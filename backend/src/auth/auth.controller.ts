@@ -1,14 +1,16 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {
+    console.log('✅ authService injecté ?', this.authService !== undefined);
+  }
 
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto) {
-     return { message: 'Utilisateur créé en base msg de authcontroller'};
-    // return this.authService.register(createUserDto);
+    return this.authService.register(createUserDto);
   }
 }
+

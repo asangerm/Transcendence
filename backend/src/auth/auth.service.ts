@@ -1,22 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {
+     console.log('✅ AuthService constructor - usersService:', usersService);  
+  }
 
   async register(createUserDto: CreateUserDto) {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const user = await this.usersService.create({
-      ...createUserDto,
-      password: hashedPassword,
-    });
+    try {
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      const user = await this.usersService.create({
+        email: createUserDto.email,
+        username: createUserDto.username,
+        passwordHash: hashedPassword,
+      });
 
-    const { password, ...rest } = user;
-    //return { message: 'Utilisateur créé en base msg de authservice', user};
+      const { passwordHash, ...rest } = user;
+      return { message: 'Utilisateur créé en base msg de authservice', user: rest };
+    } catch (error) {
+      console.error('❌ Error in register:', error);
+      throw error;
+    }
   }
 }
 

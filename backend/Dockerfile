@@ -9,7 +9,7 @@ RUN apk add --no-cache openssl openssl-dev sqlite
 COPY package*.json ./
 
 # Installer les dépendances, y compris bcryptjs
-RUN npm install bcryptjs && npm install
+RUN npm install
 
 # Copier le reste des fichiers
 COPY . .

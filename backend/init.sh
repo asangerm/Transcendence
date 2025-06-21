@@ -20,4 +20,4 @@ npx prisma studio --port 5555 --hostname 0.0.0.0 &
 
 # Start the application
 echo "Starting the application..."
-npm run dev 
+npm run start:dev 
