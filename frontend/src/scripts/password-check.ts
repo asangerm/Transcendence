@@ -7,7 +7,7 @@ export const enum PasswordStrength {
 };
 
 function MinimumLengh(): number {
-    return 7;
+    return 8;
 }
 
 // Regex to check for a common password string - all based on 5+ length passwords
@@ -32,14 +32,14 @@ export function checkPasswordStrength(password: string): PasswordStrength {
     else if (isPasswordCommon(password)) {
         currentPaswordStrength = PasswordStrength.Common;
     }
-    else if (verifElements < 3) {
+    else if (verifElements < 4) {
         currentPaswordStrength = PasswordStrength.Weak;
     }
-    else if (verifElements === 3) {
-        currentPaswordStrength = PasswordStrength.Ok;
-    }
-    else {
+    else if (verifElements >= 4 && password.length >= 12) {
         currentPaswordStrength = PasswordStrength.Strong;
+    }
+    else if (verifElements === 4) {
+        currentPaswordStrength = PasswordStrength.Ok;
     }
 
     return (currentPaswordStrength);
