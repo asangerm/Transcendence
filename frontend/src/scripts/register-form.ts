@@ -10,25 +10,25 @@ interface FormValidation {
 
 export class RegisterFormHandler {
 	private usernameInput: HTMLInputElement;
-    private emailInput: HTMLInputElement;
-    private passwordInput: HTMLInputElement;
+	private emailInput: HTMLInputElement;
+	private passwordInput: HTMLInputElement;
 	private pwdType: PasswordStrength;
 	private passwAdvertissment: HTMLParagraphElement;
 	private pwdVerifContainer: HTMLDivElement;
-    private confirmPasswordInput: HTMLInputElement;
+	private confirmPasswordInput: HTMLInputElement;
 	private confirmPasswVerif: HTMLParagraphElement;
-    private termsCheckbox: HTMLInputElement;
+	private termsCheckbox: HTMLInputElement;
 	private strengthBar: HTMLDivElement;
 	private formValidation: FormValidation;
 
-    constructor() {
+	constructor() {
 		this.usernameInput = document.getElementById('username') as HTMLInputElement;
-        this.emailInput = document.getElementById('email') as HTMLInputElement;
-        this.passwordInput = document.getElementById('password') as HTMLInputElement;
+		this.emailInput = document.getElementById('email') as HTMLInputElement;
+		this.passwordInput = document.getElementById('password') as HTMLInputElement;
 		this.pwdType = PasswordStrength.Weak;
-        this.confirmPasswordInput = document.getElementById('confirmPassword') as HTMLInputElement;
+		this.confirmPasswordInput = document.getElementById('confirmPassword') as HTMLInputElement;
 		this.confirmPasswVerif = document.getElementById('confirmPasswordVerif') as HTMLParagraphElement;
-        this.termsCheckbox = document.getElementById('terms') as HTMLInputElement;
+		this.termsCheckbox = document.getElementById('terms') as HTMLInputElement;
 		this.strengthBar = document.getElementById('passwordStrengthBar') as HTMLDivElement;
 		this.passwAdvertissment = document.getElementById('passwordVerif') as HTMLParagraphElement;
 		this.pwdVerifContainer = document.getElementById('pwdVerifContainer') as HTMLDivElement;
@@ -39,15 +39,15 @@ export class RegisterFormHandler {
 			confirmPassword: false,
 			terms: false,
 		};
-        this.setupEventListeners();
-    }
+		this.setupEventListeners();
+	}
 
     private setupEventListeners(): void {
-		if (this.usernameInput) {
-			this.usernameInput.addEventListener('blur', () => {
-				// Verifier si le nom d'utilisateur est deja pris
-			});
-		}
+		// if (this.usernameInput) {
+		// 	this.usernameInput.addEventListener('blur', () => {
+		// 		// Verifier si le nom d'utilisateur est deja pris
+		// 	});
+		// }
 
 		if (this.emailInput) {
 			this.emailInput.addEventListener('blur', () => {
