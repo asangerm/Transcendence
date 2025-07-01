@@ -1,3 +1,5 @@
+import { LoginFormHandler } from '../scripts/login-form';
+
 export function renderLogin() {
     const content = `
         <div class="min-h-screen flex items-center justify-center">
@@ -5,7 +7,7 @@ export function renderLogin() {
                 <div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg p-8 transform transition-all duration-300 hover:shadow-2xl">
                     <h2 class="text-3xl font-bold text-center mb-8">Connexion</h2>
                     
-                    <form id="loginForm" class="space-y-6">
+                    <form id="loginForm" class="space-y-6" novalidate>
                         <!-- Username/Email Input -->
                         <div>
                             <label for="username" class="block text-sm font-medium mb-2">
@@ -79,18 +81,13 @@ export function renderLogin() {
     if (app) {
         app.innerHTML = content;
         
+        const formHandler = new LoginFormHandler();
         // Add form submission handler
         const form = document.getElementById('loginForm');
         if (form) {
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                // Add your login logic here
-                const username = (document.getElementById('username') as HTMLInputElement).value;
-                const password = (document.getElementById('password') as HTMLInputElement).value;
-                const remember = (document.getElementById('remember') as HTMLInputElement).checked;
-                
-                console.log('Login attempt:', { username, password, remember });
-                // Add your authentication logic here
+                formHandler.validateForm();
             });
         }
     }

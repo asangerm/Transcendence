@@ -16,6 +16,12 @@ export default {
 			text: {
 			  DEFAULT: '#111827',
 			  dark: '#f9fafb',
+			  success: '#68A357',
+			  success_dark: '#D1F0B1',
+			  warning: '#DAE232',
+			  warning_dark: '#EAD94C',
+			  error: '#BA1F33',
+			  error_dark: '#FF6868',
 			},
 			link: {
 				DEFAULT: '#3c3cff',

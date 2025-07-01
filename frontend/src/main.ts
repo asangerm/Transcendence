@@ -1,8 +1,8 @@
 import './styles/global.css';
 import { initRouter } from './router';
 import { renderHome } from './pages/home';
-import { initializeNavigation } from './navigation';
-import { initializeTheme } from './theme';
+import { initializeNavigation } from './scripts/navigation';
+import { initializeTheme } from './scripts/theme';
 
 // Initialize the theme
 initializeTheme();

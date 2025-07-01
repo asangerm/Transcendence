@@ -5,7 +5,7 @@ export function renderForgotPassword() {
                 <div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg p-8 transform transition-all duration-300 hover:shadow-2xl">
                     <h2 class="text-3xl font-bold text-center mb-8">Réinitialisation du mot de passe</h2>
                     
-                    <form id="forgotPasswordForm" class="space-y-6">
+                    <form id="forgotPasswordForm" class="space-y-6" novalidate>
                         <div>
                             <p class="text-muted dark:text-muted-dark mb-6 text-center">
                                 Entrez votre adresse email pour recevoir un lien de réinitialisation de mot de passe.
@@ -51,17 +51,27 @@ export function renderForgotPassword() {
     if (app) {
         app.innerHTML = content;
         
+
+        const email = (document.getElementById('email') as HTMLInputElement);
+
+        email.addEventListener('blur', () => {
+            if (email.value.trim())
+                email.classList.remove('error-input', 'shake-animation');
+        });
+
         // Add form submission handler
         const form = document.getElementById('forgotPasswordForm');
         if (form) {
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const email = (document.getElementById('email') as HTMLInputElement).value;
-                
-                // Afficher un message de confirmation
-                alert('Si un compte existe avec cet email, vous recevrez un lien de réinitialisation.');
-                console.log('Password reset requested for:', email);
-                // Add your password reset logic here
+                email.classList.remove('error-input', 'shake-animation');
+                if (!email.value.trim()) {
+                    email.classList.add('error-input', 'shake-animation');
+                    setTimeout(() => email.classList.remove('shake-animation'), 1000);
+                }
+                else {
+                    // Envoyer Requete au backend
+                }
             });
         }
     }
