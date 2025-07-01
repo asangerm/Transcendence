@@ -238,7 +238,35 @@ export class RegisterFormHandler {
 		if (this.formValidation.username && this.formValidation.email 
 			&& this.formValidation.password && this.formValidation.confirmPassword 
 			&& this.formValidation.terms) {
-			// Envoyer la requete au backend
+				fetch('http://localhost:8000/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: this.usernameInput.value,
+                        email: this.emailInput.value,
+                        password: this.passwordInput.value
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'Une erreur est survenue');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('Inscription réussie 🎉');
+                    console.log('Success:', data);
+                    // Tu peux aussi rediriger :
+                    // window.location.href = '/login';
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert(`Erreur: ${error.message}`);
+                });
 		}
 		else {
 			this.displayFormErrors();
