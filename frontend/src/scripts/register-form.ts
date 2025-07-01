@@ -43,11 +43,11 @@ export class RegisterFormHandler {
 	}
 
     private setupEventListeners(): void {
-		// if (this.usernameInput) {
-		// 	this.usernameInput.addEventListener('blur', () => {
-		// 		// Verifier si le nom d'utilisateur est deja pris
-		// 	});
-		// }
+		if (this.usernameInput) {
+			this.usernameInput.addEventListener('blur', () => {
+				// Verifier si le nom d'utilisateur est deja pris
+			});
+		}
 
 		if (this.emailInput) {
 			this.emailInput.addEventListener('blur', () => {
