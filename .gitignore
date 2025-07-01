@@ -12,6 +12,9 @@ dist/
 .next/
 out/
 
+# SQLite DB
+backend/data/db.sqlite
+
 # Misc
 .DS_Store
 .env
