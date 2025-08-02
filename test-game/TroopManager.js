@@ -1,47 +1,96 @@
 // Définition des types de troupes
+const walkStopRange = 30;
 const TROOP_TYPES =
 {
 	MELEE:
 	{
 		key: 'melee',
 		texture: 'melee',
-		hp: 10,
-		damage: 1,
-		speed: 80,
-		cost: 10,
-		reward: 20,
-		castleDamage: 10,
+		cost: 15,
+		reward: 30,
 		color: 0x55aa55,
-		attackRange: 40,	// Portée d'attaque minimale
-		walkStopRange: 30,	// Plus grande que la portée d'attaque
+		hp: 10,
+		attack: 2.5,
+		defense: 1,
+		speed: 90,
+		attackRange: 50,
+		attackSpeed: 0.7,
+		critChance: 0.15,
+		critDamage: 2,
+		breakDefense: 1,
+		rage: 1
 	},
 	TANK:
 	{
 		key: 'tank',
 		texture: 'tank',
-		hp: 30,
-		damage: 0.5,
-		speed: 80,
-		cost: 30,
-		reward: 60,
-		castleDamage: 3,
+		cost: 25,
+		reward: 50,
 		color: 0x8888ff,
+		hp: 25,
+		attack: 1,
+		defense: 2.5,
+		speed: 60,
 		attackRange: 50,
-		walkStopRange: 30,
+		attackSpeed: 0.7,
+		critChance: 0.05,
+		critDamage: 1.2,
+		breakDefense: 0.8,
+		rage: 1
 	},
 	RANGE:
 	{
 		key: 'range',
 		texture: 'range',
-		hp: 5,
-		damage: 1.5,
-		speed: 80,
-		cost: 15,
-		reward: 30,
-		castleDamage: 2,
+		cost: 20,
+		reward: 40,
 		color: 0xff8888,
-		attackRange: 150,	// Grande portée d'attaque
-		walkStopRange: 30,
+		hp: 12,
+		attack: 1.5,
+		defense: 0.8,
+		speed: 75,
+		attackRange: 200,
+		attackSpeed: 1,
+		critChance: 0.1,
+		critDamage: 1.5,
+		breakDefense: 2.5,
+		rage: 1
+	},
+	ASSASSIN:
+	{
+		key: 'assassin',
+		texture: 'assassin',
+		cost: 20,
+		reward: 40,
+		color: 0x8888ff,
+		hp: 7,
+		attack: 1.5,
+		defense: 0.8,
+		speed: 140,
+		attackRange: 60,
+		attackSpeed: 2,
+		critChance: 0.15,
+		critDamage: 1.5,
+		breakDefense: 1.2,
+		rage: 1
+	},
+	BERSEKER:
+	{
+		key: 'berserker',
+		texture: 'berserker',
+		cost: 20,
+		reward: 40,
+		color: 0x8888ff,
+		hp: 12,
+		attack: 1.2,
+		defense: 0.5,
+		speed: 100,
+		attackRange: 50,
+		attackSpeed: 1,
+		critChance: 0.3,
+		critDamage: 1.1,
+		breakDefense: 1,
+		rage: 1.5
 	}
 };
 
@@ -59,28 +108,73 @@ export class TroopManager
 		// Map pour suivre le dernier moment où une troupe a infligé des dégâts
 		this.lastDamageTime = new Map();
 		// Délai minimum entre chaque dégât (en ms)
-		this.damageDelay = 1000;
+		this.damageDelay = 1000; // va changer
 		// Système de file d'attente virtuelle
 		this.spawnQueue = { left: [], right: [] };
-		this.setupCollisions();
-	}
+		
+		// Système de comptage des troupes par château
+		this.troopCount = {
+			left: {
+				MELEE: 0,
+				TANK: 0,
+				RANGE: 0,
+				ASSASSIN: 0,
+				BERSEKER: 0
+			},
+			right: {
+				MELEE: 0,
+				TANK: 0,
+				RANGE: 0,
+				ASSASSIN: 0,
+				BERSEKER: 0
+			}
+		};
 
-	setupCollisions()
-	{
-		// Collisions entre troupes
-		this.scene.physics.add.collider(this.troops, this.troops);
-		// Collisions avec les châteaux (sans dégâts, juste physique)
-		this.scene.physics.add.collider(this.troops, this.castleLeft);
-		this.scene.physics.add.collider(this.troops, this.castleRight);
+		// Définition des paliers et bonus
+		this.activeBonuses = { left: {}, right: {} };
+		this.MILESTONES = [10, 25, 50, 100];
+		this.TROOP_BONUSES = {
+			MELEE: {
+				10: { attack: 1.25, critDamage: 1.25 },
+				25: { attack: 1.5, critDamage: 1.5},
+				50: { attack: 1.75, critDamage: 2},
+				100: { attack: 2, critDamage: 2.5}
+			},
+			TANK: {
+				10: { hp: 1.25, defense: 1.25 },
+				25: { hp: 1.5, defense: 1.5 },
+				50: { hp: 1.75, defense: 2 },
+				100: { hp: 2, defense: 2.5 }
+			},
+			RANGE: {
+				10: { attackRange: 1.25, breakDefense: 1.25 },
+				25: { attackRange: 1.5, breakDefense: 1.5},
+				50: { attackRange: 1.75, breakDefense: 2},
+				100: { attackRange: 2, breakDefense: 2.5}
+			},
+			ASSASSIN: {
+				10: { speed: 1.25, attackSpeed: 1.25 },
+				25: { speed: 1.5, attackSpeed: 1.5},
+				50: { speed: 1.75, attackSpeed: 2},
+				100: { speed: 2, attackSpeed: 2.5}
+			},
+			BERSEKER: {
+				10: { rage: 1.25, critChance: 1.25 },
+				25: { rage: 1.5, critChance: 1.5},
+				50: { rage: 1.75, critChance: 2},
+				100: { rage: 2, critChance: 2.5}
+			}
+		};
 	}
 
 	isSpawnAreaClear(team)
 	{
-		const spawnX = team === 'left' ? 64 + 64 : 1280 - 64 - 64;
-		const spawnY = 720 - 90;
+		const spawnX = team === 'left' ? 128 : 1152;
+		const spawnY = 630;
 		const safeDistance = 50; // Distance minimale de sécurité
 		// Vérifie si une troupe est trop proche du point de spawn
-		return !this.troops.getChildren().some(other => {
+		return !this.troops.getChildren().some(other =>
+		{
 			if (!other.active || other.team !== team) return false;
 
 			const distance = Phaser.Math.Distance.Between(spawnX, spawnY, other.x, other.y);
@@ -90,7 +184,7 @@ export class TroopManager
 		});
 	}
 
-	requestTroopSpawn(team, troopType = 'MELEE', castle)
+	requestTroopSpawn(team, troopType, castle)
 	{
 		// Crée une demande de spawn
 		const spawnRequest =
@@ -152,6 +246,44 @@ export class TroopManager
 		const x = team === 'left' ? 64 + 64 : 1280 - 64 - 64;
 		const vx = team === 'left' ? type.speed : -type.speed;
 		const troop = this.scene.physics.add.sprite(x, y, type.texture);
+
+		// Incrémenter le compteur de troupes
+		this.troopCount[team][troopType]++;
+		
+		// Appliquer les bonus basés sur les paliers
+		const count = this.troopCount[team][troopType];
+		const bonuses = this.TROOP_BONUSES[troopType];
+		//let activeBonus = {};
+
+		// Trouver le plus haut palier atteint
+		for (const milestone of [...this.MILESTONES].reverse()) {
+			if (count >= milestone && bonuses[milestone]) {
+				const newBonus = bonuses[milestone];
+				for (const [stat, mult] of Object.entries(newBonus)) {
+					if (!this.activeBonuses[team][stat] || this.activeBonuses[team][stat] < mult) {
+						this.activeBonuses[team][stat] = mult;
+					}
+				}
+				this.showMilestoneEffect({ x, y }, milestone);
+				break;
+			}
+		}
+
+		// Copier les stats de base
+		const stats = { ...type };
+
+		// Appliquer les bonus
+		/*for (const [stat, multiplier] of Object.entries(activeBonus)) {
+			if (stats[stat]) {
+				stats[stat] *= multiplier;
+			}
+		}*/
+
+		for (const [stat, mult] of Object.entries(this.activeBonuses[team])) {
+			if (stats[stat]) stats[stat] *= mult;
+		}
+
+		// Appliquer les stats modifiées
 		if (team === 'left')
 		{
 			troop.setOrigin(1, 1);
@@ -160,35 +292,45 @@ export class TroopManager
 		{
 			troop.setOrigin(0, 1);
 		}
-		
-		troop.team = team;
-		troop.hp = type.hp;
-		troop.damage = type.damage;
-		troop.castleDamage = type.castleDamage;
-		troop.baseSpeed = type.speed;
-		troop.troopType = type.key;
-		troop.attackRange = type.attackRange;
-		troop.walkStopRange = type.walkStopRange;
+
+		// Appliquer toutes les propriétés
+		troop.hp = stats.hp;
+		troop.attack = stats.attack;
+		troop.defense = stats.defense;
+		troop.baseSpeed = stats.speed;
+		troop.troopType = stats.key;
+		troop.attackRange = stats.attackRange;
+		troop.attackSpeed = stats.attackSpeed;
+		troop.critChance = stats.critChance;
+		troop.critDamage = stats.critDamage;
+		troop.breakDefense = stats.breakDefense;
+		troop.rage = stats.rage;
+		troop.createdAt = Date.now();
 		troop.facing = team;
-		troop.reward = type.reward;
-		troop.setTint(type.color);
+		troop.team = team;
+		troop.reward = stats.reward;
+		troop.setTint(stats.color);
 
 		const graphics = this.scene.add.graphics();
 		this.attackZoneGraphics.set(troop, graphics);
+		graphics.setDepth(-1);
 
 		const walkStopGraphics = this.scene.add.graphics();
 		this.WalkStopZoneGraphics.set(troop, walkStopGraphics);
+		walkStopGraphics.setDepth(-1);
 
+		troop.baseVelocityX = vx;
 		troop.setVelocityX(vx);
+		troop.setDepth(1);
 
 		this.troops.add(troop);
-		return troop;
-	}
 
-	// Point d'entrée principal pour la création de troupes (utilisé par les boutons)
-	spawnTroop(team, troopType = 'MELEE')
-	{
-		return this.requestTroopSpawn(team, troopType);
+		// Afficher un effet visuel si un palier est atteint
+		if (this.MILESTONES.includes(count)) {
+			this.showMilestoneEffect(troop, count);
+		}
+
+		return troop;
 	}
 
 	getTroopCost(type)
@@ -210,20 +352,18 @@ export class TroopManager
 				graphics.lineStyle(1, 0xff0000, 0.3);
 				graphics.fillStyle(0xff0000, 0.1);
 				
-				const centerY = troop.y;
-				const startAngle = troop.facing === 'left' ? -90 : 90;
-				const endAngle = troop.facing === 'left' ? 90 : 270;
+				const groundY = troop.y;
+				const groundX = troop.team === 'left' ? troop.x - troop.width / 2 : troop.x + troop.width / 2;
 				
-				// Dessiner l'arc rempli pour la zone d'attaque
+				// Dessiner le demi-cercle pour la zone d'attaque
 				graphics.beginPath();
-				graphics.arc(
-					troop.x,
-					centerY,
-					troop.attackRange,
-					Phaser.Math.DegToRad(startAngle),
-					Phaser.Math.DegToRad(endAngle),
-					false
-				);
+				if (troop.facing === 'left') {
+					graphics.arc(groundX, groundY, troop.attackRange + troop.width / 2, 0, Math.PI, true);
+				} else {
+					graphics.arc(groundX, groundY, troop.attackRange + troop.width / 2, 0, Math.PI, true);
+				}
+				graphics.lineTo(groundX, groundY);
+				graphics.closePath();
 				graphics.fillPath();
 				graphics.strokePath();
 			}
@@ -236,48 +376,42 @@ export class TroopManager
 				walkStopGraphics.lineStyle(1, 0x00ff00, 0.3);
 				walkStopGraphics.fillStyle(0x00ff00, 0.1);
 				
-				const centerY = troop.y;
-				const startAngle = troop.facing === 'left' ? -90 : 90;
-				const endAngle = troop.facing === 'left' ? 90 : 270;
+				const groundY = troop.y;
+				const groundX = troop.team === 'left' ? troop.x - troop.width / 2 : troop.x + troop.width / 2;
 				
-				// Dessiner l'arc rempli pour la zone d'arrêt
+				// Dessiner le demi-cercle pour la zone d'arrêt
 				walkStopGraphics.beginPath();
-				walkStopGraphics.arc(
-					troop.x,
-					centerY,
-					troop.walkStopRange,
-					Phaser.Math.DegToRad(startAngle),
-					Phaser.Math.DegToRad(endAngle),
-					false
-				);
+				if (troop.facing === 'left') {
+					walkStopGraphics.arc(groundX, groundY, walkStopRange + troop.width / 2, 0, Math.PI, true);
+				} else {
+					walkStopGraphics.arc(groundX, groundY, walkStopRange + troop.width / 2, 0, Math.PI, true);
+				}
+				walkStopGraphics.lineTo(groundX, groundY);
+				walkStopGraphics.closePath();
 				walkStopGraphics.fillPath();
 				walkStopGraphics.strokePath();
 			}
 
 			// Vérifier les autres troupes et les châteaux pour la zone d'arrêt et d'attaque
 			let hasTargetInWalkStopRange = false;
-			let hasTargetInAttackRange = false;
 
 			// Vérification des troupes
 			this.troops.getChildren().forEach(otherTroop =>
 			{
 				if (troop !== otherTroop && otherTroop.active)
 				{
-					if (this.isInRange(troop, otherTroop, troop.walkStopRange))
+					if (this.isInRange(troop, otherTroop, walkStopRange))
 					{
 						hasTargetInWalkStopRange = true;
 					}
 					if (this.isInRange(troop, otherTroop, troop.attackRange))
 					{
-						hasTargetInAttackRange = true;
-						
 						// Si c'est un ennemi, on l'attaque
 						if (troop.team !== otherTroop.team)
 						{
 							const currentTime = Date.now();
 							const lastTime = this.lastDamageTime.get(troop) || 0;
-
-							if (currentTime - lastTime >= this.damageDelay)
+							if (currentTime - lastTime >= this.damageDelay / troop.attackSpeed)
 							{
 								this.damage(troop, otherTroop);
 								this.lastDamageTime.set(troop, currentTime);
@@ -289,21 +423,33 @@ export class TroopManager
 
 			// Vérification des châteaux
 			const targetCastle = troop.team === 'left' ? this.castleRight : this.castleLeft;
-			if (this.isInRangeCastle(troop, targetCastle, troop.walkStopRange))
+			if (this.isInRangeCastle(troop, targetCastle, walkStopRange))
 			{
 				hasTargetInWalkStopRange = true;
 			}
 			if (this.isInRangeCastle(troop, targetCastle, troop.attackRange))
 			{
-				hasTargetInAttackRange = true;
-				
 				// Attaque du château
 				const currentTime = Date.now();
 				const lastTime = this.lastDamageTime.get(troop) || 0;
 
-				if (currentTime - lastTime >= this.damageDelay)
+				if (currentTime - lastTime >= this.damageDelay / troop.attackSpeed)
 				{
-					targetCastle.health -= troop.castleDamage;
+					let damage = troop.attack;
+		
+					// Calcul du bonus de rage basé sur le temps en vie
+					const timeAlive = (Date.now() - troop.createdAt) / 1000;
+					const rageBonus = troop.rage > 1 ? 1 + (timeAlive / 5) * (troop.rage - 1) : 1;
+					damage *= rageBonus;
+
+					if (Math.random() < troop.critChance)
+					{
+						damage *= troop.critDamage;
+						this.showCritEffect(targetCastle);
+					}
+
+					targetCastle.health -= damage;
+					this.showDamageEffect(targetCastle, troop, Math.round(damage));
 					this.lastDamageTime.set(troop, currentTime);
 				}
 			}
@@ -331,7 +477,7 @@ export class TroopManager
 		};
 		if (attacker.team === target.team)
 		{
-			if (attacker.team ===	'left')
+			if (attacker.team === 'left')
 			{
 				targetCenter.x = target.x - target.body.width;
 			}
@@ -434,10 +580,84 @@ export class TroopManager
 		}
 	}
 
+	showDamageEffect(troop, attacker, damage)
+	{
+		// Calculer la position X en fonction de l'équipe
+		let textX = troop.x;
+		if (troop.team === 'left') {
+			textX -= troop.width / 2;
+		} else {
+			textX += troop.width / 2;
+		}
+
+		// Créer le texte de dégâts
+		const damageText = this.scene.add.text(textX, troop.y - 50, `-${damage}`, {
+			fontSize: '16px',
+			fontFamily: 'Arial',
+			color: '#ff0000',
+			stroke: '#000000',
+			strokeThickness: 4
+		}).setOrigin(0.5);
+
+		// Animation du texte
+		this.scene.tweens.add({
+			targets: damageText,
+			y: damageText.y - 30,
+			alpha: 0,
+			duration: 800,
+			ease: 'Power2',
+			onComplete: () => {
+				damageText.destroy();
+			}
+		});
+	}
+
+	showCritEffect(troop)
+	{
+		// Calculer la position X en fonction de l'équipe
+		let textX = troop.x;
+		if (troop.team === 'left') {
+			textX -= troop.width / 2;
+		} else {
+			textX += troop.width / 2;
+		}
+
+		const critText = this.scene.add.text(textX, troop.y - 70, `CRIT!`, {
+			fontSize: '16px',
+			fontFamily: 'Arial',
+			color: '#ff9900',
+		}).setOrigin(0.5);
+		this.scene.tweens.add({
+			targets: critText,
+			y: critText.y - 30,
+			alpha: 0,
+			duration: 800,
+			ease: 'Power2',
+			onComplete: () => {
+				critText.destroy();
+			}
+		});
+	}
+
 	damage(attacker, target)
 	{
-		target.hp -= attacker.damage;
-		this.showDamageEffect(target);
+		let damage = attacker.attack;
+		
+		// Calcul du bonus de rage basé sur le temps en vie
+		const timeAlive = (Date.now() - attacker.createdAt) / 1000; // Temps en secondes
+		const rageBonus = attacker.rage > 1 ? 1 + (timeAlive / 5) * (attacker.rage - 1) : 1; // Bonus uniquement si rage > 1
+		damage *= rageBonus;
+
+		if (Math.random() < attacker.critChance)
+		{
+			damage *= attacker.critDamage;
+			this.showCritEffect(target);
+		}
+		let def = target.defense / attacker.breakDefense;
+		def = def >= 1 ? def : 1;
+		damage /= def;
+		target.hp -= damage;
+		this.showDamageEffect(target, attacker, Math.round(damage));
 
 		if (target.hp <= 0)
 		{
@@ -461,16 +681,24 @@ export class TroopManager
 		}
 	}
 
-	showDamageEffect(troop)
+	showMilestoneEffect(troop, milestone)
 	{
-		const originalTint = troop.tintTopLeft;
-		troop.setTint(0xff0000);
-		this.scene.time.delayedCall(100, () =>
-		{
-			if (troop.active)
-			{
-				troop.setTint(originalTint);
-			}
+		const text = this.scene.add.text(troop.x, troop.y - 50, `Palier ${milestone} !`, {
+			fontSize: '24px',
+			fill: '#FFD700',
+			stroke: '#000',
+			strokeThickness: 4
+		});
+		text.setOrigin(0.5);
+
+		// Animation de l'effet
+		this.scene.tweens.add({
+			targets: text,
+			y: text.y - 50,
+			alpha: 0,
+			duration: 2000,
+			ease: 'Power2',
+			onComplete: () => text.destroy()
 		});
 	}
 }

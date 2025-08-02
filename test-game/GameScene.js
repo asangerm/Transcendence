@@ -6,16 +6,11 @@ export class GameScene extends Phaser.Scene
 
 	preload()
 	{
-		// setup de base
-		const g = this.make.graphics({ x: 0, y: 0, add: false });
-		g.fillStyle(0x55aa55, 1);
-		g.fillRect(0, 0, 32, 32);
-		g.generateTexture('melee', 32, 32);
-		g.fillRect(0, 0, 24, 24);
-		g.generateTexture('range', 24, 24);
-		g.fillRect(0, 0, 38, 38);
-		g.generateTexture('tank', 38, 38);
-		g.destroy();
+		this.createTexture('melee', 0xCA3C66, 32, 32);
+		this.createTexture('range', 0xE8AABE, 24, 24);
+		this.createTexture('tank', 0xDB6A8F, 38, 38);
+		this.createTexture('assassin', 0xA7E0E0, 24, 24);
+		this.createTexture('berserker', 0x4AA3A2, 24, 24);
 	}
 
 	create()
@@ -35,47 +30,47 @@ export class GameScene extends Phaser.Scene
 		this.troopManager = new TroopManager(this, this.castleLeft, this.castleRight);
 	}
 
+	update()
+	{
+		this.troopManager.update();
+	}
+
+	createTexture(key, color, width, height)
+	{
+		const g = this.make.graphics({ x: 0, y: 0, add: false });
+		g.fillStyle(color, 1);
+		g.fillRect(0, 0, width, height);
+		g.generateTexture(key, width, height);
+		g.destroy();
+	}
+
+	createCastle(x, y, textureKey, originX = 0)
+	{
+		const castle = this.physics.add.sprite(x, y, textureKey);
+		castle.setOrigin(originX, 1).setImmovable(true);
+		castle.health = 100;
+		castle.money = 100;
+		return castle;
+	}
+
 	createWorld()
 	{
 		// Route
-		const g2 = this.make.graphics({ x: 0, y: 0, add: false });
-		g2.fillStyle(0x888888, 1);
-		g2.fillRect(0, 0, 1280, 90);
-		g2.generateTexture('road', 1280, 90);
-		g2.destroy();
-
+		this.createTexture('road', 0x888888, 1280, 90);
 		this.add.image(0, 720, 'road').setOrigin(0, 1);
-
+	
 		// Châteaux
-		const g1 = this.make.graphics({ x: 0, y: 0, add: false });
-		g1.fillStyle(0xccd0d0, 1);
-		g1.fillRect(0, 0, 64, 160);
-		g1.generateTexture('castle', 64, 160);
-		g1.destroy();
-
-		// Création des châteaux avec physics
-		this.castleLeft = this.physics.add.sprite(64, 720 - 90, 'castle');
-		this.castleRight = this.physics.add.sprite(1280 - 64, 720 - 90, 'castle');
-		
-		// Configuration des propriétés physiques
-		this.castleLeft.setOrigin(0, 1).setImmovable(true);
-		this.castleRight.setOrigin(1, 1).setImmovable(true);
-		
-		// Initialisation de la santé
-		this.castleLeft.health = 100;
-		this.castleRight.health = 100;
-		this.castleLeft.money = 100;
-		this.castleRight.money = 100;
-
+		this.createTexture('castle', 0xccd0d0, 64, 160);
+	
+		// Création des châteaux
+		this.castleLeft = this.createCastle(64, 720 - 90, 'castle', 0);
+		this.castleRight = this.createCastle(1280 - 64, 720 - 90, 'castle', 1);
+	
+		// Événement UI
 		this.scene.get('UIScene').events.emit('castle-ready',
 		{
 			castleLeft: this.castleLeft,
 			castleRight: this.castleRight
 		});
-	}
-
-	update()
-	{
-		this.troopManager.update();
 	}
 }

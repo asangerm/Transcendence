@@ -2,10 +2,46 @@ import { CustomButton } from './CustomButton.js';
 
 export class UIScene extends Phaser.Scene
 {
-	constructor() { super({ key: 'UIScene', active: true }); }
+	constructor()
+	{
+		super({ key: 'UIScene', active: true });
+		
+		// Configuration globale des boutons
+		this.buttons =
+		[
+			{
+				text: 'Soldat',
+				type: 'MELEE',
+				color: 0xCA3C66,
+			},
+			{
+				text: 'Tank',
+				type: 'TANK',
+				color: 0xDB6A8F,
+			},
+			{
+				text: 'Archer',
+				type: 'RANGE',
+				color: 0xE8AABE,
+			},
+			{
+				text: 'Assassin',
+				type: 'ASSASSIN',
+				color: 0xA7E0E0,
+			},
+			{
+				text: 'Berserker',
+				type: 'BERSEKER',
+				color: 0x4AA3A2,
+			}
+		];
+	}
 
 	create()
 	{
+		// Récupération de la GameScene une seule fois
+		this.gameScene = this.scene.get('GameScene');
+
 		this.events.once('castle-ready', ({ castleLeft, castleRight }) =>
 		{
 			console.log('Châteaux reçus', castleLeft, castleRight);
@@ -24,74 +60,42 @@ export class UIScene extends Phaser.Scene
 
 	createButtons()
 	{
-		// Récupérer la référence au troopManager depuis la GameScene
-		const gameScene = this.scene.get('GameScene');
-			
-		// Configuration des boutons pour l'équipe de gauche
-		const buttons =
-		[
-			{
-				text: 'Soldat',
-				type: 'MELEE',
-				color: 0x55aa55,
-				cooldown: 2000
-			},
-			{
-				text: 'Tank',
-				type: 'TANK',
-				color: 0x8888ff,
-				cooldown: 3000
-			},
-			{
-				text: 'Archer',
-				type: 'RANGE',
-				color: 0xff8888,
-				cooldown: 2500
-			}
-		];
-
 		// Création des boutons pour l'équipe de gauche
 		this.ButtonsLeft = [];
-		buttons.forEach((btn, index) =>
+		this.buttons.forEach((btn, index) =>
 		{
-			const button = new CustomButton(this, 100, 150 + (index * 70), btn.text,
+			const button = new CustomButton(this, 100, 100 + (index * 70), btn.text,
 			() =>
 			{
-				const gameScene = this.scene.get('GameScene');
-				const troopCost = gameScene.troopManager ? gameScene.troopManager.getTroopCost(btn.type) : 0;
+				const troopCost = this.gameScene.troopManager ? this.gameScene.troopManager.getTroopCost(btn.type) : 0;
 				if (this.castleLeft.money >= troopCost) {
 					this.castleLeft.money -= troopCost;
-					return () => gameScene.troopManager.requestTroopSpawn('left', btn.type, this.castleLeft);
+					return () => this.gameScene.troopManager.requestTroopSpawn('left', btn.type, this.castleLeft);
 				}
 				return () => {};
 			},
 			{
-				cooldown: btn.cooldown,
 				color: btn.color,
-				width: 120
 			});
 			this.ButtonsLeft.push(button);
 		});
 
 		// Création des boutons pour l'équipe de droite (IA)
 		this.ButtonsRight = [];
-		buttons.forEach((btn, index) =>
+		this.buttons.forEach((btn, index) =>
 		{
-			const button = new CustomButton(this, 1180, 150 + (index * 70), btn.text,
+			const button = new CustomButton(this, 1180, 100 + (index * 70), btn.text,
 			() =>
 			{
-				const gameScene = this.scene.get('GameScene');
-				const troopCost = gameScene.troopManager ? gameScene.troopManager.getTroopCost(btn.type) : 0;
+				const troopCost = this.gameScene.troopManager ? this.gameScene.troopManager.getTroopCost(btn.type) : 0;
 				if (this.castleRight.money >= troopCost) {
 					this.castleRight.money -= troopCost;
-					return () => gameScene.troopManager.requestTroopSpawn('right', btn.type, this.castleRight);
+					return () => this.gameScene.troopManager.requestTroopSpawn('right', btn.type, this.castleRight);
 				}
 				return () => {};
 			},
 			{
-				cooldown: btn.cooldown,
 				color: btn.color,
-				width: 120
 			});
 			this.ButtonsRight.push(button);
 		});
@@ -99,31 +103,23 @@ export class UIScene extends Phaser.Scene
 
 	update()
 	{
-		const gameScene = this.scene.get('GameScene');
-        const buttons = [
-            { text: 'Soldat', type: 'MELEE', color: 0x55aa55, cooldown: 2000 },
-            { text: 'Tank', type: 'TANK', color: 0x8888ff, cooldown: 3000 },
-            { text: 'Archer', type: 'RANGE', color: 0xff8888, cooldown: 2500 }
-        ];
+		if (!this.ButtonsLeft || !this.ButtonsRight || !this.gameScene || !this.gameScene.troopManager) return;
 
-		if (!this.ButtonsLeft || !this.ButtonsRight) return; // <-- AJOUTE CETTE LIGNE
-
-		// Suppose que tu stockes tes CustomButton dans un tableau, par exemple this.leftCustomButtons
+		// Mise à jour des boutons de gauche
 		this.ButtonsLeft.forEach((btn, i) =>
 		{
-			const troopType = buttons[i].type;
-			const cost = gameScene.troopManager.getTroopCost(troopType);
+			const troopType = this.buttons[i].type;
+			const cost = this.gameScene.troopManager.getTroopCost(troopType);
 			btn.setEnabled(this.castleLeft.money >= cost);
 		});
 
+		// Mise à jour des boutons de droite
 		this.ButtonsRight.forEach((btn, i) =>
 		{
-			const troopType = buttons[i].type;
-			const cost = gameScene.troopManager.getTroopCost(troopType);
+			const troopType = this.buttons[i].type;
+			const cost = this.gameScene.troopManager.getTroopCost(troopType);
 			btn.setEnabled(this.castleRight.money >= cost);
 		});
-
-		if (!this.castleLeft || !this.castleRight) return;
 
 		// Mise à jour du texte avec la santé actuelle
 		this.castleLeftHealthText.setText(`HP: ${Math.max(0, Math.floor(this.castleLeft.health))}`);
