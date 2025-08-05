@@ -13,6 +13,9 @@ RUN npm install
 # Copie le reste des fichiers
 COPY . .
 
+# Compile le code TypeScript AVANT de lancer
+RUN npm run build
+
 # Expose le port utilisé par Fastify
 EXPOSE 8000
 

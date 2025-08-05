@@ -18,20 +18,20 @@ async function startServer() {
 	fastify.get('/', async (request, reply) => {
 		return { message: 'Backend is working!' }
 	});
-
+	
 	// Database test route
 	fastify.get('/db-test', async (request, reply) => {
 		try {
 			// Test if database is accessible
-			const result = fastify.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+			const result = fastify.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as Array<{name: string}>;
 			return { 
 				message: 'Database is working!',
-				tables: result.map(row => row.name)
+				tables: result.map((row: {name: string}) => row.name)
 			}
 		} catch (error) {
 			return { 
 				message: 'Database error',
-				error: error.message 
+				error: (error as Error).message 
 			}
 		}
 	});
