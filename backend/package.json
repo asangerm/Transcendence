@@ -1,17 +1,21 @@
 {
-  "name": "fastify-backend",
-  "version": "1.0.0",
-  "description": "Backend Fastify avec Node.js et SQLite",
-  "main": "src/server.js",
-  "type": "module",
-  "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
-  },
-  "dependencies": {
-    "fastify": "^4.27.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.3"
-  }
-}
+	"name": "ft-transcendence-backend",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+	  "dev": "tsx watch src/server.ts",
+	  "build": "tsc",
+	  "start": "node dist/server.js"
+	},
+	"dependencies": {
+	  "@fastify/cors": "^9.0.1",
+	  "better-sqlite3": "^9.4.3",
+	  "fastify": "^4.26.2"
+	},
+	"devDependencies": {
+	  "@types/better-sqlite3": "^7.6.9",
+	  "@types/node": "^20.11.27",
+	  "tsx": "^4.7.1",
+	  "typescript": "^5.4.2"
+	}
+  } 
