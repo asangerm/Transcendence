@@ -1,24 +1,20 @@
+# Image de base légère avec Node.js
 FROM node:20-alpine
 
+# Crée le répertoire de travail
 WORKDIR /app
 
-# Installer les paquets système nécessaires
-RUN apk add --no-cache openssl openssl-dev sqlite
-
-# Copier uniquement les fichiers package.json et package-lock.json 
+# Copie les fichiers package.json et package-lock.json
 COPY package*.json ./
 
-# Installer les dépendances, y compris bcryptjs
+# Installe les dépendances
 RUN npm install
 
-# Copier le reste des fichiers
+# Copie le reste des fichiers
 COPY . .
 
-# Rendre le script init.sh exécutable
-RUN chmod +x init.sh
-
-# Exposer le port backend
+# Expose le port utilisé par Fastify
 EXPOSE 8000
 
-# Lancer l'application via le script d'initialisation
-CMD ["/bin/sh", "./init.sh"]
+# Lance l'application
+CMD ["npm", "start"]
