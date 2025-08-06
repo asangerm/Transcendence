@@ -262,9 +262,9 @@ export class TroopManager
 				for (const [stat, mult] of Object.entries(newBonus)) {
 					if (!this.activeBonuses[team][stat] || this.activeBonuses[team][stat] < mult) {
 						this.activeBonuses[team][stat] = mult;
+						this.showMilestoneEffect({ x, y }, milestone);
 					}
 				}
-				this.showMilestoneEffect({ x, y }, milestone);
 				break;
 			}
 		}
