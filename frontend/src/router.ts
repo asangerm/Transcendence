@@ -5,9 +5,15 @@ type Route = {
 
 const routes: Route[] = [
     { path: '/', component: () => import('./pages/home').then(m => m.renderHome()) },
-    { path: '/game', component: () => import('./pages/game').then(m => m.renderGame()) },
-    { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()) }
+    { path: '/games', component: () => import('./pages/game-selection').then(m => m.renderGameSelection()) },
+    { path: '/pong', component: () => import('./pages/pong').then(m => m.renderPong()) },
+    { path: '/game2', component: () => import('./pages/pong').then(m => m.renderPong()) },
+    { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()) },
+    { path: '/login', component: () => import('./pages/login').then(m => m.renderLogin()) },
+    { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()) },
+    { path: '/register', component: () => import('./pages/register').then(m => m.renderRegister()) }
 ];
+
 
 export function initRouter() {
     // Handle initial route
@@ -19,9 +25,10 @@ export function initRouter() {
     // Handle clicks on navigation links
     document.addEventListener('click', (e: Event) => {
         const target = e.target as HTMLElement;
-        if (target.matches('[data-nav]')) {
+        const link = target.closest('a');
+        if (link && link.getAttribute('href')?.startsWith('/')) {
             e.preventDefault();
-            const path = target.getAttribute('href') || '/';
+            const path = link.getAttribute('href') || '/';
             navigateTo(path);
         }
     });
@@ -29,11 +36,16 @@ export function initRouter() {
 
 function handleRoute() {
     const path = window.location.pathname;
-    const route = routes.find(route => route.path === path) || routes[0];
-    route.component();
+    const route = routes.find(route => route.path === path);
+	if (route) {
+		route.component();
+	}
+	else {
+		import('./pages/not-found').then(m => m.render404());
+	}
 }
 
 export function navigateTo(path: string) {
-    window.history.pushState({}, '', path);
-    handleRoute();
+	window.history.pushState({}, '', path);
+	handleRoute();	
 } 

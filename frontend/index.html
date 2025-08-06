@@ -1,12 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ft_transcendence</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>ft_transcendence</title>
+</head>
+<body class="pt-16 bg-background text-text dark:bg-background-dark dark:text-text-dark">
+	<!-- Theme Switcher Button -->
+	<button 
+		id="theme-toggle" 
+		class="fixed bottom-4 left-4 p-3 rounded-lg bg-background-dark dark:bg-background shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-110 focus:outline-none ring-1 ring-muted dark:ring-muted-dark z-50"
+		aria-label="Toggle dark mode"
+	>
+		<!-- Sun icon (shown in dark mode) -->
+		<svg 
+			id="theme-toggle-light-icon" 
+			class="hidden w-6 h-6 text-text-dark dark:text-text" 
+			fill="none" 
+			viewBox="0 0 24 24" 
+			stroke="currentColor"
+		>
+			<path 
+				stroke-linecap="round" 
+				stroke-linejoin="round" 
+				stroke-width="2" 
+				d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+			/>
+		</svg>
+		<!-- Moon icon (shown in light mode) -->
+		<svg 
+			id="theme-toggle-dark-icon" 
+			class="hidden w-6 h-6 text-text-dark dark:text-text" 
+			fill="none" 
+			viewBox="0 0 24 24" 
+			stroke="currentColor"
+		>
+			<path 
+				stroke-linecap="round" 
+				stroke-linejoin="round" 
+				stroke-width="2" 
+				d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+			/>
+		</svg>
+	</button>
+
+	<nav class="bg-primary shadow-xl fixed top-0 left-0 right-0 z-50 transform transition-all duration-300 dark:bg-primary-dark">
+		<div class="max-w-6xl mx-auto px-4">
+			<div class="flex justify-between">
+				<!-- Logo -->
+				<div class="flex items-center py-4">
+					<a href="/" data-nav class="font-bold text-text hover:text-button transition-colors duration-300 text-xl dark:text-text-dark dark:hover:text-button-dark">ft_transcendence</a>
+				</div>
+
+				<!-- Mobile menu button -->
+				<div class="md:hidden flex items-center">
+					<button id="mobile-menu-button" class="text-text hover:text-button focus:outline-none dark:text-text-dark dark:hover:text-button-dark">
+						<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path id="menu-icon" class="block" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+							<path id="close-icon" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+				</div>
+
+				<!-- Desktop menu -->
+				<div class="hidden md:flex items-center space-x-6">
+					<a href="/games" data-nav class="py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Games</a>
+					<a href="/profile" data-nav class="py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Profile</a>
+					<div class="border-l border-muted dark:border-muted-dark h-6 mx-2"></div>
+					<a href="/login" data-nav class="py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Connexion</a>
+					<a href="/register" data-nav class="button-primary">Inscription</a>
+				</div>
+			</div>
+
+			<!-- Mobile menu -->
+			<div id="mobile-menu" class="hidden md:hidden pb-4">
+				<a href="/games" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Games</a>
+				<a href="/profile" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Profile</a>
+				<div class="border-t border-muted dark:border-muted-dark my-2"></div>
+				<a href="/login" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Connexion</a>
+				<a href="/register" data-nav class="button-primary">Inscription</a>
+			</div>
+		</div>
+	</nav>
+
+	<div id="app" class="bg-background dark:bg-background-dark text-text dark:text-text-dark"></div>
+	<script type="module" src="/src/main.ts"></script>
+</body>
 </html> 
