@@ -1,23 +1,28 @@
-# Image de base légère avec Node.js
-FROM node:20-alpine
+# Image de base avec Node.js
+FROM node:20-bullseye
 
 # Crée le répertoire de travail
 WORKDIR /app
 
-# Copie les fichiers package.json et package-lock.json
+# Installer les outils nécessaires pour compiler les dépendances natives
+RUN apt-get update && \
+    apt-get install -y python3 g++ make
+
+# Copier les fichiers nécessaires pour installer les dépendances
 COPY package*.json ./
 
-# Installe les dépendances
-RUN npm install
+# Installer les dépendances (et compiler better-sqlite3)
+RUN npm install --build-from-source && \
+    npm rebuild better-sqlite3 --build-from-source
 
-# Copie le reste des fichiers
+# Copier le reste de l'application
 COPY . .
 
-# Compile le code TypeScript AVANT de lancer
+# Compiler le TypeScript
 RUN npm run build
 
-# Expose le port utilisé par Fastify
+# Expose le port
 EXPOSE 8000
 
-# Lance l'application
+# Lancer le backend
 CMD ["npm", "start"]
