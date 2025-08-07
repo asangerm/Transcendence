@@ -1,7 +1,8 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import dbPlugin from "./db";
-import userRoutes from './routes/userRoutes'; // ajout import des routes utilisateur
+import userRoutes from './routes/userRoutes'; // routes utilisateurs
+import authRoutes from './routes/auth';       // routes login etc.
 
 async function startServer() {
   const fastify = Fastify({
@@ -14,8 +15,9 @@ async function startServer() {
 
   await fastify.register(dbPlugin);
 
-  // Enregistre les routes utilisateur
+  // Routes
   await fastify.register(userRoutes);
+  await fastify.register(authRoutes);
 
   fastify.get('/', async (request, reply) => {
     return { message: 'Backend is working!' }
