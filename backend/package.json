@@ -1,25 +1,28 @@
 {
-	"name": "ft-transcendence-backend",
-	"version": "1.0.0",
-	"private": true,
-	"scripts": {
-		"dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-		"build": "tsc",
-		"start": "node dist/server.js"
-	},
-	"dependencies": {
-		"@fastify/cors": "^9.0.1",
-		"bcryptjs": "^3.0.2",
-		"better-sqlite3": "^9.4.3",
-		"fastify": "^4.26.2",
-		"jsonwebtoken": "^9.0.2",
-		"zod": "^4.0.15"
-	},
-	"devDependencies": {
-		"@types/bcryptjs": "^2.4.6",
-		"@types/better-sqlite3": "^7.6.9",
-		"@types/node": "^20.11.27",
-		"tsx": "^4.7.1",
-		"typescript": "^5.4.2"
-	}
+  "name": "ft-transcendence-backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "^9.4.3",
+    "fastify": "^4.26.2",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^4.0.15",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.9",
+    "@types/node": "^20.11.27",
+    "@types/jsonwebtoken": "^9.0.2",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.2"
+  }
 }
+

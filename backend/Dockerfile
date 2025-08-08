@@ -1,5 +1,5 @@
 # Image de base avec Node.js
-FROM node:20-bullseye
+FROM node:20-bookworm
 
 # Crée le répertoire de travail
 WORKDIR /app
