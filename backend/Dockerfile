@@ -4,7 +4,7 @@ FROM node:20-bookworm
 # Crée le répertoire de travail
 WORKDIR /app
 
-# Installer les outils nécessaires pour compiler les dépendances natives
+# Installer les outils nécessaires pour compiler les dépendances natives  A
 RUN apt-get update && \
     apt-get install -y python3 g++ make
 
@@ -20,6 +20,9 @@ COPY . .
 
 # Compiler le TypeScript
 RUN npm run build
+
+# Copier schema.sql dans dist pour que le backend le trouve
+RUN cp src/schema.sql dist/schema.sql
 
 # Expose le port
 EXPOSE 8000

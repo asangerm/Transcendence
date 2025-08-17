@@ -2,6 +2,7 @@ import fp from "fastify-plugin";
 import Database from "better-sqlite3";
 import { FastifyInstance } from "fastify";
 import fs from "fs";
+import path from "path";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -10,13 +11,20 @@ declare module "fastify" {
 }
 
 async function dbPlugin(fastify: FastifyInstance) {
-  const dbPath = process.env.DB_PATH || "./data/db.sqlite";
+  // Lecture du chemin de la base depuis DB_PATH ou fallback
+  const dbPath = process.env.DB_PATH || path.join(__dirname, "../data/db.sqlite");
+
+  // Crée la DB si elle n'existe pas
+  console.log("📦 Initialisation DB :", dbPath);
+
   const db = new Database(dbPath);
 
-  const tableExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users'").get();
+  const tableExists = db.prepare(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+  ).get();
 
   if (!tableExists) {
-    const schema = fs.readFileSync("./src/schema.sql", "utf8");
+    const schema = fs.readFileSync(path.join(__dirname, "./schema.sql"), "utf8");
     db.exec(schema);
     fastify.log.info("Database schema created successfully");
   } else {
