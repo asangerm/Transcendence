@@ -7,7 +7,7 @@ const routes: Route[] = [
     { path: '/', component: () => import('./pages/home').then(m => m.renderHome()) },
     { path: '/games', component: () => import('./pages/game-selection').then(m => m.renderGameSelection()) },
     { path: '/pong', component: () => import('./pages/pong').then(m => m.renderPong()) },
-    { path: '/game2', component: () => import('./pages/pong').then(m => m.renderPong()) },
+    { path: '/game2', component: () => import('./pages/game2').then(m => m.renderGame2()) },
     { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()) },
     { path: '/login', component: () => import('./pages/login').then(m => m.renderLogin()) },
     { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()) },
