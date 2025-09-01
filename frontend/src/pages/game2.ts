@@ -5,15 +5,13 @@ import { UIScene } from '../scripts/game2/UIScene';
 
 export function renderGame2() {
     const content = `
-        <div class="min-h-screen">
-            <main class="container mx-auto px-4 py-8">
-                <div class="bg-primary dark:bg-primary-dark p-8 rounded-lg shadow-md">
-                    <h1 class="text-3xl font-bold mb-4">Age of ward</h1>
-                    <div id="gameCanvas" class="w-full h-96 bg-black rounded-lg">
-                        <!-- Game canvas will be inserted here -->
-                    </div>
+        <div class="w-full h-full flex items-center justify-center pt-2">
+            <div class="bg-primary dark:bg-primary-dark rounded-lg shadow-md flex flex-col items-center justify-center px-4 w-min">
+                <h1 class="text-3xl font-bold p-4">Age of ward</h1>
+                <div id="gameCanvas" class="max-h-[80vh] max-w-[90vw] w-min aspect-[1280/720] rounded-lg bg-transparent relative overflow-hidden">
+                    <!-- Game canvas will be inserted here -->
                 </div>
-            </main>
+            </div>
         </div>
     `;
 

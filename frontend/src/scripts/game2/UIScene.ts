@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { CustomButton } from './CustomButton';
+import { TroopManager } from './TroopManager';
 
 interface ButtonConfig {
 	text: string;
@@ -88,7 +89,7 @@ export class UIScene extends Phaser.Scene
 				const troopCost = this.gameScene.troopManager ? this.gameScene.troopManager.getTroopCost(btn.type) : 0;
 				if (this.castleLeft.money >= troopCost) {
 					this.castleLeft.money -= troopCost;
-					return () => this.gameScene.troopManager.requestTroopSpawn('left', btn.type, this.castleLeft);
+					this.gameScene.troopManager.requestTroopSpawn('left', btn.type, this.castleLeft);
 				}
 				return () => {};
 			},
@@ -108,7 +109,7 @@ export class UIScene extends Phaser.Scene
 				const troopCost = this.gameScene.troopManager ? this.gameScene.troopManager.getTroopCost(btn.type) : 0;
 				if (this.castleRight.money >= troopCost) {
 					this.castleRight.money -= troopCost;
-					return () => this.gameScene.troopManager.requestTroopSpawn('right', btn.type, this.castleRight);
+					this.gameScene.troopManager.requestTroopSpawn('right', btn.type, this.castleRight);
 				}
 				return () => {};
 			},

@@ -61,7 +61,7 @@ export class GameScene extends Phaser.Scene
 	createWorld()
 	{
 		// Route
-		this.createTexture('road', 0x888888, 1280, 90);
+		this.createTexture('road', 0x8B827D, 1280, 90);
 		this.add.image(0, 720, 'road').setOrigin(0, 1);
 	
 		// Châteaux

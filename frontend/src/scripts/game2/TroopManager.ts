@@ -122,6 +122,7 @@ export class TroopManager
 
 	constructor(scene: Phaser.Scene, castleLeft: any, castleRight: any)
 	{
+		console.log('TroopManager constructor');
 		this.scene = scene;
 		this.castleLeft = castleLeft;
 		this.castleRight = castleRight;
@@ -191,7 +192,7 @@ export class TroopManager
 		};
 	}
 
-	isSpawnAreaClear(team: string)
+	public isSpawnAreaClear(team: string)
 	{
 		const spawnX = team === 'left' ? 128 : 1152;
 		const spawnY = 630;
@@ -208,8 +209,9 @@ export class TroopManager
 		});
 	}
 
-	requestTroopSpawn(team: string, troopType: string, castle: any)
+	public requestTroopSpawn(team: string, troopType: string, castle: any)
 	{
+		console.log('requestTroopSpawn', team, troopType, castle);
 		// Crée une demande de spawn
 		const spawnRequest =
 		{
@@ -229,7 +231,7 @@ export class TroopManager
 		}
 	}
 
-	trySpawnNextTroop(team: string)
+	public trySpawnNextTroop(team: string)
 	{
 		const queue = this.spawnQueue[team];
 		if (queue.length === 0) return;
@@ -263,7 +265,7 @@ export class TroopManager
 		}
 	}
 
-	createTroop(team: string, troopType: string)
+	public createTroop(team: string, troopType: string)
 	{
 		const type = (TROOP_TYPES as any)[troopType];
 		const y = 720 - 90;
@@ -360,12 +362,12 @@ export class TroopManager
 		return troop;
 	}
 
-	getTroopCost(type: string)
+	public getTroopCost(type: string)
 	{
 		return (TROOP_TYPES as any)[type]?.cost || 0;
 	}
 
-	update()
+	public update()
 	{
 		this.troops.getChildren().forEach((troop: any) =>
 		{
@@ -494,7 +496,7 @@ export class TroopManager
 		});
 	}
 
-	isInRange(attacker: any, target: any, range?: number)
+	public isInRange(attacker: any, target: any, range?: number)
 	{
 		// Position du centre de l'attaquant et de la cible
 		const targetCenter =
@@ -556,7 +558,7 @@ export class TroopManager
 		}
 	}
 
-	isInRangeCastle(attacker: any, castle: any, range?: number)
+	public isInRangeCastle(attacker: any, castle: any, range?: number)
 	{
 		const attackerCenter =
 		{
@@ -607,7 +609,7 @@ export class TroopManager
 		}
 	}
 
-	showDamageEffect(troop: any, _attacker: any, damage: any)
+	public showDamageEffect(troop: any, _attacker: any, damage: any)
 	{
 		// Calculer la position X en fonction de l'équipe
 		let textX = troop.x;
@@ -639,7 +641,7 @@ export class TroopManager
 		});
 	}
 
-	showCritEffect(troop: any)
+	public showCritEffect(troop: any)
 	{
 		// Calculer la position X en fonction de l'équipe
 		let textX = troop.x;
@@ -666,7 +668,7 @@ export class TroopManager
 		});
 	}
 
-	damage(attacker: any, target: any)
+	public damage(attacker: any, target: any)
 	{
 		let damage = attacker.attack;
 		
@@ -708,7 +710,7 @@ export class TroopManager
 		}
 	}
 
-	showMilestoneEffect(troop: any, milestone: any)
+	public showMilestoneEffect(troop: any, milestone: any)
 	{
 		const text = this.scene.add.text(troop.x, troop.y - 50, `Palier ${milestone} !`, {
 			fontSize: '24px',
