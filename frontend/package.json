@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@babylonjs/materials": "^8.25.0",
+    "@babylonjs/core": "^8.25.0",
     "phaser": "^3.90.0"
   },
   "devDependencies": {
