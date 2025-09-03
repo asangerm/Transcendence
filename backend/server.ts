@@ -1,8 +1,8 @@
 import fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 import fastifyCookie from "@fastify/cookie";
-import dbPlugin from "./db";
-import routes from "./routes";
+import dbPlugin from "./src/db";
+import routes from "./src/routes";
 
 
 const app = fastify({
