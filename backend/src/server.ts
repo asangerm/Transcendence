@@ -2,8 +2,8 @@ import fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 import fastifyCookie from "@fastify/cookie";
 import dbPlugin from "./db";
-import authRoutes from "./routes/authRoutes";
-import userRoutes from "./routes/userRoutes";
+import routes from "./routes";
+
 
 const app = fastify({
   logger: true,
@@ -24,9 +24,8 @@ async function buildServer() {
     secret: process.env.COOKIE_SECRET || "supersecret", // pour signer les cookies
   });
 
-  // Routes
-  app.register(authRoutes, { prefix: "/auth" });
-  app.register(userRoutes, { prefix: "/" });
+  // Routes (index.ts)
+  app.register(routes);
 
   return app;
 }
