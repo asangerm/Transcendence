@@ -9,8 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@babylonjs/materials": "^8.25.0",
     "@babylonjs/core": "^8.25.0",
+    "@babylonjs/materials": "^8.25.0",
+    "@google-cloud/local-auth": "^3.0.1",
+    "@google-cloud/storage": "^7.17.0",
+    "axios": "^1.11.0",
+    "google-auth-library": "^10.3.0",
+    "jwt-decode": "^4.0.0",
     "phaser": "^3.90.0"
   },
   "devDependencies": {
