@@ -1,8 +1,9 @@
 import { FastifyInstance } from "fastify";
 import jwt from "jsonwebtoken";
+import { requireAuth } from "../../middleware/auth";
 
 export default async function meRoute(app: FastifyInstance) {
-  app.get("/me", async (req, reply) => {
+  app.get("/me", { preHandler: [requireAuth] }, async (req, reply) => {
     const { token } = req.cookies as { token?: string };
     if (!token) return reply.status(401).send({ error: true, message: "Not authenticated" });
 

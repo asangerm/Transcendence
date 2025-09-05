@@ -1,7 +1,8 @@
 import { FastifyInstance } from "fastify";
+import { requireAuth } from "../../middleware/auth";
 
 export default async function deleteUser(app: FastifyInstance) {
-  app.delete("/users/:id", async (req, reply) => {
+  app.delete("/users/:id", { preHandler: [requireAuth] }, async (req, reply) => {
     const { id } = req.params as { id: string };
 
     const existing = app.db.prepare("SELECT id FROM users WHERE id = ?").get(id);

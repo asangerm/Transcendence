@@ -17,7 +17,7 @@ export default async function registerRoute(app: FastifyInstance) {
       .prepare("SELECT id FROM users WHERE email = ? OR display_name = ?")
       .get(email, name);
     if (existing) {
-      return reply.status(409).send({ error: true, message: "User already exists" });
+      return reply.status(409).send({ error: true, message: "Email or username already taken" });
     }
 
     const hashed = await bcrypt.hash(password, 10);

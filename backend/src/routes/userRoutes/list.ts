@@ -1,7 +1,8 @@
 import { FastifyInstance } from "fastify";
+import { requireAuth } from "../../middleware/auth";
 
 export default async function listUsers(app: FastifyInstance) {
-  app.get("/", async (req, reply) => {
+  app.get("/", { preHandler: [requireAuth] }, async (req, reply) => {
     const users = app.db
       .prepare("SELECT id, display_name AS name, email FROM users")
       .all();

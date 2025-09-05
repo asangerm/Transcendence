@@ -1,7 +1,8 @@
 import { FastifyInstance } from "fastify";
+import { requireAuth } from "../../middleware/auth";
 
 export default async function userStats(app: FastifyInstance) {
-  app.get("/:id/stats", async (req, reply) => {
+  app.get("/:id/stats", { preHandler: [requireAuth] }, async (req, reply) => {
     const { id } = req.params as { id: string };
 
     const stats = app.db
