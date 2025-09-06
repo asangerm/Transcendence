@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import bcrypt from "bcryptjs";
 import validateUser from "../../validators/validator";
-import { requireAuth } from "../../middleware/auth";
+import { requireAuth } from "../../middleware/authMiddleware";
 
 export default async function updateUser(app: FastifyInstance) {
   app.put("/:id", { preHandler: [requireAuth] }, async (req, reply) => {

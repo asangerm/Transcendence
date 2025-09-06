@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { requireAuth } from "../../middleware/auth";
+import { requireAuth } from "../../middleware/authMiddleware";
 
 export default async function anonymizeUser(app: FastifyInstance) {
   app.post("/:id/anonymize", { preHandler: [requireAuth] }, async (req, reply) => {

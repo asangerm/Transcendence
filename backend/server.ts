@@ -3,6 +3,7 @@ import fastifyCors from "@fastify/cors";
 import fastifyCookie from "@fastify/cookie";
 import dbPlugin from "./src/db";
 import routes from "./src/routes";
+import { errorHandler } from "./src/middleware/errorHandler";
 
 
 const app = fastify({
@@ -26,6 +27,9 @@ async function buildServer() {
 
   // Routes (index.ts)
   app.register(routes);
+
+  // Middleware global d'erreurs
+  app.setErrorHandler(errorHandler);
 
   return app;
 }

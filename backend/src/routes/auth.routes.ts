@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authService } from '../services/auth.service';
-import { AuthenticatedRequest, authenticate } from '../middleware/auth.middleware';
+//import { AuthenticatedRequest, authenticate } from '../middleware/auth.middleware';
 
 interface RegisterBody {
   email: string;
