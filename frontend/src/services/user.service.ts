@@ -45,8 +45,8 @@ export interface FriendRequest {
 
 export class UserService {
   static async getCurrentUserProfile(): Promise<UserProfile> {
-    const response = await apiService.get('/api/users/profile');
-    return response.data;
+    const response = await apiService.get('/auth/me');
+    return response.data.user;
   }
 
   static async getUserProfile(userId: number): Promise<UserProfile> {

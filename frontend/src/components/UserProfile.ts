@@ -404,21 +404,27 @@ export class UserProfileComponent {
     const errorDiv = this.container.querySelector('#error-message') as HTMLDivElement;
     const successDiv = this.container.querySelector('#success-message') as HTMLDivElement;
     
-    successDiv.classList.add('hidden');
-    errorDiv.textContent = message;
-    errorDiv.classList.remove('hidden');
-    
-    setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+    if (successDiv) {
+      successDiv.classList.add('hidden');
+    }
+    if (errorDiv) {
+      errorDiv.textContent = message;
+      errorDiv.classList.remove('hidden');
+      setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+    }
   }
 
   private showSuccess(message: string): void {
     const errorDiv = this.container.querySelector('#error-message') as HTMLDivElement;
     const successDiv = this.container.querySelector('#success-message') as HTMLDivElement;
     
-    errorDiv.classList.add('hidden');
-    successDiv.textContent = message;
-    successDiv.classList.remove('hidden');
-    
-    setTimeout(() => successDiv.classList.add('hidden'), 3000);
+    if (errorDiv) {
+      errorDiv.classList.add('hidden');
+    }
+    if (successDiv) {
+      successDiv.textContent = message;
+      successDiv.classList.remove('hidden');
+      setTimeout(() => successDiv.classList.add('hidden'), 3000);
+    }
   }
 }

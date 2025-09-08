@@ -143,7 +143,13 @@ export class LoginForm {
 
     try {
       const result = await AuthService.login(credentials);
-      this.onSuccess?.(result.user);
+      
+      if (result.success) {
+        const user = await AuthService.verifyToken();
+        this.onSuccess?.(user);
+      } else {
+        throw new Error(result.message);
+      }
     } catch (error: any) {
       this.showError(error.message);
       this.onError?.(error.message);

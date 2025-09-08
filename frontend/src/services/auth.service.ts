@@ -26,7 +26,7 @@ export interface LoginCredentials {
 export interface RegisterCredentials {
   email: string;
   password: string;
-  displayName: string;
+  name: string;
 }
 
 export class AuthService {
@@ -71,16 +71,8 @@ export class AuthService {
   }
 
   static isAuthenticated(): boolean {
-    const token = this.getAccessToken();
-    if (!token) return false;
-
-    try {
-      const decoded: any = jwtDecode(token);
-      const now = Date.now() / 1000;
-      return decoded.exp > now;
-    } catch {
-      return false;
-    }
+    const user = this.getUser();
+    return user !== null;
   }
 
   static logout(): void {
@@ -89,31 +81,21 @@ export class AuthService {
     localStorage.removeItem(this.USER_KEY);
   }
 
-  static async register(credentials: RegisterCredentials): Promise<{ user: User; tokens: AuthTokens }> {
+  static async register(credentials: RegisterCredentials): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await apiService.post('/api/auth/register', credentials);
-      const { user, tokens } = response.data;
-      
-      this.setTokens(tokens);
-      this.setUser(user);
-      
-      return { user, tokens };
+      const response = await apiService.post('/auth/register', credentials);
+      return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Registration failed');
+      throw new Error(error.response?.data?.message || 'Registration failed');
     }
   }
 
-  static async login(credentials: LoginCredentials): Promise<{ user: User; tokens: AuthTokens }> {
+  static async login(credentials: LoginCredentials): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await apiService.post('/api/auth/login', credentials);
-      const { user, tokens } = response.data;
-      
-      this.setTokens(tokens);
-      this.setUser(user);
-      
-      return { user, tokens };
+      const response = await apiService.post('/auth/login', credentials);
+      return response.data;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Login failed');
+      throw new Error(error.response?.data?.message || 'Login failed');
     }
   }
 
@@ -133,7 +115,7 @@ export class AuthService {
 
   static async verifyToken(): Promise<User | null> {
     try {
-      const response = await apiService.get('/api/auth/verify');
+      const response = await apiService.get('/auth/me');
       const { user } = response.data;
       
       this.setUser(user);
@@ -146,7 +128,7 @@ export class AuthService {
 
   static async logoutAsync(): Promise<void> {
     try {
-      await apiService.post('/api/auth/logout');
+      await apiService.post('/auth/logout');
     } catch (error) {
       console.warn('Logout request failed:', error);
     } finally {

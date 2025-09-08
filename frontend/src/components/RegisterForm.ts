@@ -214,7 +214,7 @@ export class RegisterForm {
     const credentials: RegisterCredentials = {
       email: formData.get('email') as string,
       password,
-      displayName: formData.get('displayName') as string,
+      name: formData.get('displayName') as string,
     };
 
     const button = form.querySelector('#register-button') as HTMLButtonElement;
@@ -226,10 +226,15 @@ export class RegisterForm {
 
     try {
       const result = await AuthService.register(credentials);
-      this.showSuccess('Account created successfully! You are now logged in.');
-      setTimeout(() => {
-        this.onSuccess?.(result.user);
-      }, 1500);
+      
+      if (result.success) {
+        this.showSuccess('Account created successfully!');
+        setTimeout(() => {
+          this.onSuccess?.();
+        }, 1500);
+      } else {
+        throw new Error(result.message);
+      }
     } catch (error: any) {
       this.showError(error.message);
       this.onError?.(error.message);
