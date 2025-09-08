@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+/*import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authService } from '../services/auth.service';
 //import { AuthenticatedRequest, authenticate } from '../middleware/auth.middleware';
 
@@ -153,4 +153,4 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(500).send({ error: 'Verification failed' });
     }
   });
-}
+}*/

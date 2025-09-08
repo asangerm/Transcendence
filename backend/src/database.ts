@@ -1,4 +1,4 @@
-import sqlite3 from 'sqlite3';
+/*import sqlite3 from 'sqlite3';
 import { promises as fs } from 'fs';
 import path from 'path';
 import * as dotenv from 'dotenv';
@@ -98,4 +98,4 @@ class Database {
   }
 }
 
-export const db = new Database();
+export const db = new Database();*/

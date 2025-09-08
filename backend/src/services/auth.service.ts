@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+/*import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { v4 as uuidv4 } from 'uuid';
@@ -217,4 +217,4 @@ export class AuthService {
   }
 }
 
-export const authService = new AuthService();
+export const authService = new AuthService();*/

@@ -1,4 +1,4 @@
-import { db } from '../database';
+/*import { db } from '../database';
 import { authService, User } from './auth.service';
 import path from 'path';
 import { promises as fs } from 'fs';
@@ -273,4 +273,4 @@ export class UserService {
   }
 }
 
-export const userService = new UserService();
+export const userService = new UserService();*/

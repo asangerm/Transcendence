@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+/*import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { userService } from '../services/user.service';
 import { AuthenticatedRequest, authenticate, optionalAuthenticate } from '../middleware/auth.middleware';
 
@@ -305,4 +305,4 @@ export async function userRoutes(app: FastifyInstance) {
       return reply.status(500).send({ error: 'Failed to search users' });
     }
   });
-}
+}*/
