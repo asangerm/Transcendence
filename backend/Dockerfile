@@ -18,6 +18,9 @@ RUN npm install --build-from-source && \
 # Copier le reste de l'application
 COPY . .
 
+# Clean install for Linux
+RUN rm -rf node_modules && npm install --build-from-source && npm rebuild better-sqlite3 --build-from-source
+
 # Compiler le TypeScript
 RUN npm run build
 

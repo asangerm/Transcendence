@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@babylonjs/core": "^8.25.0",
+    "bcryptjs": "^3.0.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0"
+  }
+}

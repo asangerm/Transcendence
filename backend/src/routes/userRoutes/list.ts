@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { requireAuth } from "../../middleware/auth";
+import { requireAuth } from "../../middleware/authMiddleware";
 
 export default async function listUsers(app: FastifyInstance) {
   app.get("/", { preHandler: [requireAuth] }, async (req, reply) => {

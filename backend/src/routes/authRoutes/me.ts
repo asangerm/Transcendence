@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import jwt from "jsonwebtoken";
-import { requireAuth } from "../../middleware/auth";
+import { requireAuth } from "../../middleware/authMiddleware";
 
 export default async function meRoute(app: FastifyInstance) {
   app.get("/me", { preHandler: [requireAuth] }, async (req, reply) => {
