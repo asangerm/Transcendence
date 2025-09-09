@@ -20,6 +20,7 @@ export class UIScene extends Phaser.Scene
 	castleRightMoneyText!: Phaser.GameObjects.Text;
 	ButtonsLeft!: CustomButton[];
 	ButtonsRight!: CustomButton[];
+	gameOver: boolean = false;
 
 	constructor()
 	{
@@ -74,6 +75,15 @@ export class UIScene extends Phaser.Scene
 			this.castleRightMoneyText = this.add.text(100, 100, '', { font: '20px Arial', color: '#fff' }).setOrigin(0.5);	
 			// On crée les boutons une fois que tout est prêt
 			this.createButtons();
+
+			this.time.addEvent({
+				delay: 1000, // 1000 ms = 1 seconde
+				loop: true,
+				callback: () => {
+					this.castleLeft.money += 2;
+					this.castleRight.money += 2;
+				}
+			})
 		});
 	}
 
@@ -122,7 +132,7 @@ export class UIScene extends Phaser.Scene
 
 	update()
 	{
-		if (!this.ButtonsLeft || !this.ButtonsRight || !this.gameScene || !this.gameScene.troopManager) return;
+		if (this.gameOver || !this.ButtonsLeft || !this.ButtonsRight || !this.gameScene || !this.gameScene.troopManager) return;
 
 		// Mise à jour des boutons de gauche
 		this.ButtonsLeft.forEach((btn: CustomButton, i: number) =>
@@ -170,6 +180,25 @@ export class UIScene extends Phaser.Scene
 		// Changement de couleur en fonction de la santé
 		this.updateHealthColor(this.castleLeftHealthText, this.castleLeft.health);
 		this.updateHealthColor(this.castleRightHealthText, this.castleRight.health);
+		
+		if (this.castleLeft.health <= 0 || this.castleRight.health <= 0) {
+			this.gameOver = true;
+	
+			const winner = this.castleLeft.health <= 0 ? 'Équipe Droite' : 'Équipe Gauche';
+			const message = `${winner} a gagné !`;
+	
+			const gameOverText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, message, {
+				font: '48px Arial',
+				color: '#ffffff',
+				backgroundColor: '#000000',
+				padding: { x: 20, y: 10 },
+			}).setOrigin(0.5);
+	
+			// Optionnel : désactiver tous les boutons
+			this.ButtonsLeft.forEach(btn => btn.setEnabled(false));
+			this.ButtonsRight.forEach(btn => btn.setEnabled(false));
+		}
+
 	}
 
 	updateHealthColor(text: Phaser.GameObjects.Text, health: number)
