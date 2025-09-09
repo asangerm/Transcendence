@@ -5,6 +5,7 @@ import registerRoute from "./authRoutes/register";
 import loginRoute from "./authRoutes/login";
 import logoutRoute from "./authRoutes/logout";
 import meRoute from "./authRoutes/me";
+import googleRoute from "./authRoutes/google";
 
 // Users
 import listUsers from "./userRoutes/list";
@@ -20,6 +21,7 @@ export default async function routes(app: FastifyInstance) {
   app.register(loginRoute, { prefix: "/auth" });
   app.register(logoutRoute, { prefix: "/auth" });
   app.register(meRoute, { prefix: "/auth" });
+  app.register(googleRoute, { prefix: "/auth" });
 
   // Users
   app.register(listUsers, { prefix: "/users" });

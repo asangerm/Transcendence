@@ -101,13 +101,15 @@ export class AuthService {
 
   static async googleLogin(idToken: string): Promise<{ user: User; tokens: AuthTokens }> {
     try {
-      const response = await apiService.post('/api/auth/google', { idToken });
-      const { user, tokens } = response.data;
+      const response = await apiService.post('/auth/google', { idToken });
       
-      this.setTokens(tokens);
-      this.setUser(user);
+      // Get user data after login
+      if (response.data.success) {
+        const user = await this.verifyToken();
+        return { user, tokens: { accessToken: '', refreshToken: '' } };
+      }
       
-      return { user, tokens };
+      throw new Error('Google login failed');
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Google login failed');
     }
