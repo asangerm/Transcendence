@@ -4,14 +4,17 @@ export default async function privacyRoute(app: FastifyInstance) {
   app.get("/privacy", async (_, reply) => {
     return reply.send({
       success: true,
-      privacy: {
-        message: "Nous respectons vos données personnelles conformément au RGPD.",
-        points: [
-          "Vos données peuvent être consultées via /users/:id",
-          "Vous pouvez les mettre à jour via PUT /users/:id",
-          "Vous pouvez anonymiser votre compte via POST /users/:id/anonymize",
-          "Vous pouvez supprimer définitivement votre compte via DELETE /users/:id",
-        ],
+      privacy_policy: "Nous respectons vos données personnelles conformément au RGPD.",
+      rights: {
+        access: "Consultez vos données via GET /users/:id",
+        rectification: "Modifiez vos données via PUT /users/:id",
+        anonymization: "Anonymisez vos données via POST /users/:id/anonymize",
+        erasure: "Supprimez définitivement votre compte via DELETE /users/:id",
+        portability: "Export de vos données (non encore implémenté)",
+      },
+      contact: {
+        dpo: "privacy@tonapp.com",
+        help: "En cas de problème, contactez notre support.",
       },
     });
   });
