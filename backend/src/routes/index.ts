@@ -15,6 +15,11 @@ import userStats from "./userRoutes/stats";
 import anonymizeUser from "./userRoutes/anonymize";
 import deleteUser from "./userRoutes/delete";
 
+// RGPD
+import privacyRoute from "./rgpd/privacy";
+
+
+
 export default async function routes(app: FastifyInstance) {
   // Auth
   app.register(registerRoute, { prefix: "/auth" });
@@ -30,4 +35,8 @@ export default async function routes(app: FastifyInstance) {
   app.register(userStats, { prefix: "/users" });
   app.register(anonymizeUser, { prefix: "/users" });
   app.register(deleteUser, { prefix: "/users" });
+
+  //RGPD
+  app.register(privacyRoute, { prefix: "/rgpd" });
+  
 }
