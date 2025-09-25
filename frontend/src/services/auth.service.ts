@@ -1,5 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
 import { apiService } from './api.service';
+import { AuthStore } from '../stores/auth.store';
 
 export interface User {
   id: number;
@@ -121,9 +122,11 @@ export class AuthService {
       const { user } = response.data;
       
       this.setUser(user);
+	  AuthStore.setUser(user);
       return user;
     } catch (error) {
       this.logout();
+	  AuthStore.clear();
       return null;
     }
   }
@@ -135,6 +138,7 @@ export class AuthService {
       console.warn('Logout request failed:', error);
     } finally {
       this.logout();
+	  AuthStore.clear();
     }
   }
 }

@@ -52,18 +52,21 @@ export class RegisterFormHandler {
 		if (this.emailInput) {
 			this.emailInput.addEventListener('blur', () => {
 				this.verifyFormInputs();
-				let emailVerif = document.getElementById('emailVerif') as HTMLParagraphElement;
+				let emailVerif = document.getElementById('emailVerif') as HTMLDivElement;
 				this.emailInput.classList.remove('error-input');
-				emailVerif.classList.add('invisible');
+				emailVerif.classList.remove('scale-100');
+				emailVerif.classList.add('invisible', 'scale-0');
 				if (this.emailInput.value) {
 					// Expression régulière simple pour vérifier le format email
 					const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 					if (!emailRegex.test(this.emailInput.value)) {
-						emailVerif.classList.remove('invisible');
+						emailVerif.classList.add('scale-100');
+						emailVerif.classList.remove('invisible', 'scale-0');
 						this.emailInput.classList.add('error-input');
 					}
 					else {
-						emailVerif.classList.add('invisible');
+						emailVerif.classList.remove('scale-100');
+						emailVerif.classList.add('invisible', 'scale-0');
 						this.emailInput.classList.remove('error-input');
 					}
 				}
@@ -77,48 +80,58 @@ export class RegisterFormHandler {
                 this.passwAdvertissment.classList.remove('error-text', 'warning-text', 'success-text');
 
                 this.strengthBar?.classList.remove('error-bg', 'warning-bg', 'success-bg', 'invisible');
-				this.pwdVerifContainer.classList.remove('invisible');
+				this.pwdVerifContainer.classList.remove('invisible', 'scale-0');
+				this.pwdVerifContainer.classList.add('scale-100');
 
 				this.updatePasswordStrengthIndicator(this.pwdType);
 
                 if (this.passwordInput.value === '') {
                     this.strengthBar?.style.setProperty('width', '0%');
-                    this.pwdVerifContainer.classList.add('invisible');
+					this.pwdVerifContainer.classList.remove('scale-100');
+                    this.pwdVerifContainer.classList.add('invisible', 'scale-0');
                 }
+				if (this.passwordInput.value !== this.confirmPasswordInput.value) {
+					
+					this.confirmPasswVerif.classList.remove('invisible', 'error-text', 'success-text', 'scale-0');
+					this.confirmPasswVerif.classList.add('scale-100');
+					this.confirmPasswVerif.innerHTML = "Mot de passe différent !";
+				} else {
+					this.confirmPasswVerif.classList.add('invisible', 'scale-0');
+					this.confirmPasswVerif.classList.remove('scale-100');
+				}
             });
 			this.passwordInput.addEventListener('blur', () => {
 				this.verifyFormInputs();
 				if (this.formValidation.password) {
-					this.pwdVerifContainer.classList.add('invisible');
-				}
-				if (this.passwordInput.value !== this.confirmPasswordInput.value) {
-					this.confirmPasswVerif.classList.remove('invisible', 'error-text', 'success-text');
-					this.confirmPasswVerif.classList.add('error-text');
-					this.confirmPasswVerif.innerHTML = "❌ Les mots de passe ne correspondent pas";
+					this.pwdVerifContainer.classList.remove('scale-100');
+					this.pwdVerifContainer.classList.add('invisible', 'scale-0');
 				}
 			});
         }
 
 		if (this.confirmPasswordInput) {
 			this.confirmPasswordInput.addEventListener('input', () => {
-				this.confirmPasswordInput.classList.remove('error-input');
+				this.confirmPasswordInput.classList.remove('error-input', 'scale-0');
 				this.confirmPasswVerif.classList.remove('invisible', 'error-text', 'success-text');
 				if (this.confirmPasswordInput.value !== this.passwordInput.value) {
-					this.confirmPasswVerif.classList.add('error-text');
-					this.confirmPasswVerif.innerHTML = "❌ Les mots de passe ne correspondent pas";
+					this.confirmPasswVerif.classList.remove('scale-0');
+					this.confirmPasswVerif.classList.add('scale-100');
+					this.confirmPasswVerif.innerHTML = "NAN !";
 				}
 				else if (this.confirmPasswordInput.value !== '' && this.confirmPasswordInput.value === this.passwordInput.value) {
-					this.confirmPasswVerif.classList.add('success-text');
-					this.confirmPasswVerif.innerHTML = "✅ Les mots de passe correspondent";
+					this.confirmPasswVerif.classList.remove('scale-100');
+					this.confirmPasswVerif.classList.add('invisible', 'scale-0');
 				}
 				else {
-					this.confirmPasswVerif.classList.add('invisible');
+					this.confirmPasswVerif.classList.remove('scale-100');
+					this.confirmPasswVerif.classList.add('invisible', 'scale-0');
 				}
 			});
 			this.confirmPasswordInput.addEventListener('blur', () => {
 				this.verifyFormInputs();
 				if (this.formValidation.confirmPassword) {
-					this.confirmPasswVerif.classList.add('invisible');
+					this.confirmPasswVerif.classList.remove('scale-100');
+					this.confirmPasswVerif.classList.add('invisible', 'scale-0');
 				}
 			});
 		}
@@ -126,32 +139,37 @@ export class RegisterFormHandler {
 
     private updatePasswordStrengthIndicator(strength: PasswordStrength): void {
 		if (strength === PasswordStrength.Short) {
-			this.passwAdvertissment.classList.add('error-text');
-			this.passwAdvertissment.innerHTML = "🚫 Trop court (minimum 8 caractères)";
-			this.strengthBar?.classList.add('error-bg');
+			this.passwAdvertissment.classList.remove('error-border', 'warning-border', 'success-border');
+			this.passwAdvertissment.classList.add('error-border');
+			this.passwAdvertissment.innerHTML = "Trop court (8 min.)";
+			this.strengthBar?.classList.add('red-500');
 			this.strengthBar?.style.setProperty('width', '25%');
 		}
 		else if (strength === PasswordStrength.Weak) {
-			this.passwAdvertissment.classList.add('warning-text');
-			this.passwAdvertissment.innerHTML = "⚠️ Trop faible (1 majuscule, 1 chiffre, 1 caractère spécial)";
-			this.strengthBar?.classList.add('warning-bg');
+			this.passwAdvertissment.classList.remove('error-border', 'warning-border', 'success-border');
+			this.passwAdvertissment.classList.add('error-border');
+			this.passwAdvertissment.innerHTML = "(1Min, 1Maj, 1Chiffre)";
+			this.strengthBar?.classList.add('red-500');
 			this.strengthBar?.style.setProperty('width', '50%');
 		}
 		else if (strength === PasswordStrength.Common) {
-			this.passwAdvertissment.classList.add('warning-text');
-			this.passwAdvertissment.innerHTML = "⚠️ Trop commun";
+			this.passwAdvertissment.classList.remove('error-border', 'warning-border', 'success-border');
+			this.passwAdvertissment.classList.add('warning-border');
+			this.passwAdvertissment.innerHTML = "Trop commun";
 			this.strengthBar?.classList.add('warning-bg');
 			this.strengthBar?.style.setProperty('width', '50%');
 		}
 		else if (strength === PasswordStrength.Ok) {
-			this.passwAdvertissment.classList.add('success-text');
-			this.passwAdvertissment.innerHTML = "✅ Mot de passe acceptable";
+			this.passwAdvertissment.classList.remove('error-border', 'warning-border', 'success-border');
+			this.passwAdvertissment.classList.add('success-border');
+			this.passwAdvertissment.innerHTML = "MDP Sécurisé";
 			this.strengthBar?.classList.add('success-bg');
 			this.strengthBar?.style.setProperty('width', '75%');
 		}
 		else if (strength === PasswordStrength.Strong) {
-			this.passwAdvertissment.classList.add('success-text');
-			this.passwAdvertissment.innerHTML = "🔒 Mot de passe très solide";
+			this.passwAdvertissment.classList.remove('error-border', 'warning-border', 'success-border');
+			this.passwAdvertissment.classList.add('success-border');
+			this.passwAdvertissment.innerHTML = "MDP Solide";
 			this.strengthBar?.classList.add('success-bg');
 			this.strengthBar?.style.setProperty('width', '100%');
 		}
@@ -226,7 +244,7 @@ export class RegisterFormHandler {
 		}
 	}
 
-    public validateForm(): void {
+    public validateForm(): boolean {
 		// Réinitialiser les états d'erreur
 		this.termsCheckbox.classList.remove('ring-2', 'ring-red-500');
 		[this.usernameInput, this.emailInput, this.passwordInput, this.confirmPasswordInput].forEach(input => {
@@ -238,38 +256,35 @@ export class RegisterFormHandler {
 		if (this.formValidation.username && this.formValidation.email 
 			&& this.formValidation.password && this.formValidation.confirmPassword 
 			&& this.formValidation.terms) {
-				fetch('http://localhost:8000/auth/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: this.usernameInput.value,
-                        email: this.emailInput.value,
-                        password: this.passwordInput.value
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => {
-                            throw new Error(err.message || 'Une erreur est survenue');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    alert('Inscription réussie 🎉');
-                    console.log('Success:', data);
-                    // Tu peux aussi rediriger :
-                    // window.location.href = '/login';
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    alert(`Erreur: ${error.message}`);
-                });
+			return true;
 		}
 		else {
 			this.displayFormErrors();
+			return false;
 		}
+    }
+
+    // Afficher un message de succès
+    private showSuccessMessage(message: string): void {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        successDiv.textContent = message;
+        document.body.appendChild(successDiv);
+        
+        setTimeout(() => {
+            successDiv.remove();
+        }, 3000);
+    }
+
+    // Afficher un message d'erreur
+    private showErrorMessage(message: string): void {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        errorDiv.textContent = message;
+        document.body.appendChild(errorDiv);
+        
+        setTimeout(() => {
+            errorDiv.remove();
+        }, 5000);
     }
 }

@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Installer les outils nécessaires pour compiler les dépendances natives (Node.js natives (comme better-sqlite3) ont besoin)
 RUN apt-get update && \
-    apt-get install -y python3 g++ make
+    apt-get install -y python3 g++ make sqlite3
 
 # Copier les fichiers nécessaires pour installer les dépendances
 COPY package*.json ./

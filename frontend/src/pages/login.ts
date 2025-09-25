@@ -1,4 +1,5 @@
 import { LoginForm } from '../components/LoginForm';
+import { NavBar } from '../components/NavBar';
 import { navigateTo } from '../router';
 
 export function renderLogin() {
@@ -8,6 +9,10 @@ export function renderLogin() {
         
         new LoginForm(app, {
             onSuccess: (user) => {
+				const navbarContainer = document.getElementById('navbar-container');
+				if (navbarContainer) {
+					new NavBar(navbarContainer);
+				}
                 console.log('Login successful:', user);
                 navigateTo('/');
             },

@@ -1,3 +1,4 @@
+import { NavBar } from './components/NavBar';
 import { AuthService } from './services/auth.service';
 
 type Route = {
@@ -9,10 +10,11 @@ type Route = {
 
 const routes: Route[] = [
     { path: '/', component: () => import('./pages/home').then(m => m.renderHome()) },
-    { path: '/games', component: () => import('./pages/game-selection').then(m => m.renderGameSelection()), requiresAuth: true },
-    { path: '/pong', component: () => import('./pages/pong').then(m => m.renderPong()), requiresAuth: true },
-    { path: '/game2', component: () => import('./pages/game2').then(m => m.renderGame2()), requiresAuth: true },
+    { path: '/games', component: () => import('./pages/game-selection').then(m => m.renderGameSelection()), requiresAuth: false },
+    { path: '/pong', component: () => import('./pages/pong').then(m => m.renderPong()), requiresAuth: false },
+    { path: '/game2', component: () => import('./pages/game2').then(m => m.renderGame2()), requiresAuth: false },
     { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()), requiresAuth: true },
+    { path: '/profile2', component: () => import('./pages/profileold').then(m => m.renderProfile()), requiresAuth: true },
     { path: '/login', component: () => import('./pages/login').then(m => m.renderLogin()), guestOnly: true },
     { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()), guestOnly: true },
     { path: '/register', component: () => import('./pages/register').then(m => m.renderRegister()), guestOnly: true }
@@ -25,6 +27,10 @@ export function initRouter() {
 
     // Handle browser back/forward buttons
     window.addEventListener('popstate', handleRoute);
+	const navbarContainer = document.getElementById('navbar-container');
+	if (navbarContainer) {
+		new NavBar(navbarContainer);
+	}
 
     // Handle clicks on navigation links
     document.addEventListener('click', (e: Event) => {

@@ -24,7 +24,8 @@ async function dbPlugin(fastify: FastifyInstance) {
   ).get();
 
   if (!tableExists) {
-    const schema = fs.readFileSync(path.join(__dirname, "./schema.sql"), "utf8");
+    const schemaPath = path.join(process.cwd(), "dist", "schema.sql");
+    const schema = fs.readFileSync(schemaPath, "utf8");
     db.exec(schema);
     fastify.log.info("Database schema created successfully");
   } else {
