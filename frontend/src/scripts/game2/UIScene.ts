@@ -105,7 +105,7 @@ export class UIScene extends Phaser.Scene
 		this.ButtonsLeft = [];
 		this.buttons.forEach((btn: ButtonConfig, index: number) =>
 		{
-			const button = new CustomButton(this, 100, 100 + (index * 70), btn.text,
+			const button = new CustomButton(this, 100, 50 + (index * 55), btn.text,
 			() =>
 			{
 				const troopCost = this.gameScene.troopManager ? this.gameScene.troopManager.getTroopCost(btn.type) : 0;
@@ -125,7 +125,7 @@ export class UIScene extends Phaser.Scene
 		this.ButtonsRight = [];
 		this.buttons.forEach((btn: ButtonConfig, index: number) =>
 		{
-			const button = new CustomButton(this, 1180, 100 + (index * 70), btn.text,
+			const button = new CustomButton(this, 1180, 50 + (index * 55), btn.text,
 			() =>
 			{
 				const troopCost = this.gameScene.troopManager ? this.gameScene.troopManager.getTroopCost(btn.type) : 0;
@@ -175,25 +175,31 @@ export class UIScene extends Phaser.Scene
 		this.castleLeftMoneyText.setText(`Money: ${Math.max(0, Math.floor(this.castleLeft.money))}`);
 		this.castleRightMoneyText.setText(`Money: ${Math.max(0, Math.floor(this.castleRight.money))}`);
 		// Mise à jour de la position des textes
+		// Variables pour ajuster facilement les positions
+		const leftOffsetX = 100;  // Décalage horizontal pour le château gauche
+		const rightOffsetX = -100; // Décalage horizontal pour le château droite
+		const healthOffsetY = -320; // Décalage vertical pour HP
+		const moneyOffsetY = -300; // Décalage vertical pour Money
+		
 		this.castleLeftHealthText.setPosition
 		(
-			this.castleLeft.x + 32, // Centre du château
-			this.castleLeft.y - 180 // Au-dessus du château
+			this.castleLeft.x + leftOffsetX, // Position X ajustable
+			this.castleLeft.y + healthOffsetY // Position Y ajustable
 		);
 		this.castleRightHealthText.setPosition
 		(
-			this.castleRight.x - 32, // Centre du château
-			this.castleRight.y - 180 // Au-dessus du château
+			this.castleRight.x + rightOffsetX, // Position X ajustable
+			this.castleRight.y + healthOffsetY // Position Y ajustable
 		);
 		this.castleLeftMoneyText.setPosition
 		(
-			this.castleLeft.x + 32, // Centre du château
-			this.castleLeft.y - 210 // Au-dessus du château
+			this.castleLeft.x + leftOffsetX, // Position X ajustable
+			this.castleLeft.y + moneyOffsetY // Position Y ajustable
 		);
 		this.castleRightMoneyText.setPosition
 		(
-			this.castleRight.x - 32, // Centre du château
-			this.castleRight.y - 210 // Au-dessus du château
+			this.castleRight.x + rightOffsetX, // Position X ajustable
+			this.castleRight.y + moneyOffsetY // Position Y ajustable
 		);
 
 		// Changement de couleur en fonction de la santé

@@ -353,6 +353,15 @@ export class TroopManager
 		troop.setVelocityX(vx);
 		troop.setDepth(1);
 
+		// Jouer l'animation de marche pour les troupes melee
+		if (troopType === 'MELEE') {
+			troop.play('melee-walk-left');
+			// Inverser l'image pour les troupes de droite
+			if (team === 'right') {
+				troop.setFlipX(true);
+			}
+		}
+
 		this.troops.add(troop);
 
 		// Afficher un effet visuel si un palier est atteint
