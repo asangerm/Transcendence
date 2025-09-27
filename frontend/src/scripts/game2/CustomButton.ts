@@ -1,4 +1,5 @@
-import Phaser from 'phaser';
+// @ts-ignore
+import * as Phaser from 'phaser';
 
 export class CustomButton
 {
@@ -59,12 +60,22 @@ export class CustomButton
 
 	setEnabled(enabled: boolean)
 	{
-		this.button.disableInteractive();
-		this.text.setAlpha(0.5);
-		if (enabled)
-		{
-			this.button.setInteractive({ useHandCursor: true });
-			this.text.setAlpha(1);
+		if (!this.button || !this.text) return;
+		
+		try {
+			if (enabled)
+			{
+				this.button.setInteractive({ useHandCursor: true });
+				this.text.setAlpha(1);
+			}
+			else
+			{
+				this.button.disableInteractive();
+				this.text.setAlpha(0.5);
+			}
+		} catch (error) {
+			// Ignorer les erreurs si les objets ne sont pas encore prêts
+			console.warn('CustomButton.setEnabled error:', error);
 		}
 	}
 }

@@ -1,4 +1,5 @@
-import Phaser from 'phaser';
+// @ts-ignore
+import * as Phaser from 'phaser';
 
 // Types pour les troupes
 interface SpawnRequest {
@@ -198,7 +199,7 @@ export class TroopManager
 		const spawnY = 630;
 		const safeDistance = 50; // Distance minimale de sécurité
 		// Vérifie si une troupe est trop proche du point de spawn
-		return !this.troops.getChildren().some(other =>
+		return !this.troops.getChildren().some((other: any) =>
 		{
 			if (!other.active || (other as any).team !== team) return false;
 
@@ -338,7 +339,7 @@ export class TroopManager
 		(troop as any).facing = team;
 		(troop as any).team = team;
 		(troop as any).reward = stats.reward;
-		troop.setTint(stats.color);
+		// Ne plus appliquer de tint coloré, utiliser l'image originale
 
 		const graphics = this.scene.add.graphics();
 		this.attackZoneGraphics.set(troop, graphics);

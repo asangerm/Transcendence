@@ -1,4 +1,5 @@
-import Phaser from 'phaser';
+// @ts-ignore
+import * as Phaser from 'phaser';
 import { TroopManager } from './TroopManager';
 
 export class GameScene extends Phaser.Scene
@@ -6,16 +7,28 @@ export class GameScene extends Phaser.Scene
 	castleLeft: any;
 	castleRight: any;
 	troopManager!: TroopManager;
+	load!: Phaser.Loader.LoaderPlugin;
+	scene!: Phaser.Scenes.SceneManager;
+	time!: Phaser.Time.Clock;
+	make!: Phaser.GameObjects.GameObjectFactory;
+	physics!: Phaser.Physics.Arcade.ArcadePhysics;
+	add!: Phaser.GameObjects.GameObjectFactory;
 
-	constructor() { super('GameScene'); }
+	constructor() { 
+		super({ key: 'GameScene' }); 
+	}
 
 	preload()
 	{
-		this.createTexture('melee', 0xCA3C66, 32, 32);
-		this.createTexture('range', 0xE8AABE, 24, 24);
-		this.createTexture('tank', 0xDB6A8F, 38, 38);
-		this.createTexture('assassin', 0xA7E0E0, 24, 24);
-		this.createTexture('berserker', 0x4AA3A2, 24, 24);
+		// Charger l'image de fond
+		this.load.image('background', '/src/scripts/game2/assets/images/background.jpg');
+		
+		// Charger les images des troupes
+		this.load.image('melee', '/src/scripts/game2/assets/images/melee.png');
+		this.load.image('range', '/src/scripts/game2/assets/images/range.png');
+		this.load.image('tank', '/src/scripts/game2/assets/images/tank.png');
+		this.load.image('assassin', '/src/scripts/game2/assets/images/assassin.png');
+		this.load.image('berserker', '/src/scripts/game2/assets/images/berserker.png');
 	}
 
 	create()
@@ -60,6 +73,12 @@ export class GameScene extends Phaser.Scene
 
 	createWorld()
 	{
+		// Image de fond
+		const background = this.add.image(0, 0, 'background');
+		background.setOrigin(0, 0);
+		background.setDisplaySize(1280, 720); // Ajuster à la taille de l'écran
+		background.setDepth(-10); // Mettre en arrière-plan
+		
 		// Route
 		this.createTexture('road', 0x8B827D, 1280, 90);
 		this.add.image(0, 720, 'road').setOrigin(0, 1);

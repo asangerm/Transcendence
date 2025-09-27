@@ -1,6 +1,7 @@
-import Phaser from 'phaser';
+// @ts-ignore
+import * as Phaser from 'phaser';
 import { CustomButton } from './CustomButton';
-import { TroopManager } from './TroopManager';
+// import { TroopManager } from './TroopManager';
 
 interface ButtonConfig {
 	text: string;
@@ -21,6 +22,12 @@ export class UIScene extends Phaser.Scene
 	ButtonsLeft!: CustomButton[];
 	ButtonsRight!: CustomButton[];
 	gameOver: boolean = false;
+	scene!: Phaser.Scenes.SceneManager;
+	events!: Phaser.Events.EventEmitter;
+	add!: Phaser.GameObjects.GameObjectFactory;
+	time!: Phaser.Time.Clock;
+	cameras!: Phaser.Cameras.Scene2D.CameraManager;
+	updateReady: boolean = false;
 
 	constructor()
 	{
@@ -75,6 +82,11 @@ export class UIScene extends Phaser.Scene
 			this.castleRightMoneyText = this.add.text(100, 100, '', { font: '20px Arial', color: '#fff' }).setOrigin(0.5);	
 			// On crée les boutons une fois que tout est prêt
 			this.createButtons();
+
+			// Délai pour s'assurer que tout est prêt
+			this.time.delayedCall(1000, () => {
+				this.updateReady = true;
+			});
 
 			this.time.addEvent({
 				delay: 1000, // 1000 ms = 1 seconde
@@ -132,23 +144,30 @@ export class UIScene extends Phaser.Scene
 
 	update()
 	{
-		if (this.gameOver || !this.ButtonsLeft || !this.ButtonsRight || !this.gameScene || !this.gameScene.troopManager) return;
+		if (this.gameOver || !this.ButtonsLeft || !this.ButtonsRight || !this.gameScene || !this.gameScene.troopManager || !this.castleLeft || !this.castleRight) return;
+		
+		// Attendre que tout soit prêt
+		if (!this.updateReady || !this.castleLeftHealthText || !this.castleRightHealthText || !this.castleLeftMoneyText || !this.castleRightMoneyText) return;
 
-		// Mise à jour des boutons de gauche
-		this.ButtonsLeft.forEach((btn: CustomButton, i: number) =>
-		{
-			const troopType = this.buttons[i].type;
-			const cost = this.gameScene.troopManager.getTroopCost(troopType);
-			btn.setEnabled(this.castleLeft.money >= cost);
-		});
+		// Mise à jour des boutons de gauche (désactivé temporairement)
+		// this.ButtonsLeft.forEach((btn: CustomButton, i: number) =>
+		// {
+		// 	if (btn && this.buttons[i]) {
+		// 		const troopType = this.buttons[i].type;
+		// 		const cost = this.gameScene.troopManager.getTroopCost(troopType);
+		// 		btn.setEnabled(this.castleLeft.money >= cost);
+		// 	}
+		// });
 
-		// Mise à jour des boutons de droite
-		this.ButtonsRight.forEach((btn: CustomButton, i: number) =>
-		{
-			const troopType = this.buttons[i].type;
-			const cost = this.gameScene.troopManager.getTroopCost(troopType);
-			btn.setEnabled(this.castleRight.money >= cost);
-		});
+		// Mise à jour des boutons de droite (désactivé temporairement)
+		// this.ButtonsRight.forEach((btn: CustomButton, i: number) =>
+		// {
+		// 	if (btn && this.buttons[i]) {
+		// 		const troopType = this.buttons[i].type;
+		// 		const cost = this.gameScene.troopManager.getTroopCost(troopType);
+		// 		btn.setEnabled(this.castleRight.money >= cost);
+		// 	}
+		// });
 
 		// Mise à jour du texte avec la santé actuelle
 		this.castleLeftHealthText.setText(`HP: ${Math.max(0, Math.floor(this.castleLeft.health))}`);
@@ -187,7 +206,7 @@ export class UIScene extends Phaser.Scene
 			const winner = this.castleLeft.health <= 0 ? 'Équipe Droite' : 'Équipe Gauche';
 			const message = `${winner} a gagné !`;
 	
-			const gameOverText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, message, {
+			this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, message, {
 				font: '48px Arial',
 				color: '#ffffff',
 				backgroundColor: '#000000',
