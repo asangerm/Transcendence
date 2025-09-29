@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { requireAuth } from "../../middleware/authMiddleware";
 
 export default async function deleteUser(app: FastifyInstance) {
-  app.delete("/users/:id", { preHandler: [requireAuth] }, async (req, reply) => {
+  app.delete("/:id", { preHandler: [requireAuth] }, async (req, reply) => {
     const { id } = req.params as { id: string };
     const mode = (req.query as { mode?: string })?.mode;
 
