@@ -10,10 +10,10 @@ export default async function privacyRoute(app: FastifyInstance) {
         rectification: "Modifiez vos données via PUT /users/:id",
         anonymization: "Anonymisez vos données via POST /users/:id/anonymize",
         erasure: "Supprimez définitivement votre compte via DELETE /users/:id",
-        portability: "Export de vos données (non encore implémenté)",
+        portability: "Export de vos données (non implémenté)",
       },
       contact: {
-        dpo: "privacy@tonapp.com",
+        dpo: "Mail : onievayoan@gmail.com / 06.28.32.27.46",
         help: "En cas de problème, contactez notre support.",
       },
     });
