@@ -13,7 +13,7 @@ export default async function privacyRoute(app: FastifyInstance) {
         portability: "Export de vos données (non implémenté)",
       },
       contact: {
-        dpo: "Mail : onievayoan@gmail.com / 06.28.32.27.46",
+        dpo: "Mail : onievayoan@gmail.com / Tel : 06.28.32.27.46",
         help: "En cas de problème, contactez notre support.",
       },
     });
