@@ -197,7 +197,7 @@ export class TroopManager
 	{
 		const spawnX = team === 'left' ? 128 : 1152;
 		const spawnY = 630;
-		const safeDistance = 50; // Distance minimale de sécurité
+		const safeDistance = 65; // Distance minimale de sécurité
 		// Vérifie si une troupe est trop proche du point de spawn
 		return !this.troops.getChildren().some((other: any) =>
 		{
@@ -353,9 +353,19 @@ export class TroopManager
 		troop.setVelocityX(vx);
 		troop.setDepth(1);
 
+		// Initialiser l'état d'animation
+		(troop as any).lastAnimationState = true; // Commence en mouvement
+		
 		// Jouer l'animation de marche pour les troupes melee
 		if (troopType === 'MELEE') {
 			troop.play('melee-walk-left');
+			// Inverser l'image pour les troupes de droite
+			if (team === 'right') {
+				troop.setFlipX(true);
+			}
+		}
+		if (troopType === 'RANGE') {
+			troop.play('range-walk-left');
 			// Inverser l'image pour les troupes de droite
 			if (team === 'right') {
 				troop.setFlipX(true);
@@ -433,6 +443,8 @@ export class TroopManager
 
 			// Vérifier les autres troupes et les châteaux pour la zone d'arrêt et d'attaque
 			let hasTargetInWalkStopRange = false;
+			let hasEnemyInWalkStopRange = false;
+			let frontTroopIsMoving = true; // Par défaut, on considère qu'on peut bouger
 
 			// Vérification des troupes
 			this.troops.getChildren().forEach((otherTroop: any) =>
@@ -442,6 +454,16 @@ export class TroopManager
 					if (this.isInRange(troop, otherTroop, walkStopRange))
 					{
 						hasTargetInWalkStopRange = true;
+						// Ne s'arrêter que devant des ennemis, pas des alliés
+						if ((troop as any).team !== (otherTroop as any).team)
+						{
+							hasEnemyInWalkStopRange = true;
+						}
+						else
+						{
+							// Si c'est un allié devant nous, vérifier s'il bouge
+							frontTroopIsMoving = Math.abs(otherTroop.body.velocity.x) > 1;
+						}
 					}
 					if (this.isInRange(troop, otherTroop, (troop as any).attackRange))
 					{
@@ -465,6 +487,7 @@ export class TroopManager
 			if (this.isInRangeCastle(troop, targetCastle, walkStopRange))
 			{
 				hasTargetInWalkStopRange = true;
+				hasEnemyInWalkStopRange = true; // Les châteaux sont toujours des ennemis
 			}
 			if (this.isInRangeCastle(troop, targetCastle, troop.attackRange))
 			{
@@ -493,17 +516,56 @@ export class TroopManager
 				}
 			}
 
-			// Gérer le mouvement
+			// Gérer le mouvement - s'arrêter devant toute cible (allié ou ennemi) pour la file indienne
 			if (hasTargetInWalkStopRange)
 			{
 				troop.setVelocityX(0);
 			}
-			else if (!troop.body.velocity.x && (troop as any).hp > 0)
+			else if ((troop as any).hp > 0)
 			{
+				// Si la troupe n'est pas bloquée et est en vie, elle doit avancer
 				const dir = (troop as any).team === 'left' ? 1 : -1;
 				troop.setVelocityX(dir * (troop as any).baseSpeed);
 			}
+
+			// Gérer l'animation basée sur l'intention de mouvement
+			// Si bloquée par un ennemi OU si la troupe de devant ne bouge pas, passer en idle
+			const isMoving = !hasEnemyInWalkStopRange && frontTroopIsMoving && (troop as any).hp > 0;
+			this.updateTroopAnimation(troop, isMoving);
 		});
+	}
+
+	private updateTroopAnimation(troop: any, isMoving: boolean)
+	{
+		const troopType = (troop as any).troopType;
+		const team = (troop as any).team;
+		
+		// Ne changer l'animation que si l'état a changé
+		if ((troop as any).lastAnimationState === isMoving) {
+			return;
+		}
+		
+		(troop as any).lastAnimationState = isMoving;
+		
+		console.log('updateTroopAnimation:', { troopType, team, isMoving });
+		
+		if (troopType === 'melee') {
+			if (isMoving) {
+				const animationKey = team === 'left' ? 'melee-walk-left' : 'melee-walk-right';
+				troop.play(animationKey);
+			} else {
+				const animationKey = team === 'left' ? 'melee-idle-left' : 'melee-idle-right';
+				troop.play(animationKey);
+			}
+		} else if (troopType === 'range') {
+			if (isMoving) {
+				const animationKey = team === 'left' ? 'range-walk-left' : 'range-walk-right';
+				troop.play(animationKey);
+			} else {
+				const animationKey = team === 'left' ? 'range-idle-left' : 'range-idle-right';
+				troop.play(animationKey);
+			}
+		}
 	}
 
 	public isInRange(attacker: any, target: any, range?: number)

@@ -394,6 +394,8 @@ export class TroopManager
 
 			// Vérifier les autres troupes et les châteaux pour la zone d'arrêt et d'attaque
 			let hasTargetInWalkStopRange = false;
+			let hasEnemyInWalkStopRange = false;
+			let frontTroopIsMoving = true; // Par défaut, on considère qu'on peut bouger
 
 			// Vérification des troupes
 			this.troops.getChildren().forEach(otherTroop =>
@@ -403,6 +405,16 @@ export class TroopManager
 					if (this.isInRange(troop, otherTroop, walkStopRange))
 					{
 						hasTargetInWalkStopRange = true;
+						// Ne s'arrêter que devant des ennemis, pas des alliés
+						if (troop.team !== otherTroop.team)
+						{
+							hasEnemyInWalkStopRange = true;
+						}
+						else
+						{
+							// Si c'est un allié devant nous, vérifier s'il bouge
+							frontTroopIsMoving = Math.abs(otherTroop.body.velocity.x) > 1;
+						}
 					}
 					if (this.isInRange(troop, otherTroop, troop.attackRange))
 					{
@@ -426,6 +438,7 @@ export class TroopManager
 			if (this.isInRangeCastle(troop, targetCastle, walkStopRange))
 			{
 				hasTargetInWalkStopRange = true;
+				hasEnemyInWalkStopRange = true; // Les châteaux sont toujours des ennemis
 			}
 			if (this.isInRangeCastle(troop, targetCastle, troop.attackRange))
 			{
@@ -454,17 +467,47 @@ export class TroopManager
 				}
 			}
 
-			// Gérer le mouvement
+			// Gérer le mouvement - s'arrêter devant toute cible (allié ou ennemi) pour la file indienne
 			if (hasTargetInWalkStopRange)
 			{
 				troop.setVelocityX(0);
 			}
-			else if (!troop.body.velocity.x && troop.hp > 0)
+			else if (troop.hp > 0)
 			{
+				// Si la troupe n'est pas bloquée et est en vie, elle doit avancer
 				const dir = troop.team === 'left' ? 1 : -1;
 				troop.setVelocityX(dir * troop.baseSpeed);
 			}
+
+			// Gérer l'animation basée sur l'intention de mouvement
+			// Si bloquée par un ennemi OU si la troupe de devant ne bouge pas, passer en idle
+			const isMoving = !hasEnemyInWalkStopRange && frontTroopIsMoving && troop.hp > 0;
+			this.updateTroopAnimation(troop, isMoving);
 		});
+	}
+
+	updateTroopAnimation(troop, isMoving)
+	{
+		const troopType = troop.troopType;
+		const team = troop.team;
+		
+		if (troopType === 'melee') {
+			if (isMoving) {
+				const animationKey = team === 'left' ? 'melee-walk-left' : 'melee-walk-right';
+				troop.play(animationKey);
+			} else {
+				const animationKey = team === 'left' ? 'melee-idle-left' : 'melee-idle-right';
+				troop.play(animationKey);
+			}
+		} else if (troopType === 'range') {
+			if (isMoving) {
+				const animationKey = team === 'left' ? 'range-walk-left' : 'range-walk-right';
+				troop.play(animationKey);
+			} else {
+				const animationKey = team === 'left' ? 'range-idle-left' : 'range-idle-right';
+				troop.play(animationKey);
+			}
+		}
 	}
 
 	isInRange(attacker, target, range)

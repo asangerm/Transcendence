@@ -38,7 +38,10 @@ export class GameScene extends Phaser.Scene
 			frameWidth: 64,
 			frameHeight: 64
 		});
-		this.load.image('range', '/src/scripts/game2/assets/images/range.png');
+		this.load.spritesheet('range', '/src/scripts/game2/assets/images/range_spritesheet.png', {
+			frameWidth: 64,
+			frameHeight: 64
+		});
 		this.load.image('tank', '/src/scripts/game2/assets/images/tank.png');
 		this.load.image('assassin', '/src/scripts/game2/assets/images/assassin.png');
 		this.load.image('berserker', '/src/scripts/game2/assets/images/berserker.png');
@@ -59,6 +62,49 @@ export class GameScene extends Phaser.Scene
 			frames: this.anims.generateFrameNumbers('melee', { start: 0, end: 8 }),
 			frameRate: 10,
 			repeat: -1
+		});
+
+		this.anims.create({
+			key: 'range-walk-left',
+			frames: this.anims.generateFrameNumbers('range', { start: 0, end: 8 }),
+			frameRate: 10,
+			repeat: -1
+		});
+
+		this.anims.create({
+			key: 'range-walk-right',
+			frames: this.anims.generateFrameNumbers('range', { start: 0, end: 8 }),
+			frameRate: 10,
+			repeat: -1
+		});
+
+		// Créer les animations d'idle (repos) pour les troupes
+		this.anims.create({
+			key: 'melee-idle-left',
+			frames: this.anims.generateFrameNumbers('melee', { start: 0, end: 0 }),
+			frameRate: 1,
+			repeat: 0
+		});
+
+		this.anims.create({
+			key: 'melee-idle-right',
+			frames: this.anims.generateFrameNumbers('melee', { start: 0, end: 0 }),
+			frameRate: 1,
+			repeat: 0
+		});
+
+		this.anims.create({
+			key: 'range-idle-left',
+			frames: this.anims.generateFrameNumbers('range', { start: 0, end: 0 }),
+			frameRate: 1,
+			repeat: 0
+		});
+
+		this.anims.create({
+			key: 'range-idle-right',
+			frames: this.anims.generateFrameNumbers('range', { start: 0, end: 0 }),
+			frameRate: 1,
+			repeat: 0
 		});
 
 		this.scene.launch('UIScene');
