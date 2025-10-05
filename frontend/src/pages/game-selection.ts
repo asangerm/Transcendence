@@ -1,6 +1,6 @@
 export function renderGameSelection() {
     const content = `
-        <div class="min-h-screen">
+        <div class="h-full w-full">
             <main class="container mx-auto px-4 py-8">
                 <h1 class="text-4xl font-bold text-center mb-12">Sélection des Jeux</h1>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">

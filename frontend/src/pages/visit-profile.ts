@@ -2,7 +2,7 @@ import { UserProfileComponent } from '../components/UserProfile';
 import { AuthService } from '../services/auth.service';
 import { navigateTo } from '../router';
 
-export function renderProfile(id: number) {
+export function renderProfile(username: string) {
 	const app = document.getElementById('app');
 	if (app) {
 		app.innerHTML = '';
@@ -15,6 +15,6 @@ export function renderProfile(id: number) {
 		}
 		
 		const profileComponent = new UserProfileComponent(app);
-		profileComponent.init();
+		profileComponent.init(username);
 	}
 }

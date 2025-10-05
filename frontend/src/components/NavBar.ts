@@ -1,24 +1,20 @@
-import { AuthService, RegisterCredentials, User } from '../services/auth.service';
-import { UserService, UserProfile } from '../services/user.service';
 import { AuthStore } from '../stores/auth.store';
+import { AuthService, User } from '../services/auth.service';
+import { sanitizeHtml, sanitizeInput, escapeHtml } from '../utils/sanitizer';
 
 export class NavBar {
   	private container: HTMLElement;
-	private onSuccess?: (user: any) => void;
-	private onError?: (error: string) => void;
-	private userProfile: UserProfile | null = null;
 	private user: User | null;
 	private unsubscribe?: () => void;
 
-	constructor(container: HTMLElement, options: { onSuccess?: (user: any) => void; onError?: (error: string) => void } = {}) {
+	constructor(container: HTMLElement) {
 		this.container = container;
-		this.onSuccess = options.onSuccess;
-		this.onError = options.onError;
 		this.render();
 		this.attachEventListeners();
 		this.user = AuthStore.getUser();
 		this.unsubscribe = AuthStore.subscribe((u) => {
 			this.user = u;
+			console.log("update de l'utilisateur")
 			this.updateAuthState();
 		});
 	}
@@ -28,13 +24,14 @@ export class NavBar {
 	}
 
 	private render(): void {
+		const safeDisplayName = escapeHtml(this.user?.display_name || '');
  		this.container.innerHTML = `
-			<nav class="bg-primary shadow-xl fixed top-0 left-0 right-0 z-50 transform transition-all duration-300 dark:bg-primary-dark">
+			<nav class="bg-primary font-extrabold shadow-xl fixed top-0 left-0 right-0 z-50 transform transition-all duration-300 dark:bg-primary-dark">
 				<div class="max-w-6xl mx-auto px-4">
 					<div class="flex justify-between">
 						<!-- Logo -->
 						<div class="flex items-center py-4">
-							<a href="/" data-nav class="font-bold text-text hover:text-button transition-colors duration-300 text-xl dark:text-text-dark dark:hover:text-button-dark">ft_transcendence</a>
+							<a href="/" data-nav class="font-extrabold text-text hover:text-button transition-colors duration-300 text-xl dark:text-text-dark dark:hover:text-button-dark">ft_transcendence</a>
 						</div>
 
 						<!-- Mobile menu button -->
@@ -55,7 +52,7 @@ export class NavBar {
 								<div id="profile-nav" class="relative w-10 h-10 hover:cursor-pointer bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold mb-2 mx-auto border border-2">
 									<img 
 										src="../../images/profile1.png"
-										alt="${this.user?.display_name}"
+										alt="${safeDisplayName}"
 										class="rounded-full object-cover"
 										id="profile-avatar"
 									>
@@ -65,8 +62,8 @@ export class NavBar {
 									<div class="absolute right-0 bottom-0 w-3 h-3 bg-gray-500 rounded-full border-2"></div>
 									`}
 									<!-- Menu déroulant -->
-									<div id="profile-dropdown" class="hidden absolute top-10 left-0 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
-										<a href="/profile" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Profile</a>
+									<div id="profile-dropdown" class="absolute transition-all duration-150 invisible origin-top-right scale-0 z-50 top-10 right-0 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
+										<a href="/profile/${safeDisplayName}" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Profile</a>
 										<a id="friends" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Friends</a>
 										<a id="history" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Statistics</a>
 										<a id="logout" 
@@ -122,10 +119,18 @@ export class NavBar {
 			menuIcon?.classList.toggle('hidden');
 			closeIcon?.classList.toggle('hidden');
 		});
-
-		navProfile?.addEventListener('click', () => {
-			dropdownProfile?.classList.toggle('hidden');
-		});
+		if (dropdownProfile) {
+			navProfile?.addEventListener('click', () => {
+				if (dropdownProfile.classList.contains("invisible")) {
+					dropdownProfile.classList.remove("invisible", "scale-0");
+					dropdownProfile.classList.add("scale-100");
+				} else {
+					dropdownProfile.classList.remove("scale-100");
+					dropdownProfile.classList.add( "scale-0");
+					dropdownProfile.classList.add("invisible");
+				}
+			});
+		}
 		logoutBtn?.addEventListener('click', () => {
 			this.handleLogout();
 		});

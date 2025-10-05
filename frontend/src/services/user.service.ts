@@ -44,20 +44,31 @@ export interface FriendRequest {
 }
 
 export class UserService {
-  static async getCurrentUserProfile(): Promise<UserProfile> {
-    const response = await apiService.get('/auth/me');
-    return response.data.user;
-  }
+	static async getCurrentUserProfile(): Promise<UserProfile> {
+		const response = await apiService.get('/auth/me');
+		return response.data.user;
+	}
 
-  static async getUserProfile(userId: number): Promise<UserProfile> {
-    const response = await apiService.get(`/api/users/${userId}`);
-    return response.data;
-  }
+	static async getUserProfile(username: string): Promise<UserProfile | null> {
+		try {
+			const response = await apiService.get(`/users/name/${username}`);
+			// console.log("response data : ",response.data);
+			return response.data.user;
+		}
+		catch (error: any) {
+			if (error.response && error.response.status == 404) {
+				console.warn(`Utilisateur "${username}" introuvable.`);
+				return (null);
+			}
+			console.error("Erreur lors de la récupération du profil utilisateur :", error);
+			throw error; // autres erreurs (500, 401, etc.)
+		}
+	}
 
-  static async updateProfile(updates: Partial<User>): Promise<User> {
-    const response = await apiService.patch('/api/users/profile', updates);
-    return response.data;
-  }
+	static async updateProfile(updates: Partial<User>): Promise<User> {
+		const response = await apiService.patch('/users/profile', updates);
+		return response.data;
+	}
 
   static async uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
     const formData = new FormData();

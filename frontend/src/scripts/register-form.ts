@@ -91,7 +91,6 @@ export class RegisterFormHandler {
                     this.pwdVerifContainer.classList.add('invisible', 'scale-0');
                 }
 				if (this.passwordInput.value !== this.confirmPasswordInput.value) {
-					
 					this.confirmPasswVerif.classList.remove('invisible', 'error-text', 'success-text', 'scale-0');
 					this.confirmPasswVerif.classList.add('scale-100');
 					this.confirmPasswVerif.innerHTML = "Mot de passe différent !";

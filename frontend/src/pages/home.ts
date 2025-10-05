@@ -1,6 +1,6 @@
 export function renderHome() {
     const content = `
-        <div class="min-h-screen">
+        <div class="h-full w-full">
             <main class="container mx-auto px-4 py-8">
                 <div class="bg-primary shadow-xl rounded-xl p-8 transform transition-all duration-300 hover:shadow-2xl dark:bg-primary-dark">
                     <h1 class="text-4xl font-bold text-text mb-6 dark:text-text-dark">

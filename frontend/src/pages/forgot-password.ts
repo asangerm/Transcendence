@@ -1,6 +1,6 @@
 export function renderForgotPassword() {
     const content = `
-        <div class="min-h-screen flex items-center justify-center">
+        <div class="h-full w-full pt-10 flex items-center justify-center">
             <div class="max-w-md w-full mx-auto">
                 <div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg p-8 transform transition-all duration-300 hover:shadow-2xl">
                     <h2 class="text-3xl font-bold text-center mb-8">Réinitialisation du mot de passe</h2>

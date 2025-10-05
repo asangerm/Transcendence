@@ -1,5 +1,6 @@
 import { NavBar } from './components/NavBar';
 import { AuthService } from './services/auth.service';
+import { UserService } from './services/user.service';
 
 type Route = {
     path: string;
@@ -11,15 +12,13 @@ type Route = {
 const routes: Route[] = [
     { path: '/', component: () => import('./pages/home').then(m => m.renderHome()) },
     { path: '/games', component: () => import('./pages/game-selection').then(m => m.renderGameSelection()), requiresAuth: false },
-    { path: '/pong', component: () => import('./pages/pong').then(m => m.renderPong()), requiresAuth: false },
-    { path: '/game2', component: () => import('./pages/game2').then(m => m.renderGame2()), requiresAuth: false },
+    { path: '/pong', component: () => import('./pages/pong').then(m => m.renderPong()), requiresAuth: true },
+    { path: '/game2', component: () => import('./pages/game2').then(m => m.renderGame2()), requiresAuth: true },
     { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()), requiresAuth: true },
-    { path: '/profile2', component: () => import('./pages/profileold').then(m => m.renderProfile()), requiresAuth: true },
     { path: '/login', component: () => import('./pages/login').then(m => m.renderLogin()), guestOnly: true },
     { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()), guestOnly: true },
     { path: '/register', component: () => import('./pages/register').then(m => m.renderRegister()), guestOnly: true }
 ];
-
 
 export function initRouter() {
     // Handle initial route
@@ -47,12 +46,26 @@ export function initRouter() {
 async function handleRoute() {
     const path = window.location.pathname;
     const route = routes.find(route => route.path === path);
-    
+	
+	if (path.startsWith('/profile/')) {
+		const parts = path.split('/');
+		const username = parts[2];
+		const user = await UserService.getUserProfile(username);
+		console.log(user)
+		if (user) {
+			import('./pages/visit-profile').then(m => m.renderProfile(username));
+		}
+		else {
+			console.log(window.location.pathname)
+			window.location.pathname.replace(path, '/');
+			navigateTo('/');
+		}
+		return;
+	}
     if (!route) {
         import('./pages/not-found').then(m => m.render404());
         return;
     }
-
     // Check authentication requirements
     const isAuthenticated = AuthService.isAuthenticated();
 

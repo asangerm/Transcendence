@@ -4,7 +4,7 @@ import { requireAuth } from "../../middleware/authMiddleware";
 export default async function getUserMatchHistory(app: FastifyInstance) {
 	app.get("/:id/matchHistory", { preHandler: [requireAuth] }, async (req, reply) => {
 	  const { id } = req.params as { id: string };
-	  
+
 	  const matchHistory = app.db.prepare(`
 		SELECT 
 		  m.id,
@@ -30,7 +30,7 @@ export default async function getUserMatchHistory(app: FastifyInstance) {
 		WHERE m.player1_id = ? OR m.player2_id = ?
 		ORDER BY m.played_at DESC
 	  `).all(id, id, id, id);
-	  
+
 	  return reply.send({ success: true, matches: matchHistory });
 	});
   }

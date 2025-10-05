@@ -18,10 +18,10 @@ export class RegisterForm {
 
   private render(): void {
     this.container.innerHTML = `
-      <div class="h-full w-full flex items-center justify-center p-4">
+      <div class="h-full w-full flex items-center justify-center p-4 pt-10">
 			<div class="max-w-md w-full mx-auto">
-				<div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg p-8 transform transition-all duration-300 hover:shadow-2xl">
-					<h2 class="text-3xl font-bold text-center mb-6">Inscription</h2>
+				<div class="bg-primary dark:bg-primary-dark rounded-md shadow-lg py-5 px-10 transform transition-all duration-300 hover:shadow-2xl">
+					<h2 class="text-3xl font-extrabold text-center mb-6">Inscription</h2>
 					
 					<form id="registerForm" class="space-y-3" novalidate>
 						<!-- Username Input -->
@@ -34,7 +34,7 @@ export class RegisterForm {
 								id="username"
 								name="username"
 								required
-								class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-black placeholder-gray-500 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+								class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-muted dark:text-muted-dark border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
 								placeholder="Choisissez un nom d'utilisateur"
 							>
 							<p id="usernameError" class="mt-2 text-sm error-text hidden"></p>
@@ -45,7 +45,7 @@ export class RegisterForm {
 							<label for="email" class="block text-sm font-medium mb-2">
 								Email
 							</label>
-							<div id="emailVerif" class="transition-all duration-150 invisible scale-0 absolute top-2 -right-4 z-10 inline-block w-48 h-7 flex items-center justify-center text-sm font-medium text-white bg-red-500 rounded-full shadow-xs">
+							<div id="emailVerif" class="transition-all duration-150 invisible scale-0 absolute top-2 -right-4 z-10 inline-block w-48 h-7 flex items-center justify-center text-sm font-medium bg-red-500 rounded-full shadow-xs text-black">
 								Format Email Invalide
 							</div>
 
@@ -54,7 +54,7 @@ export class RegisterForm {
 								id="email"
 								name="email"
 								required
-								class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-black border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+								class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-muted dark:text-muted-dark border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
 								placeholder="Entrez votre email"
 							>
 						</div>
@@ -64,9 +64,9 @@ export class RegisterForm {
 							<label for="password" class="block text-sm font-medium mb-2">
 								Mot de passe
 							</label>
-							<div id="pwdVerifContainer" class="transition-all duration-150 invisible scale-0 absolute top-2 -right-4 w-48 h-7 z-50 inline-block text-sm font-medium text-white bg-neutral-300 rounded-full shadow-xs overflow-hidden">
+							<div id="pwdVerifContainer" class="transition-all duration-150 invisible scale-0 absolute top-2 -right-4 w-48 h-7 z-50 inline-block text-black text-sm font-medium bg-neutral-300 rounded-full shadow-xs overflow-hidden">
 								
-								<p id="passwordVerif" class="transition-all duration-500 text-sm absolute inset-0 w-full h-full text-center rounded-full border-2 text-black">
+								<p id="passwordVerif" class="transition-all duration-500 text-sm absolute inset-0 w-full h-full text-center rounded-full border-2 text-dark">
 									Veuillez taper un mot de passe
 								</p>
 								<div id="passwordStrengthBar" class="transition-all duration-500 bg-red-500 h-full">
@@ -78,7 +78,7 @@ export class RegisterForm {
 								id="password"
 								name="password"
 								required
-								class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-black border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+								class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-muted dark:text-muted-dark border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
 								placeholder="Créez un mot de passe"
 							>
 
@@ -97,7 +97,7 @@ export class RegisterForm {
 								id="confirmPassword"
 								name="confirmPassword"
 								required
-								class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-black border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+								class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-muted dark:text-muted-dark border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
 								placeholder="Confirmez votre mot de passe"
 							>
 						</div>
@@ -124,7 +124,7 @@ export class RegisterForm {
 						<!-- Submit Button -->
 						<button
 							type="submit"
-							class="w-full button-primary"
+							class="w-full button-primary rounded-md"
 							id="register-button"
 						>
 							S'inscrire
