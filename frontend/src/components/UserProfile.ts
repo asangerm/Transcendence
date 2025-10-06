@@ -410,13 +410,13 @@ private attachEventListeners(): void {
 	});
 
 	pongbtn.addEventListener("click", () => {
-		dropdown.classList.toggle("hidden");
+		dropdown.classList.toggle("invisible");
 		arrow.classList.toggle("rotate-180");
 		this.updateGameStats('PONG');
 	});
 
 	aowbtn.addEventListener("click", () => {
-		dropdown.classList.toggle("hidden");
+		dropdown.classList.toggle("invisible");
 		arrow.classList.toggle("rotate-180");
 		this.updateGameStats('AGE OF WAR');
 	});

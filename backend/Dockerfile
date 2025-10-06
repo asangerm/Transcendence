@@ -23,7 +23,7 @@ COPY . .
 RUN npm run build
 
 # Copier schema.sql dans le bon dossier pour que le backend le trouve
-RUN mkdir -p dist/src && cp src/schema.sql dist/src/schema.sql
+RUN cp src/schema.sql dist/schema.sql
 
 # Expose le port du backend
 EXPOSE 8000

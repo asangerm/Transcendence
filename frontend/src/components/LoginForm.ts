@@ -12,7 +12,6 @@ export class LoginForm {
     this.onError = options.onError;
     this.render();
     this.attachEventListeners();
-	// updateAuthState();
   }
 
   private render(): void {
