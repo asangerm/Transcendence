@@ -1,3 +1,4 @@
+import { Ball } from './Ball';
 import { Scene, GameObject } from './Scene';
 
 export class Renderer {
@@ -128,7 +129,7 @@ export class Renderer {
 		this.camera3d.fov = fov;
 	}
 
-	render(scene: Scene): void {
+	render(scene: Scene, ballSpeed: number): void {
 		if (!this.engine || !this.scene3d) return;
 		this.setupCanvas();
 		this.updateCameraFromScene(scene);
@@ -164,6 +165,6 @@ export class Renderer {
 			this.lastTime = currentTime;
 		}
 		const pos = scene.camera.position;
-		this.textDisplay.textContent = `Camera: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}) | FPS: ${this.fps}`;
+		this.textDisplay.textContent = `Camera: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}) | FPS: ${this.fps} | Speed: ${ballSpeed.toFixed(2)}`;
 	}
 }

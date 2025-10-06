@@ -8,7 +8,7 @@ export function renderLogin() {
         
         new LoginForm(app, {
             onSuccess: (user) => {
-                console.log('Login successful:', user);
+                // console.log('Login successful:', user);
                 navigateTo('/');
             },
             onError: (error) => {

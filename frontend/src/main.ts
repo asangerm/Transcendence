@@ -3,6 +3,9 @@ import { initRouter } from './router';
 import { renderHome } from './pages/home';
 import { initializeNavigation } from './scripts/navigation';
 import { initializeTheme } from './scripts/theme';
+import { AuthStore } from './stores/auth.store';
+
+AuthStore.init();
 
 // Initialize the theme
 initializeTheme();

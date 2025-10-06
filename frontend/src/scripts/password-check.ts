@@ -24,7 +24,6 @@ export function checkPasswordStrength(password: string): PasswordStrength {
     verifElements = /.*[a-z].*/.test(password) ? ++verifElements : verifElements;
     verifElements = /.*[A-Z].*/.test(password) ? ++verifElements : verifElements;
     verifElements = /.*[0-9].*/.test(password) ? ++verifElements : verifElements;
-    verifElements = /[^a-zA-Z0-9]/.test(password) ? ++verifElements : verifElements;
 
     if (password === null || password.length < MinimumLengh()) {
         currentPaswordStrength = PasswordStrength.Short;
@@ -32,13 +31,13 @@ export function checkPasswordStrength(password: string): PasswordStrength {
     else if (isPasswordCommon(password)) {
         currentPaswordStrength = PasswordStrength.Common;
     }
-    else if (verifElements < 4) {
+    else if (verifElements < 3) {
         currentPaswordStrength = PasswordStrength.Weak;
     }
-    else if (verifElements >= 4 && password.length >= 12) {
+    else if (verifElements >= 3 && password.length >= 12) {
         currentPaswordStrength = PasswordStrength.Strong;
     }
-    else if (verifElements === 4) {
+    else if (verifElements === 3) {
         currentPaswordStrength = PasswordStrength.Ok;
     }
 

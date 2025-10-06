@@ -2,6 +2,7 @@ import { apiService } from './api.service';
 import { User } from './auth.service';
 
 export interface UserProfile extends User {
+  id: number;
   friendCount?: number;
   matchHistory?: Match[];
   friends?: Friend[];
@@ -19,18 +20,17 @@ export interface Match {
   game_name: string;
   opponent_name: string;
   opponent_id: number;
-  player_score: number;
-  opponent_score: number;
-  result: 'win' | 'loss';
+  score_p1: number;
+  score_p2: number;
+  winner_id: number;
   played_at: string;
 }
 
 export interface UserStats {
-  totalGames: number;
-  wins: number;
-  losses: number;
-  winRate: number;
-  recentMatches: Match[];
+  game_id: number;
+  game_name: string;
+  victories: number;
+  defeats: number;
 }
 
 export interface FriendRequest {
@@ -44,20 +44,31 @@ export interface FriendRequest {
 }
 
 export class UserService {
-  static async getCurrentUserProfile(): Promise<UserProfile> {
-    const response = await apiService.get('/auth/me');
-    return response.data.user;
-  }
+	static async getCurrentUserProfile(): Promise<UserProfile> {
+		const response = await apiService.get('/auth/me');
+		return response.data.user;
+	}
 
-  static async getUserProfile(userId: number): Promise<UserProfile> {
-    const response = await apiService.get(`/api/users/${userId}`);
-    return response.data;
-  }
+	static async getUserProfile(username: string): Promise<UserProfile | null> {
+		try {
+			const response = await apiService.get(`/users/name/${username}`);
+			// console.log("response data : ",response.data);
+			return response.data.user;
+		}
+		catch (error: any) {
+			if (error.response && error.response.status == 404) {
+				console.warn(`Utilisateur "${username}" introuvable.`);
+				return (null);
+			}
+			console.error("Erreur lors de la récupération du profil utilisateur :", error);
+			throw error; // autres erreurs (500, 401, etc.)
+		}
+	}
 
-  static async updateProfile(updates: Partial<User>): Promise<User> {
-    const response = await apiService.patch('/api/users/profile', updates);
-    return response.data;
-  }
+	static async updateProfile(updates: Partial<User>): Promise<User> {
+		const response = await apiService.patch('/users/profile', updates);
+		return response.data;
+	}
 
   static async uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
     const formData = new FormData();
@@ -72,48 +83,48 @@ export class UserService {
     }
   }
 
-  static async getUserStats(userId: number): Promise<UserStats> {
-    const response = await apiService.get(`/api/users/${userId}/stats`);
-    return response.data;
+  static async getUserStats(userId: number): Promise<UserStats[]>  {
+    const response = await apiService.get(`/users/${userId}/stats`);
+    return response.data.stats as UserStats[];
   }
 
   static async getMatchHistory(userId: number): Promise<Match[]> {
-    const response = await apiService.get(`/api/users/${userId}/matches`);
-    return response.data;
+    const response = await apiService.get(`/users/${userId}/matchHistory`);
+    return response.data.matches || [];
   }
 
   static async getUserFriends(userId: number): Promise<Friend[]> {
-    const response = await apiService.get(`/api/users/${userId}/friends`);
+    const response = await apiService.get(`/users/${userId}/friends`);
     return response.data;
   }
 
   static async sendFriendRequest(friendId: number): Promise<{ message: string }> {
-    const response = await apiService.post('/api/users/friends/request', { friendId });
+    const response = await apiService.post('/users/friends/request', { friendId });
     return response.data;
   }
 
   static async acceptFriendRequest(requestId: number): Promise<{ message: string }> {
-    const response = await apiService.post('/api/users/friends/accept', { requestId });
+    const response = await apiService.post('/users/friends/accept', { requestId });
     return response.data;
   }
 
   static async rejectFriendRequest(requestId: number): Promise<{ message: string }> {
-    const response = await apiService.post('/api/users/friends/reject', { requestId });
+    const response = await apiService.post('/users/friends/reject', { requestId });
     return response.data;
   }
 
   static async getPendingFriendRequests(): Promise<FriendRequest[]> {
-    const response = await apiService.get('/api/users/friends/requests');
+    const response = await apiService.get('/users/friends/requests');
     return response.data;
   }
 
   static async removeFriend(friendId: number): Promise<{ message: string }> {
-    const response = await apiService.delete(`/api/users/friends/${friendId}`);
+    const response = await apiService.delete(`/users/friends/${friendId}`);
     return response.data;
   }
 
   static async searchUsers(query: string): Promise<User[]> {
-    const response = await apiService.get(`/api/users/search?q=${encodeURIComponent(query)}`);
+    const response = await apiService.get(`/users/search?q=${encodeURIComponent(query)}`);
     return response.data;
   }
 }

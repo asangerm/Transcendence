@@ -13,8 +13,7 @@ export function renderProfile() {
             navigateTo('/login');
             return;
         }
-        
-        const profileComponent = new UserProfileComponent(app);
-        profileComponent.init();
+        const ProfileComponent = new UserProfileComponent(app);
+        ProfileComponent.init();
     }
 }

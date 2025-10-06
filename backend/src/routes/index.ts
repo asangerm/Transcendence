@@ -10,8 +10,10 @@ import googleRoute from "./authRoutes/google";
 // Users
 import listUsers from "./userRoutes/list";
 import getUserById from "./userRoutes/getById";
+import getUserByName from "./userRoutes/getByName";
 import updateUser from "./userRoutes/update";
 import userStats from "./userRoutes/stats";
+import getUserMatchHistory from "./userRoutes/matchHistory";
 import anonymizeUser from "./userRoutes/anonymize";
 import deleteUser from "./userRoutes/delete";
 
@@ -31,8 +33,10 @@ export default async function routes(app: FastifyInstance) {
   // Users
   app.register(listUsers, { prefix: "/users" });
   app.register(getUserById, { prefix: "/users" });
+  app.register(getUserByName, { prefix: "/users" });
   app.register(updateUser, { prefix: "/users" });
   app.register(userStats, { prefix: "/users" });
+  app.register(getUserMatchHistory, { prefix: "/users" });
   app.register(anonymizeUser, { prefix: "/users" });
   app.register(deleteUser, { prefix: "/users" });
 

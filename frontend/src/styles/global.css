@@ -17,7 +17,7 @@ body {
 }
 
 .button-secondary {
-	@apply px-6 py-3 border-2 border-button text-button font-medium rounded-lg hover:bg-button hover:text-text-dark transform transition-all duration-300 hover:scale-105 dark:border-button-dark dark:text-button-dark dark:hover:bg-button-dark dark:hover:text-text;
+	@apply px-4 py-3 border-2 border-button text-button font-medium rounded-lg hover:bg-button hover:text-text-dark transform transition-all duration-300 hover:scale-105 dark:border-button-dark dark:text-button-dark dark:hover:bg-button-dark dark:hover:text-text;
 }
 
 .links-style {
