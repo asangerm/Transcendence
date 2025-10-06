@@ -50,7 +50,10 @@ export class GameScene extends Phaser.Scene
 			frameWidth: 64,
 			frameHeight: 64
 		});
-		this.load.image('berserker', '/src/scripts/game2/assets/images/berserker.png');
+		this.load.spritesheet('berserker', '/src/scripts/game2/assets/images/berserker_spritesheet.png', {
+			frameWidth: 64,
+			frameHeight: 64
+		});
 	}
 
 	create()
@@ -110,6 +113,19 @@ export class GameScene extends Phaser.Scene
 			frameRate: 10,
 			repeat: -1
 		});
+		this.anims.create({
+			key: 'berserker-walk-left',
+			frames: this.anims.generateFrameNumbers('berserker', { start: 0, end: 8 }),
+			frameRate: 10,
+			repeat: -1
+		});
+
+		this.anims.create({
+			key: 'berserker-walk-right',
+			frames: this.anims.generateFrameNumbers('berserker', { start: 0, end: 8 }),
+			frameRate: 10,
+			repeat: -1
+		});
 
 		// Créer les animations d'idle (repos) pour les troupes
 		this.anims.create({
@@ -162,6 +178,19 @@ export class GameScene extends Phaser.Scene
 		this.anims.create({
 			key: 'assassin-idle-right',
 			frames: this.anims.generateFrameNumbers('assassin', { start: 0, end: 0 }),
+			frameRate: 1,
+			repeat: 0
+		});
+		this.anims.create({
+			key: 'berserker-idle-left',
+			frames: this.anims.generateFrameNumbers('berserker', { start: 0, end: 0 }),
+			frameRate: 1,
+			repeat: 0
+		});
+
+		this.anims.create({
+			key: 'berserker-idle-right',
+			frames: this.anims.generateFrameNumbers('berserker', { start: 0, end: 0 }),
 			frameRate: 1,
 			repeat: 0
 		});

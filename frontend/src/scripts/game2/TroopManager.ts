@@ -84,7 +84,7 @@ const TROOP_TYPES =
 		breakDefense: 1.2,
 		rage: 1
 	},
-	BERSEKER:
+	BERSERKER:
 	{
 		key: 'berserker',
 		texture: 'berserker',
@@ -145,14 +145,14 @@ export class TroopManager
 				TANK: 0,
 				RANGE: 0,
 				ASSASSIN: 0,
-				BERSEKER: 0
+				BERSERKER: 0
 			},
 			right: {
 				MELEE: 0,
 				TANK: 0,
 				RANGE: 0,
 				ASSASSIN: 0,
-				BERSEKER: 0
+				BERSERKER: 0
 			}
 		} as any;
 
@@ -184,7 +184,7 @@ export class TroopManager
 				50: { speed: 1.75, attackSpeed: 2},
 				100: { speed: 2, attackSpeed: 2.5}
 			},
-			BERSEKER: {
+			BERSERKER: {
 				10: { rage: 1.25, critChance: 1.25 },
 				25: { rage: 1.5, critChance: 1.5},
 				50: { rage: 1.75, critChance: 2},
@@ -380,6 +380,13 @@ export class TroopManager
 		}
 		if (troopType === 'ASSASSIN') {
 			troop.play('assassin-walk-left');
+			// Inverser l'image pour les troupes de droite
+			if (team === 'right') {
+				troop.setFlipX(true);
+			}
+		}
+		if (troopType === 'BERSERKER') {
+			troop.play('berserker-walk-left');
 			// Inverser l'image pour les troupes de droite
 			if (team === 'right') {
 				troop.setFlipX(true);
@@ -593,6 +600,14 @@ export class TroopManager
 				troop.play(animationKey);
 			} else {
 				const animationKey = team === 'left' ? 'assassin-idle-left' : 'assassin-idle-right';
+				troop.play(animationKey);
+			}
+		} else if (troopType === 'berserker') {
+			if (isMoving) {
+				const animationKey = team === 'left' ? 'berserker-walk-left' : 'berserker-walk-right';
+				troop.play(animationKey);
+			} else {
+				const animationKey = team === 'left' ? 'berserker-idle-left' : 'berserker-idle-right';
 				troop.play(animationKey);
 			}
 		}

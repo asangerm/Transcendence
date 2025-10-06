@@ -58,7 +58,7 @@ export class UIScene extends Phaser.Scene
 			},
 			{
 				text: 'Berserker',
-				type: 'BERSEKER',
+				type: 'BERSERKER',
 				color: 0x4AA3A2,
 			}
 		];
