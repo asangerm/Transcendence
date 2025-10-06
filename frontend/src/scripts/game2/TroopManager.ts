@@ -371,6 +371,13 @@ export class TroopManager
 				troop.setFlipX(true);
 			}
 		}
+		if (troopType === 'TANK') {
+			troop.play('tank-walk-left');
+			// Inverser l'image pour les troupes de droite
+			if (team === 'right') {
+				troop.setFlipX(true);
+			}
+		}
 
 		this.troops.add(troop);
 
@@ -563,6 +570,14 @@ export class TroopManager
 				troop.play(animationKey);
 			} else {
 				const animationKey = team === 'left' ? 'range-idle-left' : 'range-idle-right';
+				troop.play(animationKey);
+			}
+		} else if (troopType === 'tank') {
+			if (isMoving) {
+				const animationKey = team === 'left' ? 'tank-walk-left' : 'tank-walk-right';
+				troop.play(animationKey);
+			} else {
+				const animationKey = team === 'left' ? 'tank-idle-left' : 'tank-idle-right';
 				troop.play(animationKey);
 			}
 		}
