@@ -378,6 +378,13 @@ export class TroopManager
 				troop.setFlipX(true);
 			}
 		}
+		if (troopType === 'ASSASSIN') {
+			troop.play('assassin-walk-left');
+			// Inverser l'image pour les troupes de droite
+			if (team === 'right') {
+				troop.setFlipX(true);
+			}
+		}
 
 		this.troops.add(troop);
 
@@ -578,6 +585,14 @@ export class TroopManager
 				troop.play(animationKey);
 			} else {
 				const animationKey = team === 'left' ? 'tank-idle-left' : 'tank-idle-right';
+				troop.play(animationKey);
+			}
+		} else if (troopType === 'assassin') {
+			if (isMoving) {
+				const animationKey = team === 'left' ? 'assassin-walk-left' : 'assassin-walk-right';
+				troop.play(animationKey);
+			} else {
+				const animationKey = team === 'left' ? 'assassin-idle-left' : 'assassin-idle-right';
 				troop.play(animationKey);
 			}
 		}
