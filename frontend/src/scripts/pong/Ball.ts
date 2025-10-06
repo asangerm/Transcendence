@@ -4,7 +4,7 @@ export class Ball {
     private position: [number, number, number];
     private velocity: [number, number, number];
     private radius: number;
-    private speed: number;
+    public speed: number;
     private gameObject: GameObject;
     private scene: Scene;
 
@@ -14,21 +14,21 @@ export class Ball {
         this.position = [gameObject.position.x, gameObject.position.y, gameObject.position.z];
         this.velocity = [0, 0, 0];
         this.radius = gameObject.size.x / 2; // Assuming sphere has equal dimensions
-        this.speed = 20; // Initial speed
+        this.speed = 5; // Initial speed
         this.reset();
     }
 
     reset(): void {
         // Reset position to center
-        this.position = [0, 0, 0];
+        // this.position = [0, 0, 0];
         
         // Random initial direction
-        // const angle = Math.random() * Math.PI * 2;
-        // this.velocity = [
-        //     Math.cos(angle) * this.speed,
-        //     0,
-        //     Math.sin(angle) * this.speed
-        // ];
+        const angle = Math.random() * Math.PI * 2;
+        this.velocity = [
+            Math.cos(angle) * this.speed,
+            0,
+            Math.sin(angle) * this.speed
+        ];
         
         // Update game object position
         this.gameObject.position = { x: this.position[0], y: this.position[1], z: this.position[2] };
@@ -38,17 +38,23 @@ export class Ball {
         if (deltaTime > 0.1) {
             deltaTime = 0.1;
         }
+
+        if (this.speed > 20) {
+            this.speed = 20;
+        }
+
         // Update position based on velocity
         const newPosition: [number, number, number] = [
-            this.position[0] + this.velocity[0] * deltaTime,
-            this.position[1] + this.velocity[1] * deltaTime,
-            this.position[2] + this.velocity[2] * deltaTime
+            this.position[0] + this.velocity[0] * deltaTime * this.speed,
+            this.position[1] + this.velocity[1] * deltaTime * this.speed,
+            this.position[2] + this.velocity[2] * deltaTime * this.speed
         ];
 
         // Check for collisions
         const collision = this.checkCollision(newPosition);
         if (collision) {
             // Move to collision point
+            this.speed *= 1.01;
             this.position = collision.position;
             // Update velocity based on collision
             this.velocity = collision.velocity;

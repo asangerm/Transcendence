@@ -32,7 +32,7 @@ export class Paddle {
 
         // Clamp paddle position to prevent it from going off screen
         const paddleWidth = this.gameObject.size.x;
-        const maxX = 40 - paddleWidth / 2; // Assuming game area is 80 units wide
+        const maxX = 25 - paddleWidth / 2; // Assuming game area is 80 units wide
         newX = Math.max(-maxX, Math.min(maxX, newX));
 
         // Update position

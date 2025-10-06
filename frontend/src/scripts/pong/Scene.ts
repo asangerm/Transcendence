@@ -11,25 +11,66 @@ const defaultScene = {
     },
     "objects": [
         {
+            "name": "floor",
+            "type": "box",
+            "position": [0, -1, 0],
+            "size": [10000, 0.5, 10000],
+            "color": [0.2, 0.2, 0.2]
+        },{
+            "name": "arena",
+            "type": "box",
+            "position": [0, -0.25, 0],
+            "size": [50, 0.5, 100],
+            "color": [0.1, 0.2, 0.1]
+        },
+        {
             "name": "ball",
             "type": "sphere",
-            "position": [0, 0, 0],
-            "size": [1, 1, 1],
+            "position": [0, 1.5, 0],
+            "size": [2, 2, 2],
             "color": [1, 0, 0]
         },
         {
             "name": "paddle_top",
             "type": "box",
-            "position": [0, 0, 0],
-            "size": [1, 1, 1],
+            "position": [0, 1.5, 45],
+            "size": [10, 2.5, 1],
             "color": [0, 1, 0]
         },
         {
             "name": "paddle_bottom",
             "type": "box",
-            "position": [0, 0, 0],
-            "size": [1, 1, 1],
+            "position": [0, 1.5, -45],
+            "size": [10, 2.5, 1],
             "color": [0, 0, 1]
+        },
+        {
+            "name": "wall_top",
+            "type": "box",
+            "position": [0, 2.25, 50],
+            "size": [51, 5, 1],
+            "color": [0, 0, 0]
+        },
+        {
+            "name": "wall_bottom",
+            "type": "box",
+            "position": [0, 2.25, -50],
+            "size": [51, 5, 1],
+            "color": [0, 0, 0]
+        },
+        {
+            "name": "wall_left",
+            "type": "box",
+            "position": [25, 2.25, 0],
+            "size": [1, 5, 101],
+            "color": [0, 0, 0]
+        },
+        {
+            "name": "wall_right",
+            "type": "box",
+            "position": [-25, 2.25, 0],
+            "size": [1, 5, 101],
+            "color": [0, 0, 0]
         }
     ]
 }
@@ -129,6 +170,10 @@ export class Scene {
 
     findObjectByIndex(index: number): GameObject | undefined {
         return this.objects[index];
+    }
+
+    findObjectByName(name: string): GameObject | undefined {
+        return this.objects.find((o) => o.name === name);
     }
 
     updateObjectByIndex(index: number, updates: Partial<GameObject>): GameObject | undefined {
