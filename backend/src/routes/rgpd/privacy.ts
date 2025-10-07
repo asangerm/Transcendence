@@ -6,11 +6,11 @@ export default async function privacyRoute(app: FastifyInstance) {
       success: true,
       privacy_policy: "Nous respectons vos données personnelles conformément au RGPD.",
       rights: {
-        access: "Consultez vos données via GET /users/:id",
-        rectification: "Modifiez vos données via PUT /users/:id",
-        anonymization: "Anonymisez vos données via POST /users/:id/anonymize",
-        erasure: "Supprimez définitivement votre compte via DELETE /users/:id",
-        portability: "Export de vos données (non implémenté)",
+        access: "Consultez vos données via 'Profil",
+        rectification: "Modifiez vos données via 'Profil' --> 'Modifier le profil'",
+        anonymization: "Anonymisez vos données via 'Profil' --> 'Modifier le profil' --> 'Anonymiser mon compte'",
+        erasure: "Supprimez définitivement votre compte via 'Profil' --> 'Modifier le profil' --> 'Supprimer mon compte'",
+        portability: "Exportez vos données via 'Profil' --> 'Modifier le profil' --> 'Exporter mes données'"
       },
       contact: {
         dpo: "Mail : onievayoan@gmail.com / Tel : 06.28.32.27.46",
