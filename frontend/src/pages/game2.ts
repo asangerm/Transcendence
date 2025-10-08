@@ -39,7 +39,7 @@ function initGame() {
         },
         physics: {
             default: 'arcade',
-            arcade: { debug: true }
+            arcade: { debug: false }
         },
         scene: [GameScene, UIScene]
     };

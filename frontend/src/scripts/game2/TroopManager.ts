@@ -9,7 +9,11 @@ interface SpawnRequest {
 }
 
 // Définition des types de troupes
-const walkStopRange = 30;
+const walkStopRange = 10;
+
+// Configuration d'affichage des zones de debug
+const SHOW_ATTACK_ZONES = false; // Mettre à true pour afficher les zones d'attaque
+const SHOW_WALK_STOP_ZONES = false; // Mettre à true pour afficher les zones d'arrêt
 const TROOP_TYPES =
 {
 	MELEE:
@@ -197,7 +201,7 @@ export class TroopManager
 	{
 		const spawnX = team === 'left' ? 128 : 1152;
 		const spawnY = 630;
-		const safeDistance = 65; // Distance minimale de sécurité
+		const safeDistance = 80; // Distance minimale de sécurité
 		// Vérifie si une troupe est trop proche du point de spawn
 		return !this.troops.getChildren().some((other: any) =>
 		{
@@ -269,7 +273,7 @@ export class TroopManager
 	public createTroop(team: string, troopType: string)
 	{
 		const type = (TROOP_TYPES as any)[troopType];
-		const y = 720 - 90;
+		const y = 720 - 48; // Modifier cette valeur pour changer la hauteur des troupes
 		const x = team === 'left' ? 64 + 64 : 1280 - 64 - 64;
 		const vx = team === 'left' ? type.speed : -type.speed;
 		const troop = this.scene.physics.add.sprite(x, y, type.texture) as any;
@@ -414,52 +418,56 @@ export class TroopManager
 		{
 			if (!troop.active) return;
 
-			// Mise à jour de la visualisation de la zone d'attaque
-			const graphics = this.attackZoneGraphics.get(troop);
-			if (graphics)
-			{
-				graphics.clear();
-				graphics.lineStyle(1, 0xff0000, 0.3);
-				graphics.fillStyle(0xff0000, 0.1);
-				
-				const groundY = troop.y;
-				const groundX = troop.team === 'left' ? troop.x - troop.width / 2 : troop.x + troop.width / 2;
-				
-				// Dessiner le demi-cercle pour la zone d'attaque
-				graphics.beginPath();
-				if (troop.facing === 'left') {
-					graphics.arc(groundX, groundY, troop.attackRange + troop.width / 2, 0, Math.PI, true);
-				} else {
-					graphics.arc(groundX, groundY, troop.attackRange + troop.width / 2, 0, Math.PI, true);
+			// Mise à jour de la visualisation de la zone d'attaque (si activée)
+			if (SHOW_ATTACK_ZONES) {
+				const graphics = this.attackZoneGraphics.get(troop);
+				if (graphics)
+				{
+					graphics.clear();
+					graphics.lineStyle(1, 0xff0000, 0.3);
+					graphics.fillStyle(0xff0000, 0.1);
+					
+					const groundY = troop.y;
+					const groundX = troop.team === 'left' ? troop.x - troop.width / 2 : troop.x + troop.width / 2;
+					
+					// Dessiner le demi-cercle pour la zone d'attaque
+					graphics.beginPath();
+					if (troop.facing === 'left') {
+						graphics.arc(groundX, groundY, troop.attackRange + troop.width / 2, 0, Math.PI, true);
+					} else {
+						graphics.arc(groundX, groundY, troop.attackRange + troop.width / 2, 0, Math.PI, true);
+					}
+					graphics.lineTo(groundX, groundY);
+					graphics.closePath();
+					graphics.fillPath();
+					graphics.strokePath();
 				}
-				graphics.lineTo(groundX, groundY);
-				graphics.closePath();
-				graphics.fillPath();
-				graphics.strokePath();
 			}
 
-			// Mise à jour de la visualisation de la zone d'arrêt
-			const walkStopGraphics = this.WalkStopZoneGraphics.get(troop);
-			if (walkStopGraphics)
-			{
-				walkStopGraphics.clear();
-				walkStopGraphics.lineStyle(1, 0x00ff00, 0.3);
-				walkStopGraphics.fillStyle(0x00ff00, 0.1);
-				
-				const groundY = troop.y;
-				const groundX = troop.team === 'left' ? troop.x - troop.width / 2 : troop.x + troop.width / 2;
-				
-				// Dessiner le demi-cercle pour la zone d'arrêt
-				walkStopGraphics.beginPath();
-				if (troop.facing === 'left') {
-					walkStopGraphics.arc(groundX, groundY, walkStopRange + troop.width / 2, 0, Math.PI, true);
-				} else {
-					walkStopGraphics.arc(groundX, groundY, walkStopRange + troop.width / 2, 0, Math.PI, true);
+			// Mise à jour de la visualisation de la zone d'arrêt (si activée)
+			if (SHOW_WALK_STOP_ZONES) {
+				const walkStopGraphics = this.WalkStopZoneGraphics.get(troop);
+				if (walkStopGraphics)
+				{
+					walkStopGraphics.clear();
+					walkStopGraphics.lineStyle(1, 0x00ff00, 0.3);
+					walkStopGraphics.fillStyle(0x00ff00, 0.1);
+					
+					const groundY = troop.y;
+					const groundX = troop.team === 'left' ? troop.x - troop.width / 2 : troop.x + troop.width / 2;
+					
+					// Dessiner le demi-cercle pour la zone d'arrêt
+					walkStopGraphics.beginPath();
+					if (troop.facing === 'left') {
+						walkStopGraphics.arc(groundX, groundY, walkStopRange + troop.width / 2, 0, Math.PI, true);
+					} else {
+						walkStopGraphics.arc(groundX, groundY, walkStopRange + troop.width / 2, 0, Math.PI, true);
+					}
+					walkStopGraphics.lineTo(groundX, groundY);
+					walkStopGraphics.closePath();
+					walkStopGraphics.fillPath();
+					walkStopGraphics.strokePath();
 				}
-				walkStopGraphics.lineTo(groundX, groundY);
-				walkStopGraphics.closePath();
-				walkStopGraphics.fillPath();
-				walkStopGraphics.strokePath();
 			}
 
 			// Vérifier les autres troupes et les châteaux pour la zone d'arrêt et d'attaque
@@ -495,6 +503,9 @@ export class TroopManager
 							const lastTime = this.lastDamageTime.get(troop) || 0;
 							if (currentTime - lastTime >= this.damageDelay / (troop as any).attackSpeed)
 							{
+								// Déclencher l'animation d'attaque pour toutes les troupes
+								this.playAttackAnimation(troop);
+								
 								this.damage(troop, otherTroop);
 								this.lastDamageTime.set(troop, currentTime);
 							}
@@ -518,6 +529,9 @@ export class TroopManager
 
 				if (currentTime - lastTime >= this.damageDelay / troop.attackSpeed)
 				{
+					// Déclencher l'animation d'attaque pour toutes les troupes
+					this.playAttackAnimation(troop);
+					
 					let damage = troop.attack;
 		
 					// Calcul du bonus de rage basé sur le temps en vie
@@ -552,7 +566,11 @@ export class TroopManager
 			// Gérer l'animation basée sur l'intention de mouvement
 			// Si bloquée par un ennemi OU si la troupe de devant ne bouge pas, passer en idle
 			const isMoving = !hasEnemyInWalkStopRange && frontTroopIsMoving && (troop as any).hp > 0;
-			this.updateTroopAnimation(troop, isMoving);
+			
+			// Ne pas changer l'animation si une animation d'attaque est en cours
+			if (!(troop as any).isPlayingAttackAnimation) {
+				this.updateTroopAnimation(troop, isMoving);
+			}
 		});
 	}
 
@@ -568,7 +586,10 @@ export class TroopManager
 		
 		(troop as any).lastAnimationState = isMoving;
 		
-		console.log('updateTroopAnimation:', { troopType, team, isMoving });
+		// Debug seulement pour les troupes range pour éviter le spam
+		if (troopType === 'range') {
+			console.log('updateTroopAnimation:', { troopType, team, isMoving });
+		}
 		
 		if (troopType === 'melee') {
 			if (isMoving) {
@@ -611,6 +632,64 @@ export class TroopManager
 				troop.play(animationKey);
 			}
 		}
+	}
+
+	private playAttackAnimation(troop: any)
+	{
+		// Éviter les animations multiples simultanées
+		if ((troop as any).isPlayingAttackAnimation) {
+			return;
+		}
+		
+		const troopType = (troop as any).troopType;
+		const team = (troop as any).team;
+		
+		// Déterminer la clé d'animation d'attaque selon le type de troupe
+		let animationKey: string;
+		switch (troopType) {
+			case 'melee':
+				animationKey = team === 'left' ? 'melee-attack-left' : 'melee-attack-right';
+				break;
+			case 'range':
+				animationKey = team === 'left' ? 'range-attack-left' : 'range-attack-right';
+				break;
+			case 'tank':
+				animationKey = team === 'left' ? 'tank-attack-left' : 'tank-attack-right';
+				break;
+			case 'assassin':
+				animationKey = team === 'left' ? 'assassin-attack-left' : 'assassin-attack-right';
+				break;
+			case 'berserker':
+				animationKey = team === 'left' ? 'berserker-attack-left' : 'berserker-attack-right';
+				break;
+			default:
+				return; // Type de troupe non supporté
+		}
+		
+		// Marquer que l'animation d'attaque est en cours
+		(troop as any).isPlayingAttackAnimation = true;
+		
+		// Jouer l'animation d'attaque
+		troop.play(animationKey);
+		
+		// Calculer la durée de l'animation basée sur la vitesse d'attaque de la troupe
+		const attackSpeed = (troop as any).attackSpeed;
+		const animationDuration = this.damageDelay / attackSpeed; // Synchronisé avec la vitesse d'attaque
+		
+		// Programmer le retour à l'animation normale après l'attaque
+		this.scene.time.delayedCall(animationDuration, () => {
+			if (troop.active) {
+				// Réinitialiser le flag d'animation d'attaque
+				(troop as any).isPlayingAttackAnimation = false;
+				
+				// Forcer la mise à jour de l'animation normale
+				(troop as any).lastAnimationState = null;
+				
+				// Déterminer si la troupe doit bouger ou rester idle
+				const isMoving = Math.abs(troop.body.velocity.x) > 5; // Seuil plus élevé pour éviter les faux positifs
+				this.updateTroopAnimation(troop, isMoving);
+			}
+		});
 	}
 
 	public isInRange(attacker: any, target: any, range?: number)
