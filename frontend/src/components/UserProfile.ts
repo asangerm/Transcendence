@@ -195,40 +195,57 @@ private render(): void {
 
 	<!-- Modals -->
 		<div id="edit-profile-modal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-		<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-			<div class="mt-3">
-			<h3 class="text-lg font-medium text-gray-900 dark:text-white">Edit Profile</h3>
-			<form id="edit-profile-form" class="mt-4 space-y-4">
-				<div>
-				<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Display Name</label>
-				<input 
-					type="text" 
-					name="displayName" 
-					value="${safeDisplayName}"
-					class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-					required
-					minlength="3"
-					maxlength="50"
-				>
+			<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+				<div class="mt-3">
+					<h3 class="text-lg font-medium text-gray-900 dark:text-white">Modifier le Profil</h3>
+					<form id="edit-profile-form" class="mt-4 space-y-4">
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Display Name</label>
+							<input 
+								type="text" 
+								name="displayName" 
+								value="${safeDisplayName}"
+								class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								required
+								minlength="3"
+								maxlength="50"
+							>
+							</div>
+							<div class="flex justify-end space-x-3">
+							<button 
+								type="button" 
+								id="cancel-edit"
+								class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+							>
+								Cancel
+							</button>
+							<button 
+								type="submit"
+								class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+							>
+								Save Changes
+							</button>
+							</div>
+							<!-- Nouveaux boutons rouges -->
+							<div class="mt-4 flex justify-between gap-2">
+							<button 
+								type="button" 
+								id="anonymize-btn" 
+								class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+							>
+								Anonymiser mon compte
+							</button>
+							<button 
+								type="button" 
+								id="delete-btn" 
+								class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+							>
+								Supprimer mon compte
+          					</button>
+						</div>
+					</form>
 				</div>
-				<div class="flex justify-end space-x-3">
-				<button 
-					type="button" 
-					id="cancel-edit"
-					class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
-				>
-					Cancel
-				</button>
-				<button 
-					type="submit"
-					class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
-				>
-					Save Changes
-				</button>
-				</div>
-			</form>
 			</div>
-		</div>
 		</div>
 	`;
 }
