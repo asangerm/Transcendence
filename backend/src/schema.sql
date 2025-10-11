@@ -2,12 +2,15 @@
 CREATE TABLE users (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     email          VARCHAR(255) NOT NULL UNIQUE,
-    password_hash  VARCHAR(255) NOT NULL,
+    password_hash  VARCHAR(255),
     display_name   VARCHAR(255) NOT NULL UNIQUE,
-    avatar_url     TEXT DEFAULT '/avatars/default.png',
+    avatar_url     TEXT DEFAULT '/uploads/avatars/default.png',
     is_online      INTEGER DEFAULT 0,
     wins           INTEGER DEFAULT 0,
     losses         INTEGER DEFAULT 0,
+    google_id      VARCHAR(255) UNIQUE,
+    two_factor_enabled INTEGER DEFAULT 0,
+    two_factor_secret VARCHAR(255),
     created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at     DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -74,4 +77,26 @@ CREATE TABLE high_scores (
     achieved_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (game_id) REFERENCES games(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Table: sessions
+CREATE TABLE sessions (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id         INTEGER NOT NULL,
+    refresh_token   VARCHAR(500) NOT NULL UNIQUE,
+    expires_at      DATETIME NOT NULL,
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Table: friend_requests
+CREATE TABLE friend_requests (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender_id       INTEGER NOT NULL,
+    receiver_id     INTEGER NOT NULL,
+    status          VARCHAR(20) DEFAULT 'pending',
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id),
+    FOREIGN KEY (receiver_id) REFERENCES users(id),
+    UNIQUE(sender_id, receiver_id)
 );

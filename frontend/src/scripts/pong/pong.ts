@@ -122,7 +122,7 @@ export class PongGame {
         }
 
         // Render the scene
-        this.renderer.render(this.scene);
+        this.renderer.render(this.scene, this.ball?.speed ?? 0);
 
         // Continue the game loop
         this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this));
