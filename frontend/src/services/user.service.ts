@@ -94,7 +94,11 @@ export class UserService {
   }
 
   static async getUserFriends(userId: number): Promise<Friend[]> {
-    const response = await apiService.get(`/users/${userId}/friends`);
+    const response = await apiService.get(`/friends/${userId}`);
+    return response.data;
+  }
+  static async getUserFriendsWithout(): Promise<Friend[]> {
+    const response = await apiService.get(`/friends`);
     return response.data;
   }
 

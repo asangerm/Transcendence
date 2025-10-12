@@ -8,12 +8,10 @@ export class UserProfileComponent {
 	private userProfile: UserProfile | null = null;
 	private userStats: UserStats[] = [];
 	private isOwnProfile: boolean = false;
-	private user: User | null;
 	private unsubscribe?: () => void;
 
 	constructor(container: HTMLElement) {
 		this.container = container;
-		this.user = AuthStore.getUser();
 	}
 
 	private getFullAvatarUrl(avatarUrl: string | null): string {
@@ -31,7 +29,6 @@ export class UserProfileComponent {
 					this.isOwnProfile = true;
 				}
 				else if (currentUser && currentUser?.display_name != username) {
-					// username = UserService.getUserProfile(username);
 					this.isOwnProfile = false;
 				}
 			} else if (!username && currentUser) {
@@ -45,7 +42,6 @@ export class UserProfileComponent {
 
 			// S'abonner aux changements d'utilisateur
 			this.unsubscribe = AuthStore.subscribe((user) => {
-				this.user = user;
 				// Si l'utilisateur change, recharger le profil si c'est son propre profil
 					if (this.isOwnProfile && user && user.id !== this.userProfile?.id) {
 						// Vérifier qu'on est toujours sur la page profil
@@ -67,10 +63,11 @@ export class UserProfileComponent {
 	}
 
 	private async loadUserData(username: string): Promise<void> {
-		// this.userProfile = this.isOwnProfile 
-		// ? await UserService.getCurrentUserProfile()
-		// : await UserService.getUserProfile(username);
 		this.userProfile = await UserService.getUserProfile(username);
+		if (!this.userProfile) {
+			this.showError('User not found');
+			return;
+		}
 		this.userStats = await UserService.getUserStats(this.userProfile.id);
 		this.userProfile.matchHistory = await UserService.getMatchHistory(this.userProfile.id);
 		this.render();
@@ -103,7 +100,7 @@ private render(): void {
 								class="w-28 h-28 rounded-full object-cover"
 								id="profile-avatar"
 							>
-							${this.userProfile.is_online ? ` //TODO: implementer le isonline dans le backend
+							${this.userProfile.is_online ? `
 							<div class="absolute right-0 bottom-0 w-8 h-8 bg-green-500 rounded-full border-2"></div>
 							` : `
 							<div class="absolute right-0 bottom-0 w-8 h-8 bg-gray-500 rounded-full border-2"></div>

@@ -17,6 +17,9 @@ import getUserMatchHistory from "./userRoutes/matchHistory";
 import anonymizeUser from "./userRoutes/anonymize";
 import deleteUser from "./userRoutes/delete";
 
+// Friends
+// import getFriends from "./friendsRoutes/getFriends";
+
 // RGPD
 import privacyRoute from "./rgpd/privacy";
 
@@ -39,6 +42,9 @@ export default async function routes(app: FastifyInstance) {
   app.register(getUserMatchHistory, { prefix: "/users" });
   app.register(anonymizeUser, { prefix: "/users" });
   app.register(deleteUser, { prefix: "/users" });
+
+  // Friends
+//   app.register(getFriends, { prefix: "/friends" });
 
   //RGPD
   app.register(privacyRoute, { prefix: "/rgpd" });
