@@ -241,6 +241,13 @@ private render(): void {
 							>
 								Supprimer mon compte
           					</button>
+							<button 
+								type="button" 
+								id="export-btn" 
+								class="btn btn-secondary"
+							>
+								📦Exporter mes données
+							</button>
 						</div>
 					</form>
 				</div>
@@ -451,6 +458,8 @@ private attachEventListeners(): void {
 	const logoutBtn = this.container.querySelector('#logout-btn');
 	const anonymizeBtn = this.container.querySelector('#anonymize-btn');
     const deleteBtn = this.container.querySelector('#delete-btn');
+	const exportBtn = this.container.querySelector('#export-btn');
+
 
 	editBtn?.addEventListener('click', () => editModal?.classList.remove('hidden'));
 	cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
@@ -458,6 +467,7 @@ private attachEventListeners(): void {
 	logoutBtn?.addEventListener('click', this.handleLogout.bind(this));
     anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
     deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
+	exportBtn?.addEventListener('click', () => this.handleExportData());
 	} 
 	else {
 	const addFriendBtn = this.container.querySelector('#add-friend');
@@ -644,6 +654,26 @@ private async handleAnonymizeAccount(): Promise<void> {
 	}
   }
 
+	private async handleExportData(): Promise<void> {
+		if (!this.userProfile) return;
+
+		try {
+			const blob = await UserService.exportData(this.userProfile.id);
+			const url = window.URL.createObjectURL(blob);
+
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `user_${this.userProfile.id}_export.json`;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+
+			window.URL.revokeObjectURL(url);
+		} catch (error) {
+			console.error(error);
+			alert("Une erreur est survenue lors de l'export de vos données.");
+		}
+	}
 
 
 }

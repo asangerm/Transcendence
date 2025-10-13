@@ -137,6 +137,16 @@ export class UserService {
     const response = await apiService.delete(`/users/${userId}`);
     return response.data;
   }
+    
+  static async exportData(userId: number): Promise<Blob> {
+    const response = await apiService.get(`/users/${userId}/export`, {
+      responseType: 'arraybuffer', // Important pour récupérer un Blob
+    });
+    return new Blob([response.data], { type: "application/json" });
+  }
+
+
+  
 }
 
 export default UserService;
