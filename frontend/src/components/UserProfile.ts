@@ -597,6 +597,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 		"👉 Conséquences :\n" +
 		"- Votre nom, email et avatar seront remplacés par des données anonymes.\n" +
 		"- Vous resterez inscrit, mais sous un profil anonyme.\n" +
+		"- Vous ne pourrez plus vous connecter.\n" +
 		"- Cette action est irréversible.\n\n" +
 		"Voulez-vous continuer ?"
 	);
