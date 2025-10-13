@@ -226,7 +226,6 @@ private render(): void {
 								Save Changes
 							</button>
 							</div>
-							<!-- Nouveaux boutons rouges -->
 							<div class="mt-4 flex justify-between gap-2">
 							<button 
 								type="button" 
@@ -450,12 +449,17 @@ private attachEventListeners(): void {
 	const cancelBtn = this.container.querySelector('#cancel-edit');
 	const editForm = this.container.querySelector('#edit-profile-form') as HTMLFormElement;
 	const logoutBtn = this.container.querySelector('#logout-btn');
+	const anonymizeBtn = this.container.querySelector('#anonymize-btn');
+    const deleteBtn = this.container.querySelector('#delete-btn');
 
 	editBtn?.addEventListener('click', () => editModal?.classList.remove('hidden'));
 	cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
 	editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
 	logoutBtn?.addEventListener('click', this.handleLogout.bind(this));
-	} else {
+    anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
+    deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
+	} 
+	else {
 	const addFriendBtn = this.container.querySelector('#add-friend');
 	addFriendBtn?.addEventListener('click', this.handleAddFriend.bind(this));
 	}
@@ -574,4 +578,72 @@ private showSuccess(message: string): void {
 	setTimeout(() => successDiv.classList.add('hidden'), 3000);
 	}
 }
+
+private async handleAnonymizeAccount(): Promise<void> {
+	if (!this.userProfile) return;
+
+	const confirmed = confirm(
+		"⚠️ Êtes-vous sûr de vouloir ANONYMISER votre compte ?\n\n" +
+		"👉 Conséquences :\n" +
+		"- Votre nom, email et avatar seront remplacés par des données anonymes.\n" +
+		"- Vous resterez inscrit, mais sous un profil anonyme.\n" +
+		"- Cette action est irréversible.\n\n" +
+		"Voulez-vous continuer ?"
+	);
+
+	if (!confirmed) return;
+
+	try {
+		const response = await UserService.anonymizeAccount(this.userProfile.id);
+		alert(response.message || "Votre compte a été anonymisé avec succès.");
+
+		// Nettoyage local pour forcer une reconnexion
+		AuthService.logout();
+		this.userProfile = null;
+
+		// Recharge complète de la page pour rafraîchir l'état
+		window.location.href = "/";
+	} catch (error: any) {
+		console.error("Erreur lors de l'anonymisation :", error);
+		alert("Une erreur est survenue lors de l'anonymisation du compte.");
+	}
+}
+
+
+
+
+	private async handleDeleteAccount(): Promise<void> {
+	if (!this.userProfile) return;
+
+	const confirmed = confirm(
+		"⚠️ Êtes-vous sûr de vouloir SUPPRIMER DÉFINITIVEMENT votre compte ?\n\n" +
+		"👉 Conséquences :\n" +
+		"- Votre compte sera entièrement effacé de notre base de données.\n" +
+		"- Vous ne pourrez plus jamais vous reconnecter.\n" +
+		"- Vos amis perdront la relation avec vous.\n" +
+		"- Votre historique de matchs sera supprimé.\n\n" +
+		"⚠️ Cette action est IRRÉVERSIBLE.\n\n" +
+		"Voulez-vous continuer ?"
+	);
+
+	if (!confirmed) return;
+
+	try {
+		const response = await UserService.deleteAccount(this.userProfile.id);
+		alert(response.message || "Votre compte a été supprimé avec succès.");
+
+		// Nettoyage local AVANT la redirection
+		AuthService.logout();
+		this.userProfile = null;
+
+		// Forcer le rechargement complet de la page pour vider la session UI
+		window.location.href = "/";
+	} catch (error: any) {
+		console.error("Erreur lors de la suppression :", error);
+		alert("Une erreur est survenue lors de la suppression du compte.");
+	}
+  }
+
+
+
 }

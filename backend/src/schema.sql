@@ -10,7 +10,7 @@ CREATE TABLE users (
     losses         INTEGER DEFAULT 0,
     google_id      VARCHAR(255) UNIQUE,
     two_factor_method TEXT DEFAULT 'authenticator',
-    phone_number   VARCHAR(20) NULL;
+    phone_number   VARCHAR(20) NULL,
     two_factor_enabled INTEGER DEFAULT 0,
     two_factor_secret VARCHAR(255),
     created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,

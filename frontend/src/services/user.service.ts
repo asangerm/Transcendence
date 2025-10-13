@@ -127,6 +127,16 @@ export class UserService {
     const response = await apiService.get(`/users/search?q=${encodeURIComponent(query)}`);
     return response.data;
   }
+
+  static async anonymizeAccount(userId: number): Promise<{ message: string }> {
+    const response = await apiService.post(`/users/${userId}/anonymize`);
+    return response.data;
+  }
+
+  static async deleteAccount(userId: number): Promise<{ message: string }> {
+    const response = await apiService.delete(`/users/${userId}`);
+    return response.data;
+  }
 }
 
 export default UserService;
