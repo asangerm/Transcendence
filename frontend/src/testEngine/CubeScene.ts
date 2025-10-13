@@ -1,10 +1,10 @@
-import { Camera } from './Camera';
-import { Light } from './Light';
+import { Camera } from '../scripts/pong/Camera';
+import { Light } from '../scripts/pong/Light';
 
-const defaultScene = {
+const cubeScene = {
     "camera": {
-        "position": [0, 80, -80],
-        "rotation": [0.78539816339, 0, 0],
+        "position": [0, 30, -30],
+        "rotation": [0.5, 0, 0],
         "fov": 75,
         "aspectX": 16,
         "aspectY": 9
@@ -14,63 +14,43 @@ const defaultScene = {
             "name": "floor",
             "type": "box",
             "position": [0, -1, 0],
-            "size": [10000, 0.5, 10000],
+            "size": [100, 0.5, 100],
             "color": [0.2, 0.2, 0.2]
-        },{
-            "name": "arena",
-            "type": "box",
-            "position": [0, -0.25, 0],
-            "size": [50, 0.5, 100],
-            "color": [0.1, 0.2, 0.1]
         },
         {
-            "name": "ball",
-            "type": "sphere",
-            "position": [0, 1.5, 0],
+            "name": "cube",
+            "type": "box",
+            "position": [0, 0, 0],
             "size": [2, 2, 2],
-            "color": [1, 0, 0]
+            "color": [1, 0.5, 0]
         },
         {
-            "name": "paddle_top",
+            "name": "wall_north",
             "type": "box",
-            "position": [0, 1.5, 45],
-            "size": [10, 2.5, 1],
-            "color": [0, 1, 0]
+            "position": [0, 5, 25],
+            "size": [50, 10, 1],
+            "color": [0.1, 0.1, 0.1]
         },
         {
-            "name": "paddle_bottom",
+            "name": "wall_south",
             "type": "box",
-            "position": [0, 1.5, -45],
-            "size": [10, 2.5, 1],
-            "color": [0, 0, 1]
+            "position": [0, 5, -25],
+            "size": [50, 10, 1],
+            "color": [0.1, 0.1, 0.1]
         },
         {
-            "name": "wall_top",
+            "name": "wall_east",
             "type": "box",
-            "position": [0, 2.25, 50],
-            "size": [51, 5, 1],
-            "color": [0, 0, 0]
+            "position": [25, 5, 0],
+            "size": [1, 10, 50],
+            "color": [0.1, 0.1, 0.1]
         },
         {
-            "name": "wall_bottom",
+            "name": "wall_west",
             "type": "box",
-            "position": [0, 2.25, -50],
-            "size": [51, 5, 1],
-            "color": [0, 0, 0]
-        },
-        {
-            "name": "wall_left",
-            "type": "box",
-            "position": [25, 2.25, 0],
-            "size": [1, 5, 101],
-            "color": [0, 0, 0]
-        },
-        {
-            "name": "wall_right",
-            "type": "box",
-            "position": [-25, 2.25, 0],
-            "size": [1, 5, 101],
-            "color": [0, 0, 0]
+            "position": [-25, 5, 0],
+            "size": [1, 10, 50],
+            "color": [0.1, 0.1, 0.1]
         }
     ]
 }
@@ -108,21 +88,26 @@ type ImportedScene = {
     }>;
 };
 
-export class Scene {
+export class CubeScene {
     camera: Camera;
     objects: GameObject[];
     lights: Light[];
+    private loadPromise: Promise<void>;
 
     constructor() {
         this.camera = new Camera();
         this.objects = [];
         this.lights = [];
-        this.loadScene();
+        this.loadPromise = this.loadScene();
+    }
+
+    async waitForLoad(): Promise<void> {
+        await this.loadPromise;
     }
 
     private async loadScene(): Promise<void> {
         try {
-            const data = (defaultScene as unknown) as ImportedScene;
+            const data = (cubeScene as unknown) as ImportedScene;
 
             if (data.camera) {
                 const pos = data.camera.position ?? [0, 0, 10];
@@ -162,29 +147,24 @@ export class Scene {
                 ));
             }
 
-            console.log('loaded scene: ', { scene: data });
+            console.log('loaded cube scene: ', { scene: data });
         } catch (error) {
-            console.error('Error loading scene:', error);
+            console.error('Error loading cube scene:', error);
         }
-    }
-
-    findObjectByIndex(index: number): GameObject | undefined {
-        return this.objects[index];
     }
 
     findObjectByName(name: string): GameObject | undefined {
         return this.objects.find((o) => o.name === name);
     }
 
-    updateObjectByIndex(index: number, updates: Partial<GameObject>): GameObject | undefined {
-        const obj = this.findObjectByIndex(index);
-        if (obj) {
-            Object.assign(obj, updates);
+    updateCubePosition(position: { x: number; y: number; z: number }): void {
+        const cube = this.findObjectByName('cube');
+        if (cube) {
+            cube.position = position;
         }
-        return obj;
     }
 
     getObjects(): GameObject[] {
         return this.objects;
     }
-} 
+}

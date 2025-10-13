@@ -19,6 +19,8 @@ import deleteUser from "./userRoutes/delete";
 
 // RGPD
 import privacyRoute from "./rgpd/privacy";
+import gameRoutes from "./gameRoutes";
+import { registerRealtime } from "../realtime/ws";
 
 
 
@@ -42,5 +44,9 @@ export default async function routes(app: FastifyInstance) {
 
   //RGPD
   app.register(privacyRoute, { prefix: "/rgpd" });
+  // Games (HTTP)
+  app.register(gameRoutes, { prefix: "/api" });
+  // Realtime (WS)
+  await registerRealtime(app);
   
 }

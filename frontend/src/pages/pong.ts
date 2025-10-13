@@ -1,4 +1,4 @@
-import { PongGame } from '../scripts/pong/pong';
+import { Pong } from '../pong';
 
 export function renderPong() {
     const content = `
@@ -17,8 +17,15 @@ export function renderPong() {
     const app = document.getElementById('app');
     if (app) {
         app.innerHTML = content;
-        // Game logic will be implemented here
-        const pongGame = new PongGame();
-        pongGame.mount(document.getElementById('gameCanvas') as HTMLElement);
+        const url = new URL(window.location.href);
+        const mode = url.searchParams.get('mode') || 'online';
+        const gameId = url.searchParams.get('gameId') || undefined;
+        const side = (url.searchParams.get('side') as 'top' | 'bottom' | null) || undefined;
+        const pong = new Pong();
+        if (mode === 'online') {
+            pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: true, gameId, side });
+        } else {
+            pong.mount(document.getElementById('gameCanvas') as HTMLElement);
+        }
     }
 } 
