@@ -15,9 +15,9 @@ export class UserProfileComponent {
 	}
 
 	private getFullAvatarUrl(avatarUrl: string | null): string {
-		if (!avatarUrl) return '/src/assets/default-avatar.png';
+		if (!avatarUrl) return '/uploads/avatars/default.png';
 		if (avatarUrl.startsWith('http')) return avatarUrl;
-		return `http://localhost:8000${avatarUrl}`;
+		return `http://localhost:8000/uploads${avatarUrl}`;
 	}
 
 	async init(username?: string): Promise<void> {
@@ -50,7 +50,7 @@ export class UserProfileComponent {
 						}
 					}
 			});
-
+			
 			await this.loadUserData(username);
 		} catch (error: any) {
 			console.error('Error loading user profile:', error);
@@ -93,13 +93,20 @@ private render(): void {
 				</a>
 				<div class="text-center mb-2 grid grid-cols-1 lg:grid-cols-3 gap-6">
 					<div class="relative inline-block col-span-1">
-						<div class="relative w-28 h-28 bg-gray-700 rounded-full flex items-center justify-center text-4xl font-bold mb-2 mx-auto border border-2">
+						<div id="profile-photo" class="relative w-32 h-32 bg-gray-700 rounded-full flex items-center justify-center text-4xl font-bold mx-auto mb-2 border border-4">
 							<img 
 								src="${safeAvatarUrl}"
 								alt="${safeDisplayName}"
 								class="w-28 h-28 rounded-full object-cover"
 								id="profile-avatar"
 							>
+							${this.isOwnProfile ? `
+							<button id="modify-photo" class="transition-all duration-400 h-full w-full rounded-full flex flex-col justify-center items-center absolute text-black bg-gray-600 opacity-0">
+								<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
+									<path fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/>
+								</svg>
+							</button>
+							` : ``}
 							${this.userProfile.is_online ? `
 							<div class="absolute right-0 bottom-0 w-8 h-8 bg-green-500 rounded-full border-2"></div>
 							` : `
@@ -192,40 +199,80 @@ private render(): void {
 
 	<!-- Modals -->
 		<div id="edit-profile-modal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-		<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-			<div class="mt-3">
-			<h3 class="text-lg font-medium text-gray-900 dark:text-white">Edit Profile</h3>
-			<form id="edit-profile-form" class="mt-4 space-y-4">
-				<div>
-				<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Display Name</label>
-				<input 
-					type="text" 
-					name="displayName" 
-					value="${safeDisplayName}"
-					class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-					required
-					minlength="3"
-					maxlength="50"
-				>
+			<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+				<div class="mt-3">
+				<h3 class="text-lg font-medium text-gray-900 dark:text-white">Edit Profile</h3>
+				<form id="edit-profile-form" class="mt-4 space-y-4">
+					<div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom d'utilisateur</label>
+						<input 
+							id="username-modify"
+							type="text" 
+							name="displayName" 
+							value=""
+							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							required
+							minlength="3"
+							maxlength="50"
+						>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+						<input 
+							id="email-modify"
+							type="text" 
+							name="email" 
+							value=""
+							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							required
+							minlength="3"
+							maxlength="50"
+						>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mot de Passe</label>
+						<input 
+							id="password-modify"
+							type="text" 
+							name="password" 
+							value=""
+							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							required
+							minlength="3"
+							maxlength="50"
+						>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirmer le Mot de Passe</label>
+						<input 
+							id="confirmPassword-modify"
+							type="text" 
+							name="confirmPassword" 
+							value=""
+							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							required
+							minlength="3"
+							maxlength="50"
+						>
+					</div>
+					<div class="flex justify-end space-x-3">
+					<button 
+						type="button" 
+						id="cancel-edit"
+						class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+					>
+						Cancel
+					</button>
+					<button 
+						type="submit"
+						class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+					>
+						Save Changes
+					</button>
+					</div>
+				</form>
 				</div>
-				<div class="flex justify-end space-x-3">
-				<button 
-					type="button" 
-					id="cancel-edit"
-					class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
-				>
-					Cancel
-				</button>
-				<button 
-					type="submit"
-					class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
-				>
-					Save Changes
-				</button>
-				</div>
-			</form>
 			</div>
-		</div>
 		</div>
 	`;
 }
@@ -252,7 +299,7 @@ private renderDefaultStats(game: string): string {
 	<!-- Win Rate Circle -->
 	<div class="flex justify-center mb-6">
 		<div class="relative w-32 h-32">
-		<svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+		<svg class="w-32 h-32 transform trasition-all duration-400 -rotate-90" viewBox="0 0 36 36">
 			<path class="text-gray-700" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
 			<path class="text-gaming-success" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
 		</svg>
@@ -262,6 +309,23 @@ private renderDefaultStats(game: string): string {
 		</div>
 	</div>
 	`;
+}
+
+private fillModifyForm() {
+	if (!this.userProfile)
+		return;
+
+	const editModal = this.container.querySelector('#edit-profile-modal');
+	const safeDisplayName = escapeHtml(this.userProfile.display_name);
+	const safeEmail = escapeHtml(this.userProfile.email);
+	const usernameInput = editModal?.querySelector('#username-modify') as HTMLInputElement;
+	const emailInput = editModal?.querySelector('#email-modify') as HTMLInputElement;
+	usernameInput.value = safeDisplayName;
+	emailInput.value = safeEmail;
+
+
+	
+	return;
 }
 
 private renderStats(game: string): string{
@@ -306,7 +370,7 @@ private renderStats(game: string): string{
 				<!-- Win Rate Circle -->
 				<div class="flex justify-center mb-6">
 				<div class="relative w-32 h-32">
-					<svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+					<svg class="w-32 h-32 transform trasition-all duration-400 -rotate-90" viewBox="0 0 36 36">
 					<path class="text-gray-700" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
 					<path class="text-gaming-success" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="${winRate}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
 					</svg>
@@ -391,6 +455,20 @@ private attachEventListeners(): void {
 	const arrow = document.getElementById('dropdownArrow') as HTMLButtonElement;
 	const pongbtn = document.getElementById("pongChoice") as HTMLButtonElement
 	const aowbtn = document.getElementById("aowChoice") as HTMLButtonElement
+	const modifyPhoto = document.getElementById("modify-photo") as HTMLButtonElement;
+	const profilePhoto = document.getElementById("profile-photo") as HTMLDivElement;
+
+	if (modifyPhoto) {
+		profilePhoto.addEventListener('mouseenter', () => {
+			modifyPhoto.classList.remove("opacity-0");
+			modifyPhoto.classList.add("opacity-80");
+		});
+		profilePhoto.addEventListener('mouseleave', () => {
+			modifyPhoto.classList.add("opacity-0");
+			modifyPhoto.classList.remove("opacity-80");
+			
+		});
+	}
 
 	arrow.addEventListener('click', (e) => {
 		e.preventDefault();
@@ -407,37 +485,44 @@ private attachEventListeners(): void {
 	});
 
 	pongbtn.addEventListener("click", () => {
+		dropdown.classList.remove("scale-100");
+		dropdown.classList.add("scale-0");
 		dropdown.classList.toggle("invisible");
 		arrow.classList.toggle("rotate-180");
 		this.updateGameStats('PONG');
 	});
 
 	aowbtn.addEventListener("click", () => {
+		dropdown.classList.remove("scale-100");
+		dropdown.classList.add("scale-0");
 		dropdown.classList.toggle("invisible");
 		arrow.classList.toggle("rotate-180");
 		this.updateGameStats('AGE OF WAR');
 	});
 
 	if (this.isOwnProfile) {
-	const changeAvatarBtn = this.container.querySelector('#change-avatar');
-	const avatarUpload = this.container.querySelector('#avatar-upload') as HTMLInputElement;
-	
-	changeAvatarBtn?.addEventListener('click', () => avatarUpload.click());
-	avatarUpload?.addEventListener('change', this.handleAvatarUpload.bind(this));
+		const changeAvatarBtn = this.container.querySelector('#change-avatar');
+		const avatarUpload = this.container.querySelector('#avatar-upload') as HTMLInputElement;
+		
+		changeAvatarBtn?.addEventListener('click', () => avatarUpload.click());
+		avatarUpload?.addEventListener('change', this.handleAvatarUpload.bind(this));
 
-	const editBtn = this.container.querySelector('#edit-profile');
-	const editModal = this.container.querySelector('#edit-profile-modal');
-	const cancelBtn = this.container.querySelector('#cancel-edit');
-	const editForm = this.container.querySelector('#edit-profile-form') as HTMLFormElement;
-	const logoutBtn = this.container.querySelector('#logout-btn');
+		const editBtn = this.container.querySelector('#edit-profile');
+		const editModal = this.container.querySelector('#edit-profile-modal');
+		const cancelBtn = this.container.querySelector('#cancel-edit');
+		const editForm = this.container.querySelector('#edit-profile-form') as HTMLFormElement;
+		const logoutBtn = this.container.querySelector('#logout-btn');
 
-	editBtn?.addEventListener('click', () => editModal?.classList.remove('hidden'));
-	cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
-	editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
-	logoutBtn?.addEventListener('click', this.handleLogout.bind(this));
-	} else {
-	const addFriendBtn = this.container.querySelector('#add-friend');
-	addFriendBtn?.addEventListener('click', this.handleAddFriend.bind(this));
+		editBtn?.addEventListener('click', () => {
+			editModal?.classList.remove('hidden');
+			this.fillModifyForm();
+		});
+		cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
+		editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
+		logoutBtn?.addEventListener('click', this.handleLogout.bind(this));
+		} else {
+		const addFriendBtn = this.container.querySelector('#add-friend');
+		addFriendBtn?.addEventListener('click', this.handleAddFriend.bind(this));
 	}
 }
 

@@ -7,16 +7,17 @@ class AuthStoreClass {
   private subscribers = new Set<Subscriber>();
 
 	init() {
-	// Hydrate depuis le localStorage au démarrage
-	this.user = AuthService.getUser();
+		// Hydrate depuis le localStorage au démarrage
+		this.user = AuthService.getUser();
+		console.log("user : ", this.user);
 
-	// Sync multi-onglets
-	window.addEventListener('storage', (e) => {
-		if (e.key === 'user') {
-		const next = AuthService.getUser();
-		this.setUserInMemory(next, /*notify*/true);
-		}
-	});
+		// Sync multi-onglets
+		window.addEventListener('storage', (e) => {
+			if (e.key === 'user') {
+				const next = AuthService.getUser();
+				this.setUserInMemory(next, /*notify*/true);
+			}
+		});
 	}
 
 	getUser() {

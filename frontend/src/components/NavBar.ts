@@ -1,20 +1,23 @@
 import { AuthStore } from '../stores/auth.store';
 import { AuthService, User } from '../services/auth.service';
 import { sanitizeHtml, sanitizeInput, escapeHtml } from '../utils/sanitizer';
+import {UserService, UserProfile} from '../services/user.service';
 
 export class NavBar {
   	private container: HTMLElement;
 	private user: User | null;
+	private userProfile: UserProfile | null;
 	private unsubscribe?: () => void;
 
 	constructor(container: HTMLElement) {
 		this.container = container;
+		this.user = AuthStore.getUser();
+		// if (this.user?.display_name)
+			// this.userProfile = UserService.getUserProfile(this.user?.display_name);
 		this.render();
 		this.attachEventListeners();
-		this.user = AuthStore.getUser();
 		this.unsubscribe = AuthStore.subscribe((u) => {
 			this.user = u;
-			console.log("update de l'utilisateur")
 			this.updateAuthState();
 		});
 	}
@@ -22,9 +25,17 @@ export class NavBar {
 	private get isAuth(): boolean {
 		return AuthService.isAuthenticated();
 	}
+	
+	private getFullAvatarUrl(avatarUrl: string | null): string {
+		if (!avatarUrl) return 'http://localhost:8000/uploads/avatars/default.png';
+		if (avatarUrl.startsWith('http')) return avatarUrl;
+		return `http://localhost:8000/uploads${avatarUrl}`;
+	}
 
 	private render(): void {
 		const safeDisplayName = escapeHtml(this.user?.display_name || '');
+		const safeAvatarUrl = this.getFullAvatarUrl(this.user?.avatar_url || null);
+
  		this.container.innerHTML = `
 			<nav class="bg-primary font-extrabold shadow-xl fixed top-0 left-0 right-0 z-50 transform transition-all duration-300 dark:bg-primary-dark">
 				<div class="max-w-6xl mx-auto px-4">
@@ -51,7 +62,7 @@ export class NavBar {
 							${this.isAuth ? `
 								<div id="profile-nav" class="relative w-10 h-10 hover:cursor-pointer bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold mb-2 mx-auto border border-2">
 									<img 
-										src="../../images/profile1.png"
+										src="${safeAvatarUrl}"
 										alt="${safeDisplayName}"
 										class="rounded-full object-cover"
 										id="profile-avatar"
