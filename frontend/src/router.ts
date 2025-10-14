@@ -17,7 +17,9 @@ const routes: Route[] = [
     { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()), requiresAuth: true },
     { path: '/login', component: () => import('./pages/login').then(m => m.renderLogin()), guestOnly: true },
     { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()), guestOnly: true },
-    { path: '/register', component: () => import('./pages/register').then(m => m.renderRegister()), guestOnly: true }
+    { path: '/register', component: () => import('./pages/register').then(m => m.renderRegister()), guestOnly: true },
+    { path: '/terms', component: () => import('./pages/terms').then(m => m.renderTerms()), requiresAuth: false },
+    { path: '/privacy', component: () => import('./pages/privacy').then(m => m.renderPrivacy()), requiresAuth: false }
 ];
 
 export function initRouter() {

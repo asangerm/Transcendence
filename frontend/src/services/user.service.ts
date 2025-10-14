@@ -131,6 +131,26 @@ export class UserService {
     const response = await apiService.get(`/users/search?q=${encodeURIComponent(query)}`);
     return response.data;
   }
+
+  static async anonymizeAccount(userId: number): Promise<{ message: string }> {
+    const response = await apiService.post(`/users/${userId}/anonymize`);
+    return response.data;
+  }
+
+  static async deleteAccount(userId: number): Promise<{ message: string }> {
+    const response = await apiService.delete(`/users/${userId}`);
+    return response.data;
+  }
+    
+  static async exportData(userId: number): Promise<Blob> {
+    const response = await apiService.get(`/users/${userId}/export`, {
+      responseType: 'arraybuffer', // Important pour récupérer un Blob
+    });
+    return new Blob([response.data], { type: "application/json" });
+  }
+
+
+  
 }
 
 export default UserService;

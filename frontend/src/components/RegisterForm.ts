@@ -115,8 +115,8 @@ export class RegisterForm {
 							</div>
 							<div class="ml-3">
 								<label for="terms" class="text-sm text-muted dark:text-muted-dark">
-									J'accepte les <a href="#" class="links-style">conditions d'utilisation</a>
-									et la <a href="#" class="links-style">politique de confidentialité</a>
+									J'accepte les <a href="/terms" class="links-style">conditions d'utilisation</a>
+									et la <a href="/privacy" class="links-style">politique de confidentialité</a>
 								</label>
 							</div>
 						</div>

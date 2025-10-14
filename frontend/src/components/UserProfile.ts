@@ -199,17 +199,17 @@ private render(): void {
 
 	<!-- Modals -->
 		<div id="edit-profile-modal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-			<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-				<div class="mt-3">
-				<h3 class="text-lg font-medium text-gray-900 dark:text-white">Edit Profile</h3>
-				<form id="edit-profile-form" class="mt-4 space-y-4">
-					<div>
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom d'utilisateur</label>
-						<input 
+				<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+					<div class="mt-3">
+						<h3 class="text-lg font-medium text-gray-900 dark:text-white">Modifier le Profil</h3>
+						<form id="edit-profile-form" class="mt-4 space-y-4">
+							<div>
+									<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom d'utilisateur</label>
+									<input 
 							id="username-modify"
-							type="text" 
-							name="displayName" 
-							value=""
+										type="text" 
+										name="displayName" 
+										value=""
 							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 							required
 							minlength="3"
@@ -249,30 +249,53 @@ private render(): void {
 							type="text" 
 							name="confirmPassword" 
 							value=""
-							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-							required
-							minlength="3"
-							maxlength="50"
-						>
+										class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+										required
+										minlength="3"
+										maxlength="50"
+									>
+								</div>
+								<div class="flex justify-end space-x-3">
+								<button 
+									type="button" 
+									id="cancel-edit"
+									class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+								>
+									Cancel
+								</button>
+								<button 
+									type="submit"
+									class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+								>
+									Save Changes
+								</button>
+								</div>
+							<div class="mt-4 flex justify-between gap-2">
+							<button 
+								type="button" 
+								id="anonymize-btn" 
+								class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+							>
+								Anonymiser mon compte
+							</button>
+							<button 
+								type="button" 
+								id="delete-btn" 
+								class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+							>
+								Supprimer mon compte
+          					</button>
+							<button 
+								type="button" 
+								id="export-btn" 
+								class="btn btn-secondary"
+							>
+								📦Exporter mes données
+							</button>
+						</div>
+						</form>
 					</div>
-					<div class="flex justify-end space-x-3">
-					<button 
-						type="button" 
-						id="cancel-edit"
-						class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
-					>
-						Cancel
-					</button>
-					<button 
-						type="submit"
-						class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
-					>
-						Save Changes
-					</button>
-					</div>
-				</form>
 				</div>
-			</div>
 		</div>
 	`;
 }
@@ -507,11 +530,15 @@ private attachEventListeners(): void {
 		changeAvatarBtn?.addEventListener('click', () => avatarUpload.click());
 		avatarUpload?.addEventListener('change', this.handleAvatarUpload.bind(this));
 
-		const editBtn = this.container.querySelector('#edit-profile');
-		const editModal = this.container.querySelector('#edit-profile-modal');
-		const cancelBtn = this.container.querySelector('#cancel-edit');
-		const editForm = this.container.querySelector('#edit-profile-form') as HTMLFormElement;
-		const logoutBtn = this.container.querySelector('#logout-btn');
+	const editBtn = this.container.querySelector('#edit-profile');
+	const editModal = this.container.querySelector('#edit-profile-modal');
+	const cancelBtn = this.container.querySelector('#cancel-edit');
+	const editForm = this.container.querySelector('#edit-profile-form') as HTMLFormElement;
+	const logoutBtn = this.container.querySelector('#logout-btn');
+	const anonymizeBtn = this.container.querySelector('#anonymize-btn');
+    const deleteBtn = this.container.querySelector('#delete-btn');
+	const exportBtn = this.container.querySelector('#export-btn');
+
 
 		editBtn?.addEventListener('click', () => {
 			editModal?.classList.remove('hidden');
@@ -520,7 +547,11 @@ private attachEventListeners(): void {
 		cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
 		editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
 		logoutBtn?.addEventListener('click', this.handleLogout.bind(this));
-		} else {
+	    anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
+    deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
+	exportBtn?.addEventListener('click', () => this.handleExportData());
+	} 
+	else {
 		const addFriendBtn = this.container.querySelector('#add-friend');
 		addFriendBtn?.addEventListener('click', this.handleAddFriend.bind(this));
 	}
@@ -639,4 +670,93 @@ private showSuccess(message: string): void {
 	setTimeout(() => successDiv.classList.add('hidden'), 3000);
 	}
 }
+
+private async handleAnonymizeAccount(): Promise<void> {
+	if (!this.userProfile) return;
+
+	const confirmed = confirm(
+		"⚠️ Êtes-vous sûr de vouloir ANONYMISER votre compte ?\n\n" +
+		"👉 Conséquences :\n" +
+		"- Votre nom, email et avatar seront remplacés par des données anonymes.\n" +
+		"- Vous resterez inscrit, mais sous un profil anonyme.\n" +
+		"- Vous ne pourrez plus vous connecter.\n" +
+		"- Cette action est irréversible.\n\n" +
+		"Voulez-vous continuer ?"
+	);
+
+	if (!confirmed) return;
+
+	try {
+		const response = await UserService.anonymizeAccount(this.userProfile.id);
+		alert(response.message || "Votre compte a été anonymisé avec succès.");
+
+		// Nettoyage local pour forcer une reconnexion
+		AuthService.logout();
+		this.userProfile = null;
+
+		// Recharge complète de la page pour rafraîchir l'état
+		window.location.href = "/";
+	} catch (error: any) {
+		console.error("Erreur lors de l'anonymisation :", error);
+		alert("Une erreur est survenue lors de l'anonymisation du compte.");
+	}
+}
+
+
+
+
+	private async handleDeleteAccount(): Promise<void> {
+	if (!this.userProfile) return;
+
+	const confirmed = confirm(
+		"⚠️ Êtes-vous sûr de vouloir SUPPRIMER DÉFINITIVEMENT votre compte ?\n\n" +
+		"👉 Conséquences :\n" +
+		"- Votre compte sera entièrement effacé de notre base de données.\n" +
+		"- Vous ne pourrez plus jamais vous reconnecter.\n" +
+		"- Vos amis perdront la relation avec vous.\n" +
+		"- Votre historique de matchs sera supprimé.\n\n" +
+		"⚠️ Cette action est IRRÉVERSIBLE.\n\n" +
+		"Voulez-vous continuer ?"
+	);
+
+	if (!confirmed) return;
+
+	try {
+		const response = await UserService.deleteAccount(this.userProfile.id);
+		alert(response.message || "Votre compte a été supprimé avec succès.");
+
+		// Nettoyage local AVANT la redirection
+		AuthService.logout();
+		this.userProfile = null;
+
+		// Forcer le rechargement complet de la page pour vider la session UI
+		window.location.href = "/";
+	} catch (error: any) {
+		console.error("Erreur lors de la suppression :", error);
+		alert("Une erreur est survenue lors de la suppression du compte.");
+	}
+  }
+
+	private async handleExportData(): Promise<void> {
+		if (!this.userProfile) return;
+
+		try {
+			const blob = await UserService.exportData(this.userProfile.id);
+			const url = window.URL.createObjectURL(blob);
+
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `user_${this.userProfile.id}_export.json`;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+
+			window.URL.revokeObjectURL(url);
+		} catch (error) {
+			console.error(error);
+			alert("Une erreur est survenue lors de l'export de vos données.");
+		}
+	}
+
+
 }
