@@ -1,6 +1,7 @@
 import fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 import fastifyCookie from "@fastify/cookie";
+import fastifyWebsocket from "@fastify/websocket";
 import dbPlugin from "./src/db";
 import routes from "./src/routes";
 import { errorHandler } from "./src/middleware/errorHandler";
@@ -24,6 +25,9 @@ async function buildServer() {
   await app.register(fastifyCookie, {
     secret: process.env.COOKIE_SECRET || "supersecret", // pour signer les cookies
   });
+
+  // WebSocket
+  await app.register(fastifyWebsocket);
 
   // Routes (index.ts)
   app.register(routes);

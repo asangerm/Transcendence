@@ -2,8 +2,22 @@ import type { ServerGameState, Vector3 } from './gameTypes';
 
 export class PongEngine {
   private state: ServerGameState;
+  private previousState: ServerGameState | null = null;
   private lastUpdate: number;
-  private inputs: { top: { left: boolean; right: boolean }; bottom: { left: boolean; right: boolean } };
+  private inputs: { 
+    top: { left: number; right: number }; 
+    bottom: { left: number; right: number } 
+  };
+
+  // Physics constants for smooth sliding paddles
+  private readonly PADDLE_ACCELERATION = 500; // units/sec² - higher for more responsive acceleration
+  private readonly PADDLE_MAX_SPEED = 100; // units/sec - slightly higher max speed
+  private readonly PADDLE_FRICTION = 15; // friction coefficient - higher for more realistic sliding
+  private readonly BALL_SPEED_BOOST = 1.01; // speed boost factor on wall bounce
+  private readonly BALL_MAX_SPEED = 25; // maximum ball speed
+  private readonly ARENA_WIDTH = 50; // arena width
+  private readonly PADDLE_HALF_WIDTH = 5; // paddle half width
+  private readonly FIXED_DT = 1/60; // Fixed timestep for consistent physics (60fps)
 
   constructor(id: string) {
     this.state = {
@@ -12,8 +26,8 @@ export class PongEngine {
       players: {},
       ball: { position: { x: 0, y: 1.5, z: 0 }, velocity: { x: 6, y: 0, z: 4 } },
       paddles: {
-        top: { position: { x: 0, y: 1.5, z: 45 } },
-        bottom: { position: { x: 0, y: 1.5, z: -45 } },
+        top: { position: { x: 0, y: 1.5, z: 45 }, velocity: { x: 0, y: 0, z: 0 } },
+        bottom: { position: { x: 0, y: 1.5, z: -45 }, velocity: { x: 0, y: 0, z: 0 } },
       },
       scores: { top: 0, bottom: 0 },
       createdAt: Date.now(),
@@ -22,24 +36,78 @@ export class PongEngine {
       winner: null,
     };
     this.lastUpdate = Date.now();
-    this.inputs = { top: { left: false, right: false }, bottom: { left: false, right: false } };
+    this.inputs = { 
+      top: { left: 0, right: 0 }, 
+      bottom: { left: 0, right: 0 } 
+    };
   }
 
   getState(): ServerGameState {
     return this.state;
   }
 
+  getPreviousState(): ServerGameState | null {
+    return this.previousState;
+  }
+
+  // Handle client input for paddle movement
+  setInput(side: 'top' | 'bottom', input: { left: number; right: number }): void {
+    this.inputs[side] = input;
+  }
+
+  // Set player information
   setPlayer(side: 'top' | 'bottom', player: { id: string; username?: string }): void {
     this.state.players[side] = player;
   }
 
-  applyInput(side: 'top' | 'bottom', action: 'moveLeft' | 'moveRight' | 'stop'): void {
+  getStatesForInterpolation(): { current: ServerGameState; previous: ServerGameState | null } {
+    return {
+      current: this.state,
+      previous: this.previousState
+    };
+  }
+
+  applyInput(inputData: Record<string, number>): void {
+    // Update inputs based on received data (matching TestEngine pattern)
+    // Only process fields that are present in the JSON (skip noOp fields)
+    if ('topLeft' in inputData) {
+      if (inputData.topLeft === 2) {
+        this.inputs.top.left = 0; // Stop command resets to 0
+      } else {
+        this.inputs.top.left = inputData.topLeft;
+      }
+    }
+    if ('topRight' in inputData) {
+      if (inputData.topRight === 2) {
+        this.inputs.top.right = 0; // Stop command resets to 0
+      } else {
+        this.inputs.top.right = inputData.topRight;
+      }
+    }
+    if ('bottomLeft' in inputData) {
+      if (inputData.bottomLeft === 2) {
+        this.inputs.bottom.left = 0; // Stop command resets to 0
+      } else {
+        this.inputs.bottom.left = inputData.bottomLeft;
+      }
+    }
+    if ('bottomRight' in inputData) {
+      if (inputData.bottomRight === 2) {
+        this.inputs.bottom.right = 0; // Stop command resets to 0
+      } else {
+        this.inputs.bottom.right = inputData.bottomRight;
+      }
+    }
+  }
+
+  // Legacy method for backward compatibility
+  applyInputLegacy(side: 'top' | 'bottom', action: 'moveLeft' | 'moveRight' | 'stop'): void {
     if (action === 'moveLeft') {
-      this.inputs[side].left = true; this.inputs[side].right = false;
+      this.inputs[side].left = 1; this.inputs[side].right = 0;
     } else if (action === 'moveRight') {
-      this.inputs[side].right = true; this.inputs[side].left = false;
+      this.inputs[side].right = 1; this.inputs[side].left = 0;
     } else if (action === 'stop') {
-      this.inputs[side].left = false; this.inputs[side].right = false;
+      this.inputs[side].left = 0; this.inputs[side].right = 0;
     }
   }
 
@@ -49,71 +117,133 @@ export class PongEngine {
 
   update(): void {
     const now = Date.now();
-    let dt = (now - this.lastUpdate) / 1000;
+    
+    // Store previous state for interpolation
+    this.previousState = { ...this.state };
+    
+    // Use fixed timestep for consistent physics
+    const dt = this.FIXED_DT;
     this.lastUpdate = now;
-    if (dt > 0.1) dt = 0.1;
 
-    // Paddle movement from inputs and clamp within walls (arena width 50, walls at x +-25)
-    const moveFromInput = (side: 'top' | 'bottom') => {
-      const speed = 50; // units/sec
-      const dir = this.inputs[side].left ? -1 : this.inputs[side].right ? 1 : 0;
-      this.state.paddles[side].position.x += dir * speed * dt;
-    };
-    moveFromInput('top');
-    moveFromInput('bottom');
+    // Update paddles with acceleration-based physics
+    this.updatePaddle('top', dt);
+    this.updatePaddle('bottom', dt);
 
-    // Clamp paddles
-    const clampPad = (pos: Vector3) => {
-      const half = 25 - 5; // paddle half width ~=5
-      if (pos.x < -half) pos.x = -half;
-      if (pos.x > half) pos.x = half;
-    };
-    clampPad(this.state.paddles.top.position);
-    clampPad(this.state.paddles.bottom.position);
+    // Update ball physics
+    this.updateBall(dt);
 
-    // Integrate ball
-    const p = this.state.ball.position;
-    const v = this.state.ball.velocity;
+    this.state.updatedAt = now;
+  }
+
+  private updatePaddle(side: 'top' | 'bottom', dt: number): void {
+    const paddle = this.state.paddles[side];
+    const input = this.inputs[side];
+    
+    // Calculate acceleration based on inputs
+    let acceleration = 0;
+    if (input.left === 1) acceleration -= this.PADDLE_ACCELERATION;
+    if (input.right === 1) acceleration += this.PADDLE_ACCELERATION;
+
+    // Apply friction (always present, but stronger when no input)
+    const hasInput = input.left === 1 || input.right === 1;
+    const frictionCoeff = hasInput ? this.PADDLE_FRICTION * 0.3 : this.PADDLE_FRICTION; // Less friction when actively moving
+    
+    // Apply friction force (opposite to velocity direction)
+    const frictionForce = frictionCoeff * dt;
+    if (Math.abs(paddle.velocity.x) > 0.1) {
+      paddle.velocity.x *= Math.max(0, 1 - frictionForce);
+    } else {
+      paddle.velocity.x = 0; // Stop very small velocities
+    }
+
+    // Apply acceleration
+    paddle.velocity.x += acceleration * dt;
+
+    // Apply speed limit
+    const speed = Math.abs(paddle.velocity.x);
+    if (speed > this.PADDLE_MAX_SPEED) {
+      paddle.velocity.x = Math.sign(paddle.velocity.x) * this.PADDLE_MAX_SPEED;
+    }
+
+    // Integrate position using velocity
+    paddle.position.x += paddle.velocity.x * dt;
+
+    // Apply bounds with bounce
+    this.applyPaddleBounds(paddle);
+  }
+
+  private applyPaddleBounds(paddle: { position: Vector3; velocity: Vector3 }): void {
+    const half = this.ARENA_WIDTH / 2 - this.PADDLE_HALF_WIDTH;
+    
+    if (paddle.position.x <= -half) {
+      paddle.position.x = -half;
+      paddle.velocity.x = Math.abs(paddle.velocity.x) * 0.8; // Bounce with energy loss
+    } else if (paddle.position.x >= half) {
+      paddle.position.x = half;
+      paddle.velocity.x = -Math.abs(paddle.velocity.x) * 0.8;
+    }
+  }
+
+  private updateBall(dt: number): void {
+    const ball = this.state.ball;
+    const p = ball.position;
+    const v = ball.velocity;
+
+    // Integrate ball position
     p.x += v.x * dt;
     p.y += v.y * dt;
     p.z += v.z * dt;
 
-    // Collide with vertical walls at x=+-25
-    if (p.x <= -25 || p.x >= 25) {
+    // Collide with vertical walls at x=±25
+    if (p.x <= -this.ARENA_WIDTH / 2 || p.x >= this.ARENA_WIDTH / 2) {
       v.x = -v.x;
-      p.x = Math.max(-25, Math.min(25, p.x));
-      // small speed boost to keep pace lively and reduce grazing stalls
+      p.x = Math.max(-this.ARENA_WIDTH / 2, Math.min(this.ARENA_WIDTH / 2, p.x));
+      
+      // Apply speed boost to keep pace lively and reduce grazing stalls
       const mag = Math.hypot(v.x, v.z);
-      const target = Math.min(mag * 1.01, 25);
+      const target = Math.min(mag * this.BALL_SPEED_BOOST, this.BALL_MAX_SPEED);
       if (mag > 0) {
         v.x = (v.x / mag) * target;
         v.z = (v.z / mag) * target;
       }
     }
 
-    // Collide with top/bottom paddles (simple AABB on x, z proximity)
-    const collidePaddle = (padZ: number, padX: number): boolean => {
-      const withinZ = Math.abs(p.z - padZ) < 2; // contact depth
-      const withinX = Math.abs(p.x - padX) < 5; // half paddle width
-      return withinZ && withinX;
-    };
+    // Collide with paddles
+    this.checkPaddleCollision('top', p, v);
+    this.checkPaddleCollision('bottom', p, v);
 
-    if (collidePaddle(this.state.paddles.top.position.z, this.state.paddles.top.position.x) && v.z > 0) {
-      v.z = -Math.abs(v.z);
-    } else if (collidePaddle(this.state.paddles.bottom.position.z, this.state.paddles.bottom.position.x) && v.z < 0) {
-      v.z = Math.abs(v.z);
-    }
-
-    // Score if ball crosses back walls at z=+-50
+    // Score if ball crosses back walls at z=±50
     if (p.z >= 50) {
       this.state.scores.bottom += 1;
-      p.x = 0; p.y = 1.5; p.z = 0; v.x = 6; v.y = 0; v.z = -4;
+      this.resetBall();
     } else if (p.z <= -50) {
       this.state.scores.top += 1;
-      p.x = 0; p.y = 1.5; p.z = 0; v.x = -6; v.y = 0; v.z = 4;
+      this.resetBall();
     }
+  }
 
-    this.state.updatedAt = now;
+  private checkPaddleCollision(side: 'top' | 'bottom', ballPos: Vector3, ballVel: Vector3): void {
+    const paddle = this.state.paddles[side];
+    const withinZ = Math.abs(ballPos.z - paddle.position.z) < 2; // contact depth
+    const withinX = Math.abs(ballPos.x - paddle.position.x) < this.PADDLE_HALF_WIDTH; // half paddle width
+    
+    if (withinZ && withinX) {
+      if (side === 'top' && ballVel.z > 0) {
+        ballVel.z = -Math.abs(ballVel.z);
+      } else if (side === 'bottom' && ballVel.z < 0) {
+        ballVel.z = Math.abs(ballVel.z);
+      }
+    }
+  }
+
+  private resetBall(): void {
+    const ball = this.state.ball;
+    ball.position.x = 0;
+    ball.position.y = 1.5;
+    ball.position.z = 0;
+    ball.velocity.x = 6;
+    ball.velocity.y = 0;
+    ball.velocity.z = 4;
   }
 }
 

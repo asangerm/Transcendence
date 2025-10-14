@@ -9,8 +9,8 @@ export type ServerGameState = {
     };
     ball: { position: Vector3; velocity: Vector3 };
     paddles: {
-        top: { position: Vector3 };
-        bottom: { position: Vector3 };
+        top: { position: Vector3; velocity: Vector3 };
+        bottom: { position: Vector3; velocity: Vector3 };
     };
     scores: { top: number; bottom: number };
     createdAt: number;

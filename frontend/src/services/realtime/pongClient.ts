@@ -46,7 +46,14 @@ export class PongRealtimeClient {
         });
     }
 
-    sendInput(side: ClientSide, action: 'moveLeft' | 'moveRight' | 'stop'): void {
+    sendInput(inputData: Record<string, number>): void {
+        if (!this.gameId) return;
+        const payload = { gameId: this.gameId, ...inputData };
+        this.send(payload);
+    }
+
+    // Legacy method for backward compatibility
+    sendInputLegacy(side: ClientSide, action: 'moveLeft' | 'moveRight' | 'stop'): void {
         if (!this.gameId) return;
         const payload = { gameId: this.gameId, playerSide: side, action };
         this.send(payload);
@@ -55,6 +62,18 @@ export class PongRealtimeClient {
     sendPaddleX(side: ClientSide, x: number): void {
         if (!this.gameId) return;
         const payload = { type: 'paddle', gameId: this.gameId, playerSide: side, x };
+        this.send(payload);
+    }
+
+    sendPaddleInput(side: ClientSide, left: number, right: number): void {
+        if (!this.gameId) return;
+        const payload = { 
+            type: 'input', 
+            gameId: this.gameId, 
+            side: side, 
+            left: left, 
+            right: right 
+        };
         this.send(payload);
     }
 

@@ -13,6 +13,7 @@ const routes: Route[] = [
     { path: '/', component: () => import('./pages/home').then(m => m.renderHome()) },
     { path: '/games', component: () => import('./pages/game-selection').then(m => m.renderGameSelection()), requiresAuth: false },
     { path: '/pong', component: () => import('./pages/pong').then(m => m.renderPong()), requiresAuth: true },
+    { path: '/pong-lobby', component: () => import('./pages/pong-lobby').then(m => m.renderPongLobby()), requiresAuth: true },
     { path: '/game2', component: () => import('./pages/game2').then(m => m.renderGame2()), requiresAuth: true },
     { path: '/test-engine', component: () => import('./pages/test-engine').then(m => m.renderTestEngine()), requiresAuth: true },
     { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()), requiresAuth: true },

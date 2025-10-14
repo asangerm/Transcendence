@@ -32,7 +32,7 @@ export class Pong {
         this.paddleSpeed = 50;
         this.serverTargets = { ballPos: null, ballVel: null, padTopX: null, padBottomX: null, lastRecv: 0 };
         this.controller.setOnStateUpdated((snapshot: ControllerSnapshot) => {
-            this.renderer.requestFrame(snapshot.scene, snapshot.ballSpeed);
+            this.renderer.requestFrame(snapshot.scene, snapshot.ballSpeed, this.online);
         });
     }
 
@@ -82,32 +82,10 @@ export class Pong {
 
         if (!this.online) {
             const snapshot: ControllerSnapshot = this.controller.update();
-            this.renderer.requestFrame(snapshot.scene, snapshot.ballSpeed);
+            this.renderer.requestFrame(snapshot.scene, snapshot.ballSpeed, false);
         } else {
-            // Client-side prediction for paddles (client authoritative x)
-            if (padTop) {
-                const leftKey = 'o';
-                const rightKey = 'l';
-                let x = padTop.position.x;
-                if (this.onlineKeys[leftKey]) x -= this.paddleSpeed * dt;
-                if (this.onlineKeys[rightKey]) x += this.paddleSpeed * dt;
-                const half = (padTop.size?.x ?? 10) / 2;
-                const maxX = 25 - half;
-                x = Math.max(-maxX, Math.min(maxX, x));
-                padTop.position.x = x;
-            }
-
-            if (padBottom) {
-                const leftKey = 'r';
-                const rightKey = 'f';
-                let x = padBottom.position.x;
-                if (this.onlineKeys[leftKey]) x -= this.paddleSpeed * dt;
-                if (this.onlineKeys[rightKey]) x += this.paddleSpeed * dt;
-                const half = (padBottom.size?.x ?? 10) / 2;
-                const maxX = 25 - half;
-                x = Math.max(-maxX, Math.min(maxX, x));
-                padBottom.position.x = x;
-            }
+            // Send input state to server (server-authoritative paddles)
+            this.sendInputState();
 
             // Ball extrapolation to reduce stutter + reconciliation
             if (ball) {
@@ -135,19 +113,28 @@ export class Pong {
                 }
             }
 
-            // Throttle-sync paddle x back to server (20Hz)
-            if (this.realtime) {
-                const t = performance.now();
-                if (!this._lastPadSyncAt || t - this._lastPadSyncAt > 50) {
-                    if (padTop) this.realtime.sendPaddleX('top', padTop.position.x);
-                    if (padBottom) this.realtime.sendPaddleX('bottom', padBottom.position.x);
-                    this._lastPadSyncAt = t;
+            // Paddle position interpolation from server
+            if (padTop && this.serverTargets.padTopX !== null) {
+                const dx = this.serverTargets.padTopX - padTop.position.x;
+                if (Math.abs(dx) > 0.1) {
+                    padTop.position.x += dx * 0.3; // Smooth interpolation
+                } else {
+                    padTop.position.x = this.serverTargets.padTopX;
+                }
+            }
+
+            if (padBottom && this.serverTargets.padBottomX !== null) {
+                const dx = this.serverTargets.padBottomX - padBottom.position.x;
+                if (Math.abs(dx) > 0.1) {
+                    padBottom.position.x += dx * 0.3; // Smooth interpolation
+                } else {
+                    padBottom.position.x = this.serverTargets.padBottomX;
                 }
             }
 
             // Render every frame
             const speed = this.serverTargets.ballVel ? Math.hypot(this.serverTargets.ballVel.x, this.serverTargets.ballVel.z) : 0;
-            this.renderer.requestFrame(scene, speed);
+            this.renderer.requestFrame(scene, speed, true);
         }
 
         const { width, height } = this.renderer.getCanvasSize();
@@ -169,29 +156,91 @@ export class Pong {
         this.serverTargets.padTopX = state.paddles.top.position.x;
         this.serverTargets.padBottomX = state.paddles.bottom.position.x;
         this.serverTargets.lastRecv = performance.now();
-        // No immediate snap; loop will smoothly reconcile and render
+        
+        // Update paddle positions directly for immediate response
+        const scene = this.controller.getScene();
+        const padTop = scene.findObjectByName('paddle_top');
+        const padBottom = scene.findObjectByName('paddle_bottom');
+        
+        if (padTop) {
+            padTop.position.x = state.paddles.top.position.x;
+        }
+        if (padBottom) {
+            padBottom.position.x = state.paddles.bottom.position.x;
+        }
     }
 
     private handleOnlineKey(e: KeyboardEvent, side?: 'top' | 'bottom'): void {
-        if (!this.realtime) return;
+        if (!this.realtime || !side) return;
+        
         // Prevent multiple repeats causing jitter: only act on initial keydown and keyup
         const isDown = e.type === 'keydown' && !e.repeat;
         const isUp = e.type === 'keyup';
         const key = e.key.toLowerCase();
-        const sides: Array<'top' | 'bottom'> = side ? [side] : ['top', 'bottom'];
-        for (const s of sides) {
-            const leftKey = s === 'top' ? 'o' : 'r';
-            const rightKey = s === 'top' ? 'l' : 'f';
-            // local prediction key state
-            if (isDown || isUp) {
-                if (key === leftKey) {
-                    this.onlineKeys[leftKey] = isDown ? true : false;
+        
+        // Only handle keys for the player's assigned side
+        const leftKey = side === 'top' ? 'o' : 'r';
+        const rightKey = side === 'top' ? 'l' : 'f';
+        
+        if (isDown || isUp) {
+            if (key === leftKey) {
+                this.onlineKeys[leftKey] = isDown ? true : false;
+                if (isUp) {
+                    this.sendStopCommand(side === 'top' ? 'topLeft' : 'bottomLeft');
                 }
-                if (key === rightKey) {
-                    this.onlineKeys[rightKey] = isDown ? true : false;
+            }
+            if (key === rightKey) {
+                this.onlineKeys[rightKey] = isDown ? true : false;
+                if (isUp) {
+                    this.sendStopCommand(side === 'top' ? 'topRight' : 'bottomRight');
                 }
             }
         }
+        
+        // Send input state to server using new format
+        this.sendInputState();
+    }
+    
+    private sendInputState(): void {
+        if (!this.realtime) return;
+        
+        // Determine which paddle this player controls based on their side
+        const playerSide = this.getPlayerSide();
+        
+        if (playerSide === 'top') {
+            // Player 1 controls top paddle with O/L keys
+            const left = this.onlineKeys['o'] ? 1 : 0;
+            const right = this.onlineKeys['l'] ? 1 : 0;
+            this.realtime.sendPaddleInput('top', left, right);
+        } else if (playerSide === 'bottom') {
+            // Player 2 controls bottom paddle with R/F keys
+            const left = this.onlineKeys['r'] ? 1 : 0;
+            const right = this.onlineKeys['f'] ? 1 : 0;
+            this.realtime.sendPaddleInput('bottom', left, right);
+        }
+    }
+    
+    private getPlayerSide(): 'top' | 'bottom' | null {
+        // Get the side from the URL parameters or from the game state
+        const url = new URL(window.location.href);
+        const side = url.searchParams.get('side') as 'top' | 'bottom' | null;
+        
+        if (side) {
+            return side;
+        }
+        
+        // Fallback: try to determine from game state
+        // This would need to be implemented based on how the game state tracks players
+        return null;
+    }
+    
+    private sendStopCommand(direction: string): void {
+        if (!this.realtime) return;
+        
+        const inputData: Record<string, number> = {};
+        inputData[direction] = 2; // Stop command
+        
+        this.realtime.sendInput(inputData);
     }
 }
 

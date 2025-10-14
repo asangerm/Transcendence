@@ -20,6 +20,7 @@ import deleteUser from "./userRoutes/delete";
 // RGPD
 import privacyRoute from "./rgpd/privacy";
 import gameRoutes from "./gameRoutes";
+import roomRoutes from "./roomRoutes";
 import { registerRealtime } from "../realtime/ws";
 
 
@@ -46,7 +47,9 @@ export default async function routes(app: FastifyInstance) {
   app.register(privacyRoute, { prefix: "/rgpd" });
   // Games (HTTP)
   app.register(gameRoutes, { prefix: "/api" });
-  // Realtime (WS)
+  // Rooms (HTTP)
+  app.register(roomRoutes, { prefix: "/api" });
+  // Realtime (WS) - includes both game and room WebSocket functionality
   await registerRealtime(app);
   
 }

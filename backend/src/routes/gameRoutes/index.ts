@@ -21,5 +21,3 @@ export default async function gameRoutes(app: FastifyInstance) {
     return state;
   });
 }
-
-

@@ -5,7 +5,7 @@ export function renderGameSelection() {
                 <h1 class="text-4xl font-bold text-center mb-12">Sélection des Jeux</h1>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     <!-- Pong Game Card -->
-                    <a href="/pong" class="group">
+                    <a href="/pong-lobby" class="group">
                         <div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
                             <div class="relative aspect-video bg-secondary dark:bg-secondary-dark">
                                 <img 
