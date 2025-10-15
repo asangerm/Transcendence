@@ -9,7 +9,7 @@ export function renderRegister() {
         new RegisterForm(app, {
             onSuccess: (user) => {
                 console.log('Registration successful:', user);
-                navigateTo('/');
+                navigateTo('/login');
             },
             onError: (error) => {
                 console.error('Registration error:', error);

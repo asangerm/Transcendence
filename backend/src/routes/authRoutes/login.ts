@@ -15,6 +15,8 @@ export default async function loginRoute(app: FastifyInstance) {
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return reply.status(401).send({ error: true, message: "Invalid email or password" });
 
+    app.db.prepare("UPDATE users SET is_online = 1 WHERE id = ?").run(user.id);
+
     const token = jwt.sign(
       { id: user.id, email: user.email, display_name: user.display_name },
       process.env.JWT_SECRET || "secret",

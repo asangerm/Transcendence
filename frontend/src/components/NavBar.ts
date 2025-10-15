@@ -1,37 +1,77 @@
 import { AuthStore } from '../stores/auth.store';
 import { AuthService, User } from '../services/auth.service';
-import { sanitizeHtml, sanitizeInput, escapeHtml } from '../utils/sanitizer';
+import UserService, { UserProfile } from '../services/user.service';
+import { escapeHtml } from '../utils/sanitizer';
 
 export class NavBar {
-  	private container: HTMLElement;
-	private user: User | null;
+	private container: HTMLElement;
+	private user: User | null = null;
+	private userProfile: UserProfile | null = null;
 	private unsubscribe?: () => void;
 
 	constructor(container: HTMLElement) {
 		this.container = container;
+		this.init();
+	}
+
+	private async init(): Promise<void> {
+		// Charger l'utilisateur actuel
+		this.user = AuthStore.getUser();
+
+		await this.loadUserProfile();
 		this.render();
 		this.attachEventListeners();
-		this.user = AuthStore.getUser();
-		this.unsubscribe = AuthStore.subscribe((u) => {
-			this.user = u;
-			console.log("update de l'utilisateur")
-			this.updateAuthState();
+
+		// S'abonner aux changements d'utilisateur
+		this.unsubscribe = AuthStore.subscribe(async (nextUser) => {
+			this.user = nextUser;
+			await this.loadUserProfile();
+			this.render();
+			this.attachEventListeners();
 		});
+	}
+
+	private async loadUserProfile(): Promise<void> {
+		if (!this.user?.display_name) {
+			this.userProfile = null;
+			return;
+		}
+
+		try {
+			this.userProfile = await UserService.getUserProfile(this.user.display_name);
+		} catch (error) {
+			console.error('Erreur lors du chargement du profil :', error);
+			this.userProfile = null;
+		}
 	}
 
 	private get isAuth(): boolean {
 		return AuthService.isAuthenticated();
 	}
 
+	private getFullAvatarUrl(avatarUrl: string | null): string {
+		if (!avatarUrl) return 'http://localhost:8000/uploads/avatars/default.png';
+		if (avatarUrl.startsWith('http')) return avatarUrl;
+		return `http://localhost:8000${avatarUrl}`;
+	}
+
 	private render(): void {
 		const safeDisplayName = escapeHtml(this.user?.display_name || '');
+		const safeAvatarUrl = this.getFullAvatarUrl(this.userProfile?.avatar_url || null);
+
  		this.container.innerHTML = `
 			<nav class="bg-primary font-extrabold shadow-xl fixed top-0 left-0 right-0 z-50 transform transition-all duration-300 dark:bg-primary-dark">
 				<div class="max-w-6xl mx-auto px-4">
 					<div class="flex justify-between">
 						<!-- Logo -->
-						<div class="flex items-center py-4">
-							<a href="/" data-nav class="font-extrabold text-text hover:text-button transition-colors duration-300 text-xl dark:text-text-dark dark:hover:text-button-dark">ft_transcendence</a>
+						<div class="">
+							<a href="/" data-nav class="flex flex-row justify-between justify-items items-center py-4 gap-2 font-extrabold text-text hover:text-button transition-colors duration-300 text-xl dark:text-text-dark dark:hover:text-button-dark">
+							<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#000000">
+								<g fill="#ffffffff"><path d="M11.47 3.84a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 0 1.06-1.06l-8.689-8.69a2.25 2.25 0 0 0-3.182 0l-8.69 8.69a.75.75 0 0 0 1.061 1.06l8.69-8.69Z"/><path d="m12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75H5.625a1.875 1.875 0 0 1-1.875-1.875v-6.198a2.29 2.29 0 0 0 .091-.086L12 5.43Z"/>
+								</g>
+							</svg>
+							Acceuil
+							</a>
 						</div>
 
 						<!-- Mobile menu button -->
@@ -46,12 +86,14 @@ export class NavBar {
 
 						<!-- Desktop menu -->
 						<div class="hidden md:flex items-center space-x-6">
-							<a href="/games" data-nav class="py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Games</a>
+							<a href="/games" data-nav class="py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">
+								Jouer
+							</a>
 							<div class="border-l border-muted dark:border-muted-dark h-6 mx-2"></div>
 							${this.isAuth ? `
 								<div id="profile-nav" class="relative w-10 h-10 hover:cursor-pointer bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold mb-2 mx-auto border border-2">
 									<img 
-										src="../../images/profile1.png"
+										src="${safeAvatarUrl}"
 										alt="${safeDisplayName}"
 										class="rounded-full object-cover"
 										id="profile-avatar"
@@ -63,9 +105,8 @@ export class NavBar {
 									`}
 									<!-- Menu déroulant -->
 									<div id="profile-dropdown" class="absolute transition-all duration-150 invisible origin-top-right scale-0 z-50 top-10 right-0 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
-										<a href="/profile/${safeDisplayName}" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Profile</a>
-										<a id="friends" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Friends</a>
-										<a id="history" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Statistics</a>
+										<a href="/profile/${safeDisplayName}" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Profil</a>
+										<a id="friends" class="block w-full text-left px-4 py-2 hover:bg-gray-700 ">Amis</a>
 										<a id="logout" 
 											class="flex items-center gap-2 w-full px-4 py-2 text-left text-red-500 hover:bg-gray-700 rounded-b-lg border-t border-gray-600">
 											<svg xmlns="http://www.w3.org/2000/svg" 
@@ -145,9 +186,4 @@ export class NavBar {
 	  }
 	}
 
-	// Méthode publique pour mettre à jour la navbar après connexion/déconnexion
-	public updateAuthState(): void {
-		this.render();
-		this.attachEventListeners();
-	}
 }

@@ -8,16 +8,14 @@ export class UserProfileComponent {
 	private userProfile: UserProfile | null = null;
 	private userStats: UserStats[] = [];
 	private isOwnProfile: boolean = false;
-	private user: User | null;
 	private unsubscribe?: () => void;
 
 	constructor(container: HTMLElement) {
 		this.container = container;
-		this.user = AuthStore.getUser();
 	}
 
 	private getFullAvatarUrl(avatarUrl: string | null): string {
-		if (!avatarUrl) return '/src/assets/default-avatar.png';
+		if (!avatarUrl) return '/uploads/avatars/default.png';
 		if (avatarUrl.startsWith('http')) return avatarUrl;
 		return `http://localhost:8000${avatarUrl}`;
 	}
@@ -31,7 +29,6 @@ export class UserProfileComponent {
 					this.isOwnProfile = true;
 				}
 				else if (currentUser && currentUser?.display_name != username) {
-					// username = UserService.getUserProfile(username);
 					this.isOwnProfile = false;
 				}
 			} else if (!username && currentUser) {
@@ -45,7 +42,6 @@ export class UserProfileComponent {
 
 			// S'abonner aux changements d'utilisateur
 			this.unsubscribe = AuthStore.subscribe((user) => {
-				this.user = user;
 				// Si l'utilisateur change, recharger le profil si c'est son propre profil
 					if (this.isOwnProfile && user && user.id !== this.userProfile?.id) {
 						// Vérifier qu'on est toujours sur la page profil
@@ -54,7 +50,7 @@ export class UserProfileComponent {
 						}
 					}
 			});
-
+			
 			await this.loadUserData(username);
 		} catch (error: any) {
 			console.error('Error loading user profile:', error);
@@ -67,10 +63,11 @@ export class UserProfileComponent {
 	}
 
 	private async loadUserData(username: string): Promise<void> {
-		// this.userProfile = this.isOwnProfile 
-		// ? await UserService.getCurrentUserProfile()
-		// : await UserService.getUserProfile(username);
 		this.userProfile = await UserService.getUserProfile(username);
+		if (!this.userProfile) {
+			this.showError('User not found');
+			return;
+		}
 		this.userStats = await UserService.getUserStats(this.userProfile.id);
 		this.userProfile.matchHistory = await UserService.getMatchHistory(this.userProfile.id);
 		this.render();
@@ -96,14 +93,21 @@ private render(): void {
 				</a>
 				<div class="text-center mb-2 grid grid-cols-1 lg:grid-cols-3 gap-6">
 					<div class="relative inline-block col-span-1">
-						<div class="relative w-28 h-28 bg-gray-700 rounded-full flex items-center justify-center text-4xl font-bold mb-2 mx-auto border border-2">
+						<div id="profile-photo" class="relative w-32 h-32 bg-gray-700 rounded-full flex items-center justify-center text-4xl font-bold mx-auto mb-2 border border-4">
 							<img 
 								src="${safeAvatarUrl}"
 								alt="${safeDisplayName}"
 								class="w-28 h-28 rounded-full object-cover"
 								id="profile-avatar"
 							>
-							${this.userProfile.is_online ? ` //TODO: implementer le isonline dans le backend
+							${this.isOwnProfile ? `
+							<button id="modify-photo" class="transition-all duration-400 h-full w-full rounded-full flex flex-col justify-center items-center absolute text-black bg-gray-600 opacity-0">
+								<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
+									<path fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/>
+								</svg>
+							</button>
+							` : ``}
+							${this.userProfile.is_online ? `
 							<div class="absolute right-0 bottom-0 w-8 h-8 bg-green-500 rounded-full border-2"></div>
 							` : `
 							<div class="absolute right-0 bottom-0 w-8 h-8 bg-gray-500 rounded-full border-2"></div>
@@ -115,7 +119,7 @@ private render(): void {
 						<span>Membre depuis : 09/2025</span>
 					</div>
 				</div>
-				<div class="flex justify-left mb-8 items-center">
+				<div class="flex justify-left mb-2 items-center">
 				${this.isOwnProfile ? `
 					<button id="edit-profile" class="flex items-center justify-center gap-2 button-secondary fill-text-dark dark:hover:fill-text text-xs">
 						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
@@ -137,16 +141,6 @@ private render(): void {
 						Ajouter en ami
 					</button>
 				`}
-				</div>
-				<!-- Level Progress -->
-				<div>
-					<div class="flex justify-between items-end mb-4">
-						<span class="leading-none text-xl text-text dark:text-text-dark font-semibold">Niveau 7</span>
-						<span class="leading-none text-text-muted dark:text-text-muted-dark">1500 / 2500 XP</span>
-					</div>
-					<div class="w-full bg-gray-700 rounded-full h-4">
-						<div class="bg-red-500 h-4 rounded-full transition-all duration-500" style="width: 60%"></div>
-					</div>
 				</div>
 			</div>
 
@@ -170,10 +164,6 @@ private render(): void {
 				<div id="gameStats" class="grid grid-cols-2 gap-6">
 					${this.renderStats('PONG')}
 				</div>
-				
-				<a href="/stats" class="w-full text-center block button-secondary">
-					Voir plus de statistiques
-				</a>
 			</div>
 		</div>
 
@@ -195,63 +185,110 @@ private render(): void {
 
 	<!-- Modals -->
 		<div id="edit-profile-modal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-			<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-				<div class="mt-3">
-					<h3 class="text-lg font-medium text-gray-900 dark:text-white">Modifier le Profil</h3>
-					<form id="edit-profile-form" class="mt-4 space-y-4">
-						<div>
-							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Display Name</label>
-							<input 
-								type="text" 
-								name="displayName" 
-								value="${safeDisplayName}"
-								class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-								required
-								minlength="3"
-								maxlength="50"
-							>
+				<div class="relative top-10 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+					<div class="mt-3">
+						<h3 class="text-lg font-medium text-gray-900 dark:text-white">Modifier le Profil</h3>
+						<form id="edit-profile-form" class="mt-4 space-y-4">
+							<div>
+									<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom d'utilisateur</label>
+									<input 
+							id="username-modify"
+										type="text" 
+										name="displayName" 
+										value=""
+							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							required
+							minlength="3"
+							maxlength="50"
+						>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+						<input 
+							id="email-modify"
+							type="text" 
+							name="email" 
+							value=""
+							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							required
+							minlength="3"
+							maxlength="50"
+						>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mot de Passe</label>
+						<input 
+							id="password-modify"
+							type="text" 
+							name="password" 
+							value=""
+							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							required
+							minlength="3"
+							maxlength="50"
+						>
+					</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirmer le Mot de Passe</label>
+						<input 
+							id="confirmPassword-modify"
+							type="text" 
+							name="confirmPassword" 
+							value=""
+							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							required
+							minlength="3"
+							maxlength="50"
+						>
 							</div>
 							<div class="flex justify-end space-x-3">
-							<button 
-								type="button" 
-								id="cancel-edit"
-								class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
-							>
-								Cancel
-							</button>
-							<button 
-								type="submit"
-								class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
-							>
-								Save Changes
-							</button>
+								<button 
+									type="button" 
+									id="cancel-edit"
+									class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+								>
+									Cancel
+								</button>
+								<button 
+									type="submit"
+									class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+								>
+									Save Changes
+								</button>
 							</div>
-							<div class="mt-4 flex justify-between gap-2">
-							<button 
-								type="button" 
-								id="anonymize-btn" 
-								class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
-							>
-								Anonymiser mon compte
-							</button>
-							<button 
-								type="button" 
-								id="delete-btn" 
-								class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
-							>
-								Supprimer mon compte
-          					</button>
-							<button 
-								type="button" 
-								id="export-btn" 
-								class="btn btn-secondary"
-							>
-								📦Exporter mes données
-							</button>
-						</div>
-					</form>
+							<div class="w-80 mx-auto border border-top-6 mt-4"></div>
+							<div class="mt-4 flex flex-col justify-between gap-4">
+								<button 
+									type="button" 
+									id="export-btn" 
+									class="flex items-center justify-center gap-2 button-secondary stroke-text-dark dark:hover:stroke-text text-xs"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
+										<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+									</svg>
+									Exporter mes données
+								</button>
+
+								<div class="flex justify-between gap-2">
+									<button 
+									type="button" 
+									id="anonymize-btn" 
+									class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+									>
+									Anonymiser mon compte
+									</button>
+									<button 
+									type="button" 
+									id="delete-btn" 
+									class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+									>
+									Supprimer mon compte
+									</button>
+								</div>
+							</div>
+						</form>
+					</div>
 				</div>
-			</div>
 		</div>
 	`;
 }
@@ -276,9 +313,9 @@ private renderDefaultStats(game: string): string {
 		</div>
 	</div>
 	<!-- Win Rate Circle -->
-	<div class="flex justify-center mb-6">
+	<div class="flex justify-center mb-2">
 		<div class="relative w-32 h-32">
-		<svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+		<svg class="w-32 h-32 transform trasition-all duration-400 -rotate-90" viewBox="0 0 36 36">
 			<path class="text-gray-700" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
 			<path class="text-gaming-success" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
 		</svg>
@@ -288,6 +325,23 @@ private renderDefaultStats(game: string): string {
 		</div>
 	</div>
 	`;
+}
+
+private fillModifyForm() {
+	if (!this.userProfile)
+		return;
+
+	const editModal = this.container.querySelector('#edit-profile-modal');
+	const safeDisplayName = escapeHtml(this.userProfile.display_name);
+	const safeEmail = escapeHtml(this.userProfile.email);
+	const usernameInput = editModal?.querySelector('#username-modify') as HTMLInputElement;
+	const emailInput = editModal?.querySelector('#email-modify') as HTMLInputElement;
+	usernameInput.value = safeDisplayName;
+	emailInput.value = safeEmail;
+
+
+	
+	return;
 }
 
 private renderStats(game: string): string{
@@ -330,9 +384,9 @@ private renderStats(game: string): string{
 				</div>
 				</div>
 				<!-- Win Rate Circle -->
-				<div class="flex justify-center mb-6">
+				<div class="flex justify-center mb-2">
 				<div class="relative w-32 h-32">
-					<svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+					<svg class="w-32 h-32 transform trasition-all duration-400 -rotate-90" viewBox="0 0 36 36">
 					<path class="text-gray-700" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
 					<path class="text-gaming-success" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="${winRate}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
 					</svg>
@@ -417,6 +471,24 @@ private attachEventListeners(): void {
 	const arrow = document.getElementById('dropdownArrow') as HTMLButtonElement;
 	const pongbtn = document.getElementById("pongChoice") as HTMLButtonElement
 	const aowbtn = document.getElementById("aowChoice") as HTMLButtonElement
+	const modifyPhoto = document.getElementById("modify-photo") as HTMLButtonElement;
+	const profilePhoto = document.getElementById("profile-photo") as HTMLDivElement;
+
+	if (modifyPhoto) {
+		profilePhoto.addEventListener('mouseenter', () => {
+			modifyPhoto.classList.remove("opacity-0");
+			modifyPhoto.classList.add("opacity-80");
+		});
+		profilePhoto.addEventListener('mouseleave', () => {
+			modifyPhoto.classList.add("opacity-0");
+			modifyPhoto.classList.remove("opacity-80");
+			
+		});
+		modifyPhoto.addEventListener('click', (e) => {
+			e.preventDefault();
+
+		});
+	}
 
 	arrow.addEventListener('click', (e) => {
 		e.preventDefault();
@@ -433,23 +505,27 @@ private attachEventListeners(): void {
 	});
 
 	pongbtn.addEventListener("click", () => {
+		dropdown.classList.remove("scale-100");
+		dropdown.classList.add("scale-0");
 		dropdown.classList.toggle("invisible");
 		arrow.classList.toggle("rotate-180");
 		this.updateGameStats('PONG');
 	});
 
 	aowbtn.addEventListener("click", () => {
+		dropdown.classList.remove("scale-100");
+		dropdown.classList.add("scale-0");
 		dropdown.classList.toggle("invisible");
 		arrow.classList.toggle("rotate-180");
 		this.updateGameStats('AGE OF WAR');
 	});
 
 	if (this.isOwnProfile) {
-	const changeAvatarBtn = this.container.querySelector('#change-avatar');
-	const avatarUpload = this.container.querySelector('#avatar-upload') as HTMLInputElement;
-	
-	changeAvatarBtn?.addEventListener('click', () => avatarUpload.click());
-	avatarUpload?.addEventListener('change', this.handleAvatarUpload.bind(this));
+		const changeAvatarBtn = this.container.querySelector('#change-avatar');
+		const avatarUpload = this.container.querySelector('#avatar-upload') as HTMLInputElement;
+		
+		changeAvatarBtn?.addEventListener('click', () => avatarUpload.click());
+		avatarUpload?.addEventListener('change', this.handleAvatarUpload.bind(this));
 
 	const editBtn = this.container.querySelector('#edit-profile');
 	const editModal = this.container.querySelector('#edit-profile-modal');
@@ -461,17 +537,20 @@ private attachEventListeners(): void {
 	const exportBtn = this.container.querySelector('#export-btn');
 
 
-	editBtn?.addEventListener('click', () => editModal?.classList.remove('hidden'));
-	cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
-	editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
-	logoutBtn?.addEventListener('click', this.handleLogout.bind(this));
-    anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
+		editBtn?.addEventListener('click', () => {
+			editModal?.classList.remove('hidden');
+			this.fillModifyForm();
+		});
+		cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
+		editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
+		logoutBtn?.addEventListener('click', this.handleLogout.bind(this));
+	    anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
     deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
 	exportBtn?.addEventListener('click', () => this.handleExportData());
 	} 
 	else {
-	const addFriendBtn = this.container.querySelector('#add-friend');
-	addFriendBtn?.addEventListener('click', this.handleAddFriend.bind(this));
+		const addFriendBtn = this.container.querySelector('#add-friend');
+		addFriendBtn?.addEventListener('click', this.handleAddFriend.bind(this));
 	}
 }
 
