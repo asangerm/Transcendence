@@ -17,7 +17,7 @@ export class UserProfileComponent {
 	private getFullAvatarUrl(avatarUrl: string | null): string {
 		if (!avatarUrl) return '/uploads/avatars/default.png';
 		if (avatarUrl.startsWith('http')) return avatarUrl;
-		return `http://localhost:8000/uploads${avatarUrl}`;
+		return `http://localhost:8000${avatarUrl}`;
 	}
 
 	async init(username?: string): Promise<void> {
@@ -119,7 +119,7 @@ private render(): void {
 						<span>Membre depuis : 09/2025</span>
 					</div>
 				</div>
-				<div class="flex justify-left mb-8 items-center">
+				<div class="flex justify-left mb-2 items-center">
 				${this.isOwnProfile ? `
 					<button id="edit-profile" class="flex items-center justify-center gap-2 button-secondary fill-text-dark dark:hover:fill-text text-xs">
 						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
@@ -141,16 +141,6 @@ private render(): void {
 						Ajouter en ami
 					</button>
 				`}
-				</div>
-				<!-- Level Progress -->
-				<div>
-					<div class="flex justify-between items-end mb-4">
-						<span class="leading-none text-xl text-text dark:text-text-dark font-semibold">Niveau 7</span>
-						<span class="leading-none text-text-muted dark:text-text-muted-dark">1500 / 2500 XP</span>
-					</div>
-					<div class="w-full bg-gray-700 rounded-full h-4">
-						<div class="bg-red-500 h-4 rounded-full transition-all duration-500" style="width: 60%"></div>
-					</div>
 				</div>
 			</div>
 
@@ -174,10 +164,6 @@ private render(): void {
 				<div id="gameStats" class="grid grid-cols-2 gap-6">
 					${this.renderStats('PONG')}
 				</div>
-				
-				<a href="/stats" class="w-full text-center block button-secondary">
-					Voir plus de statistiques
-				</a>
 			</div>
 		</div>
 
@@ -199,7 +185,7 @@ private render(): void {
 
 	<!-- Modals -->
 		<div id="edit-profile-modal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-				<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+				<div class="relative top-10 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
 					<div class="mt-3">
 						<h3 class="text-lg font-medium text-gray-900 dark:text-white">Modifier le Profil</h3>
 						<form id="edit-profile-form" class="mt-4 space-y-4">
@@ -249,13 +235,13 @@ private render(): void {
 							type="text" 
 							name="confirmPassword" 
 							value=""
-										class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-										required
-										minlength="3"
-										maxlength="50"
-									>
-								</div>
-								<div class="flex justify-end space-x-3">
+							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							required
+							minlength="3"
+							maxlength="50"
+						>
+							</div>
+							<div class="flex justify-end space-x-3">
 								<button 
 									type="button" 
 									id="cancel-edit"
@@ -269,30 +255,37 @@ private render(): void {
 								>
 									Save Changes
 								</button>
+							</div>
+							<div class="w-80 mx-auto border border-top-6 mt-4"></div>
+							<div class="mt-4 flex flex-col justify-between gap-4">
+								<button 
+									type="button" 
+									id="export-btn" 
+									class="flex items-center justify-center gap-2 button-secondary stroke-text-dark dark:hover:stroke-text text-xs"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
+										<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+									</svg>
+									Exporter mes données
+								</button>
+
+								<div class="flex justify-between gap-2">
+									<button 
+									type="button" 
+									id="anonymize-btn" 
+									class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+									>
+									Anonymiser mon compte
+									</button>
+									<button 
+									type="button" 
+									id="delete-btn" 
+									class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+									>
+									Supprimer mon compte
+									</button>
 								</div>
-							<div class="mt-4 flex justify-between gap-2">
-							<button 
-								type="button" 
-								id="anonymize-btn" 
-								class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
-							>
-								Anonymiser mon compte
-							</button>
-							<button 
-								type="button" 
-								id="delete-btn" 
-								class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
-							>
-								Supprimer mon compte
-          					</button>
-							<button 
-								type="button" 
-								id="export-btn" 
-								class="btn btn-secondary"
-							>
-								📦Exporter mes données
-							</button>
-						</div>
+							</div>
 						</form>
 					</div>
 				</div>
@@ -320,7 +313,7 @@ private renderDefaultStats(game: string): string {
 		</div>
 	</div>
 	<!-- Win Rate Circle -->
-	<div class="flex justify-center mb-6">
+	<div class="flex justify-center mb-2">
 		<div class="relative w-32 h-32">
 		<svg class="w-32 h-32 transform trasition-all duration-400 -rotate-90" viewBox="0 0 36 36">
 			<path class="text-gray-700" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
@@ -391,7 +384,7 @@ private renderStats(game: string): string{
 				</div>
 				</div>
 				<!-- Win Rate Circle -->
-				<div class="flex justify-center mb-6">
+				<div class="flex justify-center mb-2">
 				<div class="relative w-32 h-32">
 					<svg class="w-32 h-32 transform trasition-all duration-400 -rotate-90" viewBox="0 0 36 36">
 					<path class="text-gray-700" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
@@ -490,6 +483,10 @@ private attachEventListeners(): void {
 			modifyPhoto.classList.add("opacity-0");
 			modifyPhoto.classList.remove("opacity-80");
 			
+		});
+		modifyPhoto.addEventListener('click', (e) => {
+			e.preventDefault();
+
 		});
 	}
 

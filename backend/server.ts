@@ -26,7 +26,7 @@ async function buildServer() {
     secret: process.env.COOKIE_SECRET || "supersecret", // pour signer les cookies
   });
   
-  // 📁 Servir les fichiers statiques (ex: /uploads/...)
+  // Servir les fichiers statiques
   const uploadsPath = path.join(process.cwd(), "uploads");
 
   await app.register(fastifyStatic, {

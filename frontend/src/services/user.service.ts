@@ -52,7 +52,6 @@ export class UserService {
 	static async getUserProfile(username: string): Promise<UserProfile | null> {
 		try {
 			const response = await apiService.get(`/users/name/${username}`);
-			// console.log("response data : ",response.data);
 			return response.data.user;
 		}
 		catch (error: any) {
