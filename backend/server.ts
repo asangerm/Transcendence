@@ -2,6 +2,7 @@ import fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 import fastifyCookie from "@fastify/cookie";
 import fastifyStatic from "@fastify/static";
+import fastifyMultipart from "@fastify/multipart";
 import dbPlugin from "./src/db";
 import routes from "./src/routes";
 import { errorHandler } from "./src/middleware/errorHandler";
@@ -32,6 +33,12 @@ async function buildServer() {
   await app.register(fastifyStatic, {
     root: uploadsPath,
     prefix: "/uploads/", // accessible via http://localhost:8000/uploads/...
+  });
+
+  app.register(fastifyMultipart, {
+    limits: {
+      fileSize: 2 * 1024 * 1024, // 2MB max
+    },
   });
   
   // Routes (index.ts)

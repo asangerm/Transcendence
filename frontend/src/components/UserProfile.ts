@@ -93,6 +93,11 @@ private render(): void {
 				</a>
 				<div class="text-center mb-2 grid grid-cols-1 lg:grid-cols-3 gap-6">
 					<div class="relative inline-block col-span-1">
+						<!-- Menu déroulant -->
+						<div id="avatarDropdown" class="transition-all duration-150 origin-right scale-0 absolute mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg right-[140px] top-[25px]">
+							<button id="uploadAvatar-btn" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg text-xs">Importer un avatar</button>
+							<button id="deleteAvatar-btn" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-b-lg text-xs">Supprimer l'avatar</button>
+						</div>
 						<div id="profile-photo" class="relative w-32 h-32 bg-gray-700 rounded-full flex items-center justify-center text-4xl font-bold mx-auto mb-2 border border-4">
 							<img 
 								src="${safeAvatarUrl}"
@@ -473,6 +478,9 @@ private attachEventListeners(): void {
 	const aowbtn = document.getElementById("aowChoice") as HTMLButtonElement
 	const modifyPhoto = document.getElementById("modify-photo") as HTMLButtonElement;
 	const profilePhoto = document.getElementById("profile-photo") as HTMLDivElement;
+	const avatarDropdown = document.getElementById("avatarDropdown") as HTMLDivElement;
+	const uploadAvatarBtn = this.container.querySelector('#uploadAvatar-btn') as HTMLButtonElement;
+	const deleteAvatarBtn = this.container.querySelector('#deleteAvatar-btn') as HTMLButtonElement;
 
 	if (modifyPhoto) {
 		profilePhoto.addEventListener('mouseenter', () => {
@@ -485,9 +493,29 @@ private attachEventListeners(): void {
 			
 		});
 		modifyPhoto.addEventListener('click', (e) => {
-			e.preventDefault();
+			if(avatarDropdown.classList.contains("scale-0"))
+			{
+				avatarDropdown.classList.remove("scale-0");
+				avatarDropdown.classList.add("scale-100");
+			}
+			else
+			{
+				avatarDropdown.classList.add("scale-0");
+				avatarDropdown.classList.remove("scale-100");
+			}
 
 		});
+		uploadAvatarBtn?.addEventListener('click', async () => {
+			avatarDropdown.classList.add("scale-0");
+			avatarDropdown.classList.remove("scale-100");
+			await this.handleModifyAvatar();
+		});
+		deleteAvatarBtn?.addEventListener('click', async () => {
+			avatarDropdown.classList.add("scale-0");
+			avatarDropdown.classList.remove("scale-100");
+			await this.handleDeleteAvatar();
+		});
+		
 	}
 
 	arrow.addEventListener('click', (e) => {
@@ -521,20 +549,16 @@ private attachEventListeners(): void {
 	});
 
 	if (this.isOwnProfile) {
-		const changeAvatarBtn = this.container.querySelector('#change-avatar');
-		const avatarUpload = this.container.querySelector('#avatar-upload') as HTMLInputElement;
-		
-		changeAvatarBtn?.addEventListener('click', () => avatarUpload.click());
-		avatarUpload?.addEventListener('change', this.handleAvatarUpload.bind(this));
 
-	const editBtn = this.container.querySelector('#edit-profile');
-	const editModal = this.container.querySelector('#edit-profile-modal');
-	const cancelBtn = this.container.querySelector('#cancel-edit');
-	const editForm = this.container.querySelector('#edit-profile-form') as HTMLFormElement;
-	const logoutBtn = this.container.querySelector('#logout-btn');
-	const anonymizeBtn = this.container.querySelector('#anonymize-btn');
-    const deleteBtn = this.container.querySelector('#delete-btn');
-	const exportBtn = this.container.querySelector('#export-btn');
+		const editBtn = this.container.querySelector('#edit-profile');
+		const editModal = this.container.querySelector('#edit-profile-modal');
+		const cancelBtn = this.container.querySelector('#cancel-edit');
+		const editForm = this.container.querySelector('#edit-profile-form') as HTMLFormElement;
+		const logoutBtn = this.container.querySelector('#logout-btn');
+		const anonymizeBtn = this.container.querySelector('#anonymize-btn');
+		const deleteBtn = this.container.querySelector('#delete-btn');
+		const exportBtn = this.container.querySelector('#export-btn');
+
 
 
 		editBtn?.addEventListener('click', () => {
@@ -544,44 +568,13 @@ private attachEventListeners(): void {
 		cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
 		editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
 		logoutBtn?.addEventListener('click', this.handleLogout.bind(this));
-	    anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
-    deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
-	exportBtn?.addEventListener('click', () => this.handleExportData());
+		anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
+		deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
+		exportBtn?.addEventListener('click', () => this.handleExportData());
 	} 
 	else {
 		const addFriendBtn = this.container.querySelector('#add-friend');
 		addFriendBtn?.addEventListener('click', this.handleAddFriend.bind(this));
-	}
-}
-
-private async handleAvatarUpload(event: Event): Promise<void> {
-	const input = event.target as HTMLInputElement;
-	const file = input.files?.[0];
-
-	if (!file) return;
-
-	try {
-		const result = await UserService.uploadAvatar(file);
-		const avatarImg = this.container.querySelector('#profile-avatar') as HTMLImageElement;
-		
-		const fullAvatarUrl = this.getFullAvatarUrl(result.avatarUrl);
-		avatarImg.src = fullAvatarUrl;
-		
-		if (this.userProfile) {
-			this.userProfile.avatar_url = result.avatarUrl;
-			
-			if (this.isOwnProfile) {
-			const currentUser = AuthService.getUser();
-			if (currentUser) {
-				currentUser.avatar_url = result.avatarUrl;
-				AuthService.setUser(currentUser);
-			}
-			}
-		}
-		
-		this.showSuccess('Avatar updated successfully!');
-	} catch (error: any) {
-		this.showError(error.message || 'Failed to upload avatar');
 	}
 }
 
@@ -755,5 +748,54 @@ private async handleAnonymizeAccount(): Promise<void> {
 		}
 	}
 
+	private async handleModifyAvatar(): Promise<void> {
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = 'image/*';
+		input.click();
+
+
+		input.onchange = async () => {
+			if (!input.files || input.files.length === 0) return;
+			const file = input.files[0];
+
+			try {
+			const result = await UserService.uploadAvatar(file);
+			if (this.userProfile) {
+				this.userProfile.avatar_url = result.avatarUrl;
+				const avatarImg = this.container.querySelector('#profile-avatar') as HTMLImageElement;
+				if (avatarImg) avatarImg.src = this.getFullAvatarUrl(result.avatarUrl);
+				const navAvatar = document.getElementById('navBar-avatar') as HTMLImageElement;
+				if (navAvatar) navAvatar.src = this.getFullAvatarUrl(result.avatarUrl);
+			}
+			this.showSuccess('Avatar mis à jour avec succès !');
+			} catch (error: any) {
+			console.error(error);
+			this.showError(error.message || 'Erreur lors de la mise à jour de l’avatar');
+			}
+		};
+
+	}
+
+	private async handleDeleteAvatar(): Promise<void> {
+		try {
+			const defaultAvatar = '/uploads/avatars/default.png';
+			await UserService.deleteAvatar();
+			if (this.userProfile) {
+			this.userProfile.avatar_url = defaultAvatar;
+			const avatarImg = this.container.querySelector('#profile-avatar') as HTMLImageElement;
+			if (avatarImg) avatarImg.src = this.getFullAvatarUrl(defaultAvatar);
+			}
+			this.showSuccess('Avatar supprimé avec succès !');
+		} catch (error: any) {
+			console.error(error);
+			this.showError(error.message || 'Erreur lors de la suppression de l’avatar');
+		}
+		const navAvatar = document.getElementById('navBar-avatar') as HTMLImageElement;
+		if (navAvatar) 
+		{
+			navAvatar.src = this.getFullAvatarUrl(this.userProfile?.avatar_url || '/uploads/avatars/default.png');
+		}
+	}
 
 }
