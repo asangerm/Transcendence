@@ -18,6 +18,7 @@ import anonymizeUser from "./userRoutes/anonymize";
 import deleteUser from "./userRoutes/delete";
 import exportData from "./userRoutes/exportData";
 import modifyAvatar from "./userRoutes/avatar";
+import userStatus from "./userRoutes/userStatus";
 
 
 
@@ -40,6 +41,7 @@ export default async function routes(app: FastifyInstance) {
   app.register(deleteUser, { prefix: "/users" });
   app.register(exportData, { prefix: "/users" });
   app.register(modifyAvatar, { prefix: "/users" });
+  app.register(userStatus, { prefix: "/users" });
 
   
 }

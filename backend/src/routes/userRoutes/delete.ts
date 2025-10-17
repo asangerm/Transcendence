@@ -1,7 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { requireAuth, AuthUser } from "../../middleware/authMiddleware";
 
-// Définir un type local pour FastifyRequest avec la propriété `user`
 type AuthRequest = FastifyRequest & { user?: AuthUser };
 
 export default async function deleteUser(app: FastifyInstance) {

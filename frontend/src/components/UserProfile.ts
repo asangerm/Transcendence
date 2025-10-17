@@ -52,6 +52,16 @@ export class UserProfileComponent {
 			});
 			
 			await this.loadUserData(username);
+			
+			window.addEventListener("beforeunload", () => {
+				const currentUser = AuthStore.getUser();
+				if (!currentUser) return;
+
+				const url = `http://localhost:8000/users/${currentUser.id}/offline`;
+
+				navigator.sendBeacon(url);
+			});
+
 		} catch (error: any) {
 			console.error('Error loading user profile:', error);
 			this.showError(error.message || 'Failed to load profile');
