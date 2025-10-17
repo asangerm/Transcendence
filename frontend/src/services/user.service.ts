@@ -76,13 +76,19 @@ export class UserService {
     formData.append('avatar', file);
     
     try {
-      const response = await apiService.uploadFile('/api/users/avatar', formData);
+      const response = await apiService.uploadFile('/users/avatar', formData);
       return response.data;
     } catch (error) {
       console.error('Upload error:', error);
       throw error;
     }
   }
+
+  static async deleteAvatar(): Promise<{ avatarUrl: string }> {
+    const response = await apiService.delete('/users/avatar');
+    return response.data;
+} 
+
 
   static async getUserStats(userId: number): Promise<UserStats[]>  {
     const response = await apiService.get(`/users/${userId}/stats`);

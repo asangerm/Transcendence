@@ -98,8 +98,8 @@ export class NavBar {
 									<img 
 										src="${safeAvatarUrl}"
 										alt="${safeDisplayName}"
-										class="rounded-full object-cover"
-										id="profile-avatar"
+										class="rounded-full object-cover w-8 h-8"
+										id="navBar-avatar"
 									>
 									${this.isAuth ? `
 									<div class="absolute right-0 bottom-0 w-3 h-3 bg-green-500 rounded-full border-2"></div>

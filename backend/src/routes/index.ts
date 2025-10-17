@@ -17,6 +17,7 @@ import getUserMatchHistory from "./userRoutes/matchHistory";
 import anonymizeUser from "./userRoutes/anonymize";
 import deleteUser from "./userRoutes/delete";
 import exportData from "./userRoutes/exportData";
+import modifyAvatar from "./userRoutes/avatar";
 
 // Friends
 import getFriends from "./friendsRoutes/getFriends";
@@ -43,6 +44,8 @@ export default async function routes(app: FastifyInstance) {
   app.register(anonymizeUser, { prefix: "/users" });
   app.register(deleteUser, { prefix: "/users" });
   app.register(exportData, { prefix: "/users" });
+  app.register(modifyAvatar, { prefix: "/users" });
+
   
   // Friends
   app.register(getFriends, { prefix: "/friends" });
