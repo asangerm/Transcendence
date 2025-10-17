@@ -1,10 +1,11 @@
-import { UserService, UserProfile, UserStats } from '../services/user.service';
+import { UserService, UserProfile, UserStats, Friend } from '../services/user.service';
 import { AuthService, User } from '../services/auth.service';
 import { AuthStore } from '../stores/auth.store';
 import { sanitizeHtml, sanitizeInput, escapeHtml } from '../utils/sanitizer';
 
 export class UserProfileComponent {
 	private container: HTMLElement;
+	private currentUserFriends: Friend[] | null = null;
 	private userProfile: UserProfile | null = null;
 	private userStats: UserStats[] = [];
 	private isOwnProfile: boolean = false;
@@ -63,6 +64,7 @@ export class UserProfileComponent {
 	}
 
 	private async loadUserData(username: string): Promise<void> {
+		this.currentUserFriends = await UserService.getUserFriends(AuthStore.getUser()!.id);
 		this.userProfile = await UserService.getUserProfile(username);
 		if (!this.userProfile) {
 			this.showError('User not found');
@@ -85,7 +87,7 @@ private render(): void {
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
 			<!-- Profile Card -->
 			<div class="relative bg-primary dark:bg-primary-dark rounded-2xl p-6 border border-white/10">
-				<a href="/profile" class="absolute z-50 top-5 right-5 flex flex-col items-center transform transition-all duration-300 hover:scale-105">
+				<a href="/profile" class="absolute z-40 top-5 right-5 flex flex-col items-center transform transition-all duration-300 hover:scale-105">
 					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20">
 						<path fill="#e8e8e8" d="M10 9a3 3 0 1 0 0-6a3 3 0 0 0 0 6ZM6 8a2 2 0 1 1-4 0a2 2 0 0 1 4 0Zm-4.51 7.326a.78.78 0 0 1-.358-.442a3 3 0 0 1 4.308-3.516a6.484 6.484 0 0 0-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 0 1-2.07-.655Zm14.95.654a4.97 4.97 0 0 0 2.07-.654a.78.78 0 0 0 .357-.442a3 3 0 0 0-4.308-3.517a6.484 6.484 0 0 1 1.907 3.96a2.32 2.32 0 0 1-.026.654ZM18 8a2 2 0 1 1-4 0a2 2 0 0 1 4 0ZM5.304 16.19a.844.844 0 0 1-.277-.71a5 5 0 0 1 9.947 0a.843.843 0 0 1-.277.71A6.975 6.975 0 0 1 10 18a6.974 6.974 0 0 1-4.696-1.81Z"/>
 					</svg>
@@ -128,18 +130,21 @@ private render(): void {
 						Modifier le profil
 					</button>
 				` : `
-					<button id="add-friend" class="px-4 py-3 text-xs border-2 text-button font-medium rounded-lg fill-green-500 hover:bg-button hover:text-text-dark transform transition-all duration-300 hover:scale-105 dark:text-button-dark dark:hover:bg-green-500 dark:hover:fill-black dark:hover:text-text flex items-center justify-center gap-2 border border-green-500 text-xs">
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20">
-							<path d="M11 5a3 3 0 1 1-6 0a3 3 0 0 1 6 0ZM2.615 16.428a1.224 1.224 0 0 1-.569-1.175a6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 8 18a9.953 9.953 0 0 1-5.385-1.572ZM16.25 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z"/>
-						</svg>
-						Ajouter en ami
-					</button>
-					<button id="add-friend" class="hidden px-4 py-3 text-xs border-2 text-button font-medium rounded-lg fill-red-500 hover:bg-button hover:text-text-dark transform transition-all duration-300 hover:scale-105 dark:text-button-dark dark:hover:bg-red-500 dark:hover:fill-black dark:hover:text-text flex items-center justify-center gap-2 border border-red-500 text-xs">
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20">
-							<path d="M11 5a3 3 0 1 1-6 0a3 3 0 0 1 6 0ZM2.046 15.253c-.058.468.172.92.57 1.175A9.953 9.953 0 0 0 8 18c1.982 0 3.83-.578 5.384-1.573c.398-.254.628-.707.57-1.175a6.001 6.001 0 0 0-11.908 0ZM12.75 7.75a.75.75 0 0 0 0 1.5h5.5a.75.75 0 0 0 0-1.5h-5.5Z"/>
-						</svg>
-						Ajouter en ami
-					</button>
+					${this.isHeMyFriend() ? ` 
+						<button id="remove-friend" class="px-4 py-3 text-xs border-2 text-button font-medium rounded-lg fill-red-500 hover:bg-button hover:text-text-dark transform transition-all duration-300 hover:scale-105 dark:text-button-dark dark:hover:bg-red-500 dark:hover:fill-black dark:hover:text-text flex items-center justify-center gap-2 border border-red-500 text-xs">
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20">
+								<path d="M11 5a3 3 0 1 1-6 0a3 3 0 0 1 6 0ZM2.046 15.253c-.058.468.172.92.57 1.175A9.953 9.953 0 0 0 8 18c1.982 0 3.83-.578 5.384-1.573c.398-.254.628-.707.57-1.175a6.001 6.001 0 0 0-11.908 0ZM12.75 7.75a.75.75 0 0 0 0 1.5h5.5a.75.75 0 0 0 0-1.5h-5.5Z"/>
+							</svg>
+							Retirer des amis
+						</button>
+					` : `
+						<button id="add-friend" class="px-4 py-3 text-xs border-2 text-button font-medium rounded-lg fill-green-500 hover:bg-button hover:text-text-dark transform transition-all duration-300 hover:scale-105 dark:text-button-dark dark:hover:bg-green-500 dark:hover:fill-black dark:hover:text-text flex items-center justify-center gap-2 border border-green-500 text-xs">
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20">
+								<path d="M11 5a3 3 0 1 1-6 0a3 3 0 0 1 6 0ZM2.615 16.428a1.224 1.224 0 0 1-.569-1.175a6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 8 18a9.953 9.953 0 0 1-5.385-1.572ZM16.25 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z"/>
+							</svg>
+							Ajouter en ami
+						</button>
+					`}
 				`}
 				</div>
 			</div>
@@ -527,14 +532,13 @@ private attachEventListeners(): void {
 		changeAvatarBtn?.addEventListener('click', () => avatarUpload.click());
 		avatarUpload?.addEventListener('change', this.handleAvatarUpload.bind(this));
 
-	const editBtn = this.container.querySelector('#edit-profile');
-	const editModal = this.container.querySelector('#edit-profile-modal');
-	const cancelBtn = this.container.querySelector('#cancel-edit');
-	const editForm = this.container.querySelector('#edit-profile-form') as HTMLFormElement;
-	const logoutBtn = this.container.querySelector('#logout-btn');
-	const anonymizeBtn = this.container.querySelector('#anonymize-btn');
-    const deleteBtn = this.container.querySelector('#delete-btn');
-	const exportBtn = this.container.querySelector('#export-btn');
+		const editBtn = this.container.querySelector('#edit-profile');
+		const editModal = this.container.querySelector('#edit-profile-modal');
+		const cancelBtn = this.container.querySelector('#cancel-edit');
+		const editForm = this.container.querySelector('#edit-profile-form') as HTMLFormElement;
+		const anonymizeBtn = this.container.querySelector('#anonymize-btn');
+		const deleteBtn = this.container.querySelector('#delete-btn');
+		const exportBtn = this.container.querySelector('#export-btn');
 
 
 		editBtn?.addEventListener('click', () => {
@@ -543,14 +547,15 @@ private attachEventListeners(): void {
 		});
 		cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
 		editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
-		logoutBtn?.addEventListener('click', this.handleLogout.bind(this));
 	    anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
-    deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
-	exportBtn?.addEventListener('click', () => this.handleExportData());
+		deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
+		exportBtn?.addEventListener('click', () => this.handleExportData());
 	} 
 	else {
 		const addFriendBtn = this.container.querySelector('#add-friend');
+		const removeFriendBtn = this.container.querySelector('#remove-friend');
 		addFriendBtn?.addEventListener('click', this.handleAddFriend.bind(this));
+		removeFriendBtn?.addEventListener('click', this.handleRemoveFriend.bind(this));
 	}
 }
 
@@ -620,23 +625,45 @@ private async handleProfileUpdate(event: Event): Promise<void> {
 	}
 }
 
+private isHeMyFriend(): boolean {
+	const currentUser = AuthStore.getUser();
+	if (!currentUser || !this.currentUserFriends) return false;
+
+	// Vérifie si le profil consulté est dedans
+	console.log("Mes amis : ", this.currentUserFriends);
+	console.log(this.currentUserFriends.some(friend => friend.friend_id === this.userProfile?.id));
+	return this.currentUserFriends.some(friend => friend.friend_id === this.userProfile?.id);
+}
+
 private async handleAddFriend(): Promise<void> {
 	if (!this.userProfile) return;
 
 	try {
-	await UserService.sendFriendRequest(this.userProfile.id);
-	this.showSuccess('Friend request sent!');
+		const user = AuthStore.getUser();
+		if (!user) {
+			this.showError('You must be logged in to add friends');
+			return;
+		}
+		await UserService.addFriend(user.id, this.userProfile.id);
+		this.render();
 	} catch (error: any) {
-	this.showError(error.message || 'Failed to send friend request');
+		this.showError(error.message || 'Failed to add friend');
 	}
 }
 
-private async handleLogout(): Promise<void> {
+private async handleRemoveFriend(): Promise<void> {
+	if (!this.userProfile) return;
+	
 	try {
-	await AuthService.logoutAsync();
-	window.location.href = '/login';
+		const user = AuthStore.getUser();
+		if (!user) {
+			this.showError('You must be logged in to remove friends');
+			return;
+		}
+		await UserService.removeFriend(user.id, this.userProfile.id);
+		this.render();
 	} catch (error: any) {
-	this.showError(error.message || 'Failed to logout');
+		this.showError(error.message || 'Failed to remove friend');
 	}
 }
 

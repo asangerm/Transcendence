@@ -86,7 +86,10 @@ export class NavBar {
 
 						<!-- Desktop menu -->
 						<div class="hidden md:flex items-center space-x-6">
-							<a href="/games" data-nav class="py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">
+							<a href="/games" data-nav class="flex flex-row justify-items items-center gap-2 py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">
+								<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20">
+									<path fill="#ffffffff" d="M15.9 5.5C15.3 4.5 14.2 4 13 4H7c-1.2 0-2.3.5-2.9 1.5c-2.3 3.5-2.8 8.8-1.2 9.9c1.6 1.1 5.2-3.7 7.1-3.7s5.4 4.8 7.1 3.7c1.6-1.1 1.1-6.4-1.2-9.9zM8 9H7v1H6V9H5V8h1V7h1v1h1v1zm5.4.5c0 .5-.4.9-.9.9s-.9-.4-.9-.9s.4-.9.9-.9s.9.4.9.9zm1.9-2c0 .5-.4.9-.9.9s-.9-.4-.9-.9s.4-.9.9-.9s.9.4.9.9z"/>
+								</svg>	
 								Jouer
 							</a>
 							<div class="border-l border-muted dark:border-muted-dark h-6 mx-2"></div>

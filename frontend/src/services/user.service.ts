@@ -9,8 +9,8 @@ export interface UserProfile extends User {
 }
 
 export interface Friend {
-  id: number;
-  display_name: string;
+  friend_id: number;
+  friend_name: string;
   avatar_url: string;
   is_online: number;
 }
@@ -52,6 +52,8 @@ export class UserService {
 	static async getUserProfile(username: string): Promise<UserProfile | null> {
 		try {
 			const response = await apiService.get(`/users/name/${username}`);
+			response.data.user.friends = await this.getUserFriends(response.data.user.id);
+			response.data.user.friendCount = response.data.user.friends.length;
 			return response.data.user;
 		}
 		catch (error: any) {
@@ -94,35 +96,21 @@ export class UserService {
 
   static async getUserFriends(userId: number): Promise<Friend[]> {
     const response = await apiService.get(`/friends/${userId}`);
-    return response.data;
+    return response.data.friends;
   }
   static async getUserFriendsWithout(): Promise<Friend[]> {
     const response = await apiService.get(`/friends`);
     return response.data;
   }
 
-  static async sendFriendRequest(friendId: number): Promise<{ message: string }> {
-    const response = await apiService.post('/users/friends/request', { friendId });
+  static async addFriend(userId: number, friendId: number): Promise<{ message: string }> {
+	console.log("Adding friend:", userId, friendId);
+    const response = await apiService.post(`/friends/add/${userId}/${friendId}`);
     return response.data;
   }
 
-  static async acceptFriendRequest(requestId: number): Promise<{ message: string }> {
-    const response = await apiService.post('/users/friends/accept', { requestId });
-    return response.data;
-  }
-
-  static async rejectFriendRequest(requestId: number): Promise<{ message: string }> {
-    const response = await apiService.post('/users/friends/reject', { requestId });
-    return response.data;
-  }
-
-  static async getPendingFriendRequests(): Promise<FriendRequest[]> {
-    const response = await apiService.get('/users/friends/requests');
-    return response.data;
-  }
-
-  static async removeFriend(friendId: number): Promise<{ message: string }> {
-    const response = await apiService.delete(`/users/friends/${friendId}`);
+  static async removeFriend(userId: number, friendId: number): Promise<{ message: string }> {
+    const response = await apiService.delete(`/friends/remove/${userId}/${friendId}`);
     return response.data;
   }
 
