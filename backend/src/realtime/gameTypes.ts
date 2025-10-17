@@ -59,9 +59,11 @@ export type TestEngineInput = {
   seq?: number;
 };
 
+import type { Game2State } from './Game2SimpleEngine';
+
 export type RealtimeMessage =
   | { type: 'hello'; serverTime: number }
-  | { type: 'state'; state: ServerGameState | TestEngineState }
+  | { type: 'state'; state: ServerGameState | TestEngineState | Game2State }
   | { type: 'created'; gameId: string }
   | { type: 'joined'; gameId: string; side: 'top' | 'bottom' }
   | { type: 'error'; message: string };

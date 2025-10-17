@@ -5,6 +5,8 @@ const websocket = require('@fastify/websocket');
 type FastifyInstance = any;
 import { gameManager } from './GameManager';
 import { roomManager } from './RoomManager';
+import { Game2SimpleEngine } from './Game2SimpleEngine';
+
 import type { ClientInput, ClientPaddleUpdate, TestEngineInput, RealtimeMessage, RoomMessage } from './gameTypes';
 
 export async function registerRealtime(app: FastifyInstance) {
@@ -79,6 +81,33 @@ export async function registerRealtime(app: FastifyInstance) {
         if (!raw) return;
         const anyMsg = JSON.parse(raw);
         
+        // --- Gère la création de jeu ---
+        if (anyMsg?.type === 'create_game' && anyMsg?.gameId && anyMsg?.kind) {
+            const game = gameManager.createGame(anyMsg.kind);
+            console.log(`Jeu créé: ${game.id}`);
+            
+            // Envoyer l'état initial du jeu
+            const state = gameManager.getState(game.id);
+            if (state) {
+                connection.socket.send(JSON.stringify({ 
+                    type: 'state', 
+                    state: state 
+                } satisfies RealtimeMessage));
+            }
+            return;
+        }
+
+        // --- Gère notre Game2SimpleEngine ---
+        if (anyMsg?.gameId && anyMsg?.type === 'input' && anyMsg?.playerId) {
+            const engine = gameManager.getEngine(anyMsg.gameId);
+            if (!engine) return;
+
+            if (engine instanceof Game2SimpleEngine) {
+                engine.applyInput(anyMsg.playerId, anyMsg.action);
+                return;
+            }
+        }
+  
         // Handle paddle position updates (Pong specific)
         if (anyMsg?.type === 'paddle') {
           const msg = anyMsg as ClientPaddleUpdate;
@@ -171,6 +200,7 @@ export async function registerRealtime(app: FastifyInstance) {
     connection.socket.send('Hello WebSocket!');
     connection.socket.close();
   });
+
 
   // Room WebSocket endpoint
   try {

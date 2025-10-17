@@ -1,9 +1,11 @@
 import { randomUUID } from 'crypto';
 import type { GameKind, ServerGameState, TestEngineState } from './gameTypes';
+import type { Game2State } from './Game2SimpleEngine';
 import { PongEngine } from './PongEngine';
 import { TestEngine } from './TestEngine';
+import { Game2SimpleEngine } from './Game2SimpleEngine';
 
-type Engine = PongEngine | TestEngine;
+type Engine = PongEngine | TestEngine | Game2SimpleEngine;
 
 export class GameManager {
   private games: Map<string, Engine> = new Map();
@@ -19,6 +21,9 @@ export class GameManager {
       case 'test':
         engine = new TestEngine(id);
         break;
+      case 'game2':
+        engine = new Game2SimpleEngine(id);
+        break;
       default:
         throw new Error(`Unsupported game kind: ${kind}`);
     }
@@ -27,7 +32,7 @@ export class GameManager {
     return { id };
   }
 
-  getState(id: string): ServerGameState | TestEngineState | null {
+  getState(id: string): ServerGameState | TestEngineState | Game2State | null {
     const g = this.games.get(id);
     return g ? g.getState() : null;
   }
@@ -50,5 +55,3 @@ export class GameManager {
 }
 
 export const gameManager = new GameManager();
-
-
