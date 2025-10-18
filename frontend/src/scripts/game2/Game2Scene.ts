@@ -77,7 +77,7 @@ export class Game2Scene extends Phaser.Scene {
         this.ws.onmessage = (msg) => {
             try {
                 const data = JSON.parse(msg.data);
-                console.log('Message received:', data);
+                // console.log('Message received:', data);
                 
             if (data.type === 'created' && data.gameId) {
                 // Server created the game, just update our gameId - no need to reconnect
@@ -85,8 +85,8 @@ export class Game2Scene extends Phaser.Scene {
                 this.gameId = data.gameId;
                 // Don't reconnect - the connection is already established and working
             } else if (data.type === 'state' && data.state?.players) {
-                    console.log('Processing state update:', data.state);
-                    console.log('Players:', data.state.players);
+                    // console.log('Processing state update:', data.state);
+                    // console.log('Players:', data.state.players);
                     this.events.emit('updateState', data.state.players);
                 } else if (data.type === 'error') {
                     console.error('Server error:', data.message);
