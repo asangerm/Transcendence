@@ -27,7 +27,7 @@ export function renderGameSelection() {
                     </a>
 
                     <!-- Second Game Card -->
-                    <a href="/game2" class="group">
+                    <a href="/game2-lobby" class="group">
                         <div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
                             <div class="relative aspect-video bg-secondary dark:bg-secondary-dark">
                                 <img 

@@ -61,17 +61,25 @@ export async function registerRealtime(app: FastifyInstance) {
     for (const gameId of connections.keys()) broadcastState(gameId);
   }, 8);
 
+  // Health check endpoint for WebSocket
+  app.get('/ws/health', async (req: any, reply: any) => {
+    reply.code(200).send({ status: 'ok', message: 'WebSocket server is running' });
+  });
+
   app.get('/ws', { websocket: true }, (connection: any, req: any) => {
-    const url = new URL(req.url ?? '', 'http://localhost');
-    const gameId = url.searchParams.get('gameId') ?? '';
-    if (!gameId) {
-      connection.socket.send(JSON.stringify({ type: 'error', message: 'Missing gameId' } satisfies RealtimeMessage));
-      connection.socket.close();
+    // Check if this is actually a WebSocket connection
+    if (!connection.socket) {
       return;
     }
 
-    if (!connections.has(gameId)) connections.set(gameId, new Set());
-    connections.get(gameId)!.add(connection.socket);
+    const url = new URL(req.url ?? '', 'http://localhost');
+    const gameId = url.searchParams.get('gameId') ?? '';
+    
+    // Allow connection without gameId for initial game creation
+    if (gameId) {
+      if (!connections.has(gameId)) connections.set(gameId, new Set());
+      connections.get(gameId)!.add(connection.socket);
+    }
 
     connection.socket.send(JSON.stringify({ type: 'hello', serverTime: Date.now() } as RealtimeMessage));
 
@@ -82,11 +90,21 @@ export async function registerRealtime(app: FastifyInstance) {
         const anyMsg = JSON.parse(raw);
         
         // --- Gère la création de jeu ---
-        if (anyMsg?.type === 'create_game' && anyMsg?.gameId && anyMsg?.kind) {
+        if (anyMsg?.type === 'create_game' && anyMsg?.kind) {
             const game = gameManager.createGame(anyMsg.kind);
-            console.log(`Jeu créé: ${game.id}`);
+            console.log(`Game created: ${game.id}`);
             
-            // Envoyer l'état initial du jeu
+            // Add connection to the new game
+            if (!connections.has(game.id)) connections.set(game.id, new Set());
+            connections.get(game.id)!.add(connection.socket);
+            
+            // Send created message with the actual gameId
+            connection.socket.send(JSON.stringify({ 
+                type: 'created', 
+                gameId: game.id 
+            } satisfies RealtimeMessage));
+            
+            // Send initial game state
             const state = gameManager.getState(game.id);
             if (state) {
                 connection.socket.send(JSON.stringify({ 

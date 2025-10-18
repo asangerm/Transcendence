@@ -1,11 +1,11 @@
 import type { GameRoom, LobbyState } from '../types/lobby';
 
-export function renderPongLobby() {
+export function renderGame2Lobby() {
     const content = `
         <div class="w-full h-full overflow-hidden">
             <main class="container mx-auto px-4 py-8">
                 <div class="bg-primary dark:bg-primary-dark p-8 rounded-lg shadow-md">
-                    <h1 class="text-3xl font-bold mb-6 text-center">Pong Lobby</h1>
+                    <h1 class="text-3xl font-bold mb-6 text-center">Game2 Lobby</h1>
                     
                     <!-- Room Creation Section -->
                     <div id="room-creation" class="mb-8">
@@ -64,18 +64,18 @@ export function renderPongLobby() {
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <!-- Top Player -->
+                                <!-- Player 1 -->
                                 <div class="bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-semibold mb-2">Top Player</h3>
-                                    <div id="top-player" class="text-gray-400">
+                                    <h3 class="font-semibold mb-2">Player 1</h3>
+                                    <div id="player1" class="text-gray-400">
                                         <span class="text-sm">Waiting for player...</span>
                                     </div>
                                 </div>
                                 
-                                <!-- Bottom Player -->
+                                <!-- Player 2 -->
                                 <div class="bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-semibold mb-2">Bottom Player</h3>
-                                    <div id="bottom-player" class="text-gray-400">
+                                    <h3 class="font-semibold mb-2">Player 2</h3>
+                                    <div id="player2" class="text-gray-400">
                                         <span class="text-sm">Waiting for player...</span>
                                     </div>
                                 </div>
@@ -139,11 +139,11 @@ export function renderPongLobby() {
 }
 
 function initializeLobby() {
-    const lobby = new PongLobby();
+    const lobby = new Game2Lobby();
     lobby.init();
 }
 
-class PongLobby {
+class Game2Lobby {
     private state: LobbyState = {
         currentRoom: null,
         availableRooms: [],
@@ -213,7 +213,7 @@ class PongLobby {
 
     private connectWebSocket() {
         // For now, use polling instead of WebSocket
-        console.log('Using HTTP polling instead of WebSocket');
+        console.log('Using HTTP polling instead of WebSocket for Game2');
         this.startPolling();
     }
 
@@ -245,39 +245,38 @@ class PongLobby {
                 break;
                 
             case 'room_left':
-                if (message.playerId === this.state.playerId) {
-                    this.state.currentRoom = null;
-                    this.state.isOwner = false;
-                    this.state.isReady = false;
-                } else {
-                    this.state.currentRoom = message.room;
-                }
+                this.state.currentRoom = null;
+                this.state.isOwner = false;
+                this.state.isReady = false;
                 this.updateUI();
+                this.showMessage('Left room', 'info');
+                break;
+                
+            case 'player_joined':
+                if (this.state.currentRoom) {
+                    this.state.currentRoom.players = message.room.players;
+                    this.updateUI();
+                }
+                break;
+                
+            case 'player_left':
+                if (this.state.currentRoom) {
+                    this.state.currentRoom.players = message.room.players;
+                    this.updateUI();
+                }
                 break;
                 
             case 'player_ready':
-                this.state.currentRoom = message.room;
-                this.updateUI();
-                break;
-                
-            case 'player_kicked':
-                if (message.playerId === this.state.playerId) {
-                    this.state.currentRoom = null;
-                    this.state.isOwner = false;
-                    this.state.isReady = false;
-                    this.showMessage('You were kicked from the room', 'error');
-                } else {
-                    this.state.currentRoom = message.room;
+                if (this.state.currentRoom) {
+                    this.state.currentRoom.players = message.room.players;
+                    this.updateUI();
                 }
-                this.updateUI();
                 break;
                 
             case 'game_started':
                 this.showMessage('Game starting...', 'success');
                 setTimeout(() => {
-                    // Determine player side based on room position
-                    const side = this.state.currentRoom?.players.top?.id === this.state.playerId ? 'top' : 'bottom';
-                    window.location.href = `/pong?mode=online&gameId=${message.gameId}&side=${side}`;
+                    window.location.href = `/game2?mode=online&gameId=${message.gameId}`;
                 }, 1000);
                 break;
                 
@@ -308,7 +307,7 @@ class PongLobby {
                     name: roomName,
                     ownerId: this.state.playerId,
                     ownerUsername: this.state.username,
-                    gameType: 'pong'
+                    gameType: 'game2'
                 })
             });
 
@@ -400,18 +399,20 @@ class PongLobby {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update ready status');
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to update ready status');
             }
 
             this.state.isReady = newReadyState;
             this.updateUI();
+            this.showMessage(newReadyState ? 'You are ready!' : 'You are not ready', 'info');
         } catch (error) {
-            this.showMessage('Failed to update ready status', 'error');
+            this.showMessage(error instanceof Error ? error.message : 'Failed to update ready status', 'error');
         }
     }
 
     private async startGame() {
-        if (!this.state.currentRoom || !this.state.isOwner) return;
+        if (!this.state.currentRoom) return;
 
         try {
             const response = await fetch(`/api/rooms/${this.state.currentRoom.id}/start`, {
@@ -429,33 +430,23 @@ class PongLobby {
 
             const result = await response.json();
             this.showMessage('Game starting...', 'success');
-            
-            // Update the room status immediately to trigger redirect via polling
-            this.state.currentRoom.status = 'in_progress';
-            this.state.currentRoom.gameId = result.gameId;
-            
-            // Redirect immediately for the owner, polling will handle the second player
             setTimeout(() => {
-                const side = this.state.currentRoom?.players.top?.id === this.state.playerId ? 'top' : 'bottom';
-                window.location.href = `/pong?mode=online&gameId=${result.gameId}&side=${side}`;
-            }, 500);
+                window.location.href = `/game2?mode=online&gameId=${result.gameId}`;
+            }, 1000);
         } catch (error) {
             this.showMessage(error instanceof Error ? error.message : 'Failed to start game', 'error');
         }
     }
 
     private async kickPlayer() {
-        if (!this.state.currentRoom || !this.state.isOwner) return;
+        if (!this.state.currentRoom) return;
 
-        // For now, kick the other player (you might want to add a selection UI)
-        const otherPlayer = this.state.currentRoom.players.top?.id === this.state.playerId 
-            ? this.state.currentRoom.players.bottom 
-            : this.state.currentRoom.players.top;
-
+        // Find the other player to kick
+        const otherPlayer = Object.values(this.state.currentRoom.players).find(p => p.id !== this.state.playerId);
         if (!otherPlayer) return;
 
         try {
-            await fetch(`/api/rooms/${this.state.currentRoom.id}/kick`, {
+            const response = await fetch(`/api/rooms/${this.state.currentRoom.id}/kick`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -464,23 +455,27 @@ class PongLobby {
                 })
             });
 
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to kick player');
+            }
+
             this.showMessage('Player kicked', 'info');
-            this.loadCurrentRoom();
         } catch (error) {
-            this.showMessage('Failed to kick player', 'error');
+            this.showMessage(error instanceof Error ? error.message : 'Failed to kick player', 'error');
         }
     }
 
     private async loadAvailableRooms() {
         try {
-            const response = await fetch('/api/rooms?gameType=pong');
+            const response = await fetch('/api/rooms?gameType=game2');
             if (!response.ok) throw new Error('Failed to load rooms');
             
             const data = await response.json();
-            this.state.availableRooms = data.rooms;
+            this.state.availableRooms = data.rooms || [];
             this.updateRoomsList();
         } catch (error) {
-            console.error('Failed to load rooms:', error);
+            console.error('Failed to load available rooms:', error);
         }
     }
 
@@ -499,8 +494,7 @@ class PongLobby {
                 this.showMessage('Game starting...', 'success');
                 // Redirect both players to the game
                 setTimeout(() => {
-                    const side = room.players.top?.id === this.state.playerId ? 'top' : 'bottom';
-                    window.location.href = `/pong?mode=online&gameId=${room.gameId}&side=${side}`;
+                    window.location.href = `/game2?mode=online&gameId=${room.gameId}`;
                 }, 1000);
                 return;
             }
@@ -515,84 +509,40 @@ class PongLobby {
         const currentRoomDiv = document.getElementById('current-room');
         const roomCreationDiv = document.getElementById('room-creation');
         const roomJoiningDiv = document.getElementById('room-joining');
-        const availableRoomsDiv = document.getElementById('available-rooms');
-
+        
         if (this.state.currentRoom) {
             // Show current room, hide creation/joining
             currentRoomDiv?.classList.remove('hidden');
             roomCreationDiv?.classList.add('hidden');
             roomJoiningDiv?.classList.add('hidden');
-            availableRoomsDiv?.classList.add('hidden');
-
-            this.updateCurrentRoomDisplay();
+            
+            // Update room name
+            const roomNameSpan = document.getElementById('current-room-name');
+            if (roomNameSpan) roomNameSpan.textContent = this.state.currentRoom.name;
+            
+            // Update players
+            this.updatePlayerDisplay('player1', this.state.currentRoom.players.player1);
+            this.updatePlayerDisplay('player2', this.state.currentRoom.players.player2);
+            
+            // Update buttons based on room state
+            this.updateRoomButtons();
         } else {
-            // Show creation/joining, hide current room
+            // Hide current room, show creation/joining
             currentRoomDiv?.classList.add('hidden');
             roomCreationDiv?.classList.remove('hidden');
             roomJoiningDiv?.classList.remove('hidden');
-            availableRoomsDiv?.classList.remove('hidden');
         }
     }
 
-    private updateCurrentRoomDisplay() {
-        if (!this.state.currentRoom) return;
-
-        // Update room name
-        const roomNameSpan = document.getElementById('current-room-name');
-        if (roomNameSpan) roomNameSpan.textContent = this.state.currentRoom.name;
-
-        // Update players
-        this.updatePlayerDisplay('top', this.state.currentRoom.players.top);
-        this.updatePlayerDisplay('bottom', this.state.currentRoom.players.bottom);
-
-        // Update buttons
-        const readyBtn = document.getElementById('ready-btn');
-        const startGameBtn = document.getElementById('start-game-btn');
-        const kickPlayerBtn = document.getElementById('kick-player-btn');
-
-        if (readyBtn) {
-            readyBtn.textContent = this.state.isReady ? 'Not Ready' : 'Ready';
-            readyBtn.className = this.state.isReady 
-                ? 'px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors'
-                : 'px-6 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-semibold transition-colors';
-        }
-
-        if (startGameBtn) {
-            const canStart = this.state.isOwner && 
-                this.state.currentRoom.players.top && 
-                this.state.currentRoom.players.bottom &&
-                this.state.currentRoom.players.top.ready && 
-                this.state.currentRoom.players.bottom.ready;
-            
-            if (canStart) {
-                startGameBtn.classList.remove('hidden');
-            } else {
-                startGameBtn.classList.add('hidden');
-            }
-        }
-
-        if (kickPlayerBtn) {
-            const hasOtherPlayer = (this.state.currentRoom.players.top && this.state.currentRoom.players.top.id !== this.state.playerId) ||
-                                 (this.state.currentRoom.players.bottom && this.state.currentRoom.players.bottom.id !== this.state.playerId);
-            
-            if (this.state.isOwner && hasOtherPlayer) {
-                kickPlayerBtn.classList.remove('hidden');
-            } else {
-                kickPlayerBtn.classList.add('hidden');
-            }
-        }
-    }
-
-    private updatePlayerDisplay(side: 'top' | 'bottom', player: { id: string; username: string; ready: boolean } | undefined) {
-        const playerDiv = document.getElementById(`${side}-player`);
+    private updatePlayerDisplay(playerId: string, player: { id: string; username: string; ready: boolean } | undefined) {
+        const playerDiv = document.getElementById(playerId);
         if (!playerDiv) return;
 
         if (player) {
-            const isCurrentPlayer = player.id === this.state.playerId;
             playerDiv.innerHTML = `
                 <div class="flex items-center justify-between">
-                    <span class="${isCurrentPlayer ? 'text-blue-400 font-semibold' : 'text-white'}">${player.username}${isCurrentPlayer ? ' (You)' : ''}</span>
-                    <span class="px-2 py-1 rounded text-xs ${player.ready ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'}">
+                    <span class="text-white">${player.username}</span>
+                    <span class="text-sm ${player.ready ? 'text-green-400' : 'text-yellow-400'}">
                         ${player.ready ? 'Ready' : 'Not Ready'}
                     </span>
                 </div>
@@ -602,19 +552,50 @@ class PongLobby {
         }
     }
 
+    private updateRoomButtons() {
+        if (!this.state.currentRoom) return;
+
+        const readyBtn = document.getElementById('ready-btn') as HTMLButtonElement;
+        const startGameBtn = document.getElementById('start-game-btn') as HTMLButtonElement;
+        const kickPlayerBtn = document.getElementById('kick-player-btn') as HTMLButtonElement;
+
+        const isOwner = this.state.currentRoom.ownerId === this.state.playerId;
+        const playerCount = Object.keys(this.state.currentRoom.players).length;
+        const allPlayersReady = Object.values(this.state.currentRoom.players).every(p => p.ready);
+
+        // Update ready button text
+        if (readyBtn) {
+            readyBtn.textContent = this.state.isReady ? 'Not Ready' : 'Ready';
+        }
+
+        // Show/hide start game button for room owner
+        if (isOwner && playerCount === 2 && allPlayersReady) {
+            startGameBtn.classList.remove('hidden');
+        } else {
+            startGameBtn.classList.add('hidden');
+        }
+
+        // Show/hide kick player button for room owner
+        if (isOwner && playerCount > 1) {
+            kickPlayerBtn.classList.remove('hidden');
+        } else {
+            kickPlayerBtn.classList.add('hidden');
+        }
+    }
+
     private updateRoomsList() {
         const roomsListDiv = document.getElementById('rooms-list');
         if (!roomsListDiv) return;
 
-        // Filter rooms to only show pong rooms as a safety measure
-        const pongRooms = this.state.availableRooms.filter(room => room.gameType === 'pong' || !room.gameType);
+        // Filter rooms to only show game2 rooms as a safety measure
+        const game2Rooms = this.state.availableRooms.filter(room => room.gameType === 'game2');
 
-        if (pongRooms.length === 0) {
+        if (game2Rooms.length === 0) {
             roomsListDiv.innerHTML = '<div class="text-center text-gray-400 py-4">No available rooms</div>';
             return;
         }
 
-        roomsListDiv.innerHTML = pongRooms.map(room => {
+        roomsListDiv.innerHTML = game2Rooms.map(room => {
             const playerCount = Object.keys(room.players).length;
             const isOwner = room.ownerId === this.state.playerId;
             
@@ -646,26 +627,24 @@ class PongLobby {
         });
     }
 
-
     private showMessage(message: string, type: 'success' | 'error' | 'info') {
-        const container = document.getElementById('message-container');
-        if (!container) return;
+        const messageContainer = document.getElementById('message-container');
+        if (!messageContainer) return;
 
         const messageDiv = document.createElement('div');
-        messageDiv.className = `p-4 rounded-lg font-semibold ${
-            type === 'success' ? 'bg-green-600 text-white' :
-            type === 'error' ? 'bg-red-600 text-white' :
-            'bg-blue-600 text-white'
+        messageDiv.className = `p-4 rounded-lg mb-4 ${
+            type === 'success' ? 'bg-green-800 text-green-200' :
+            type === 'error' ? 'bg-red-800 text-red-200' :
+            'bg-blue-800 text-blue-200'
         }`;
         messageDiv.textContent = message;
 
-        container.innerHTML = '';
-        container.appendChild(messageDiv);
+        messageContainer.appendChild(messageDiv);
 
-        // Auto-remove after 3 seconds
+        // Remove message after 5 seconds
         setTimeout(() => {
             messageDiv.remove();
-        }, 3000);
+        }, 5000);
     }
 
     private getCurrentUserId(): string {

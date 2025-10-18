@@ -1,28 +1,45 @@
 import { randomUUID } from 'crypto';
-import type { GameRoom, RoomPlayer } from './gameTypes';
+import type { GameRoom, RoomPlayer, GameKind } from './gameTypes';
 import { gameManager } from './GameManager';
 
 export class RoomManager {
   private rooms: Map<string, GameRoom> = new Map();
   private playerRooms: Map<string, string> = new Map(); // playerId -> roomId
 
-  createRoom(ownerId: string, ownerUsername: string, roomName: string): GameRoom {
+  createRoom(ownerId: string, ownerUsername: string, roomName: string, gameType: GameKind = 'pong'): GameRoom {
     const roomId = randomUUID();
-    const room: GameRoom = {
-      id: roomId,
-      name: roomName,
-      ownerId,
-      ownerUsername,
-      players: {
+    
+    // Set up players based on game type
+    let players: any = {};
+    if (gameType === 'game2') {
+      players = {
+        player1: {
+          id: ownerId,
+          username: ownerUsername,
+          ready: false
+        }
+      };
+    } else {
+      // Default to pong structure (top/bottom)
+      players = {
         top: {
           id: ownerId,
           username: ownerUsername,
           ready: false
         }
-      },
+      };
+    }
+    
+    const room: GameRoom = {
+      id: roomId,
+      name: roomName,
+      ownerId,
+      ownerUsername,
+      players,
       createdAt: Date.now(),
       maxPlayers: 2,
-      status: 'waiting'
+      status: 'waiting',
+      gameType: gameType
     };
     
     this.rooms.set(roomId, room);
@@ -52,13 +69,18 @@ export class RoomManager {
       return { success: false, error: 'Room is full' };
     }
 
-    // If the creator is joining their own room, they're already in it as top player
+    // If the creator is joining their own room, they're already in it
     if (playerId === room.ownerId) {
       return { success: true, room };
     }
 
-    // Other players go to bottom
-    room.players.bottom = { id: playerId, username, ready: false };
+    // Add player based on game type
+    if (room.gameType === 'game2') {
+      room.players.player2 = { id: playerId, username, ready: false };
+    } else {
+      // Default to pong structure
+      room.players.bottom = { id: playerId, username, ready: false };
+    }
     this.playerRooms.set(playerId, roomId);
 
     return { success: true, room };
@@ -86,10 +108,19 @@ export class RoomManager {
       return { success: true };
     }
 
-    // Remove player from room
-    const side = room.players.top?.id === playerId ? 'top' : 'bottom';
-    if (side && room.players[side]) {
-      delete room.players[side];
+    // Remove player from room based on game type
+    if (room.gameType === 'game2') {
+      if (room.players.player1?.id === playerId) {
+        delete room.players.player1;
+      } else if (room.players.player2?.id === playerId) {
+        delete room.players.player2;
+      }
+    } else {
+      // Default to pong structure
+      const side = room.players.top?.id === playerId ? 'top' : 'bottom';
+      if (side && room.players[side]) {
+        delete room.players[side];
+      }
     }
 
     this.playerRooms.delete(playerId);
@@ -133,9 +164,19 @@ export class RoomManager {
       return { success: false, error: 'Room not found' };
     }
 
-    const side = room.players.top?.id === playerId ? 'top' : 'bottom';
-    if (side && room.players[side]) {
-      room.players[side]!.ready = ready;
+    // Update ready status based on game type
+    if (room.gameType === 'game2') {
+      if (room.players.player1?.id === playerId) {
+        room.players.player1.ready = ready;
+      } else if (room.players.player2?.id === playerId) {
+        room.players.player2.ready = ready;
+      }
+    } else {
+      // Default to pong structure
+      const side = room.players.top?.id === playerId ? 'top' : 'bottom';
+      if (side && room.players[side]) {
+        room.players[side]!.ready = ready;
+      }
     }
 
     return { success: true, room };
@@ -166,18 +207,29 @@ export class RoomManager {
     }
 
     // Create the game
-    const { id: gameId } = gameManager.createGame('pong');
+    const gameType = (room.gameType || 'pong') as GameKind;
+    const { id: gameId } = gameManager.createGame(gameType);
     room.gameId = gameId;
     room.status = 'in_progress';
 
-    // Set players in the game engine
+    // Set players in the game engine based on game type
     const engine = gameManager.getEngine(gameId);
     if (engine && 'setPlayer' in engine) {
-      if (room.players.top) {
-        (engine as any).setPlayer('top', { id: room.players.top.id, username: room.players.top.username });
-      }
-      if (room.players.bottom) {
-        (engine as any).setPlayer('bottom', { id: room.players.bottom.id, username: room.players.bottom.username });
+      if (room.gameType === 'game2') {
+        if (room.players.player1) {
+          (engine as any).setPlayer('player1', { id: room.players.player1.id, username: room.players.player1.username });
+        }
+        if (room.players.player2) {
+          (engine as any).setPlayer('player2', { id: room.players.player2.id, username: room.players.player2.username });
+        }
+      } else {
+        // Default to pong structure
+        if (room.players.top) {
+          (engine as any).setPlayer('top', { id: room.players.top.id, username: room.players.top.username });
+        }
+        if (room.players.bottom) {
+          (engine as any).setPlayer('bottom', { id: room.players.bottom.id, username: room.players.bottom.username });
+        }
       }
     }
 
@@ -193,10 +245,15 @@ export class RoomManager {
     return roomId ? this.rooms.get(roomId) || null : null;
   }
 
-  listRooms(): GameRoom[] {
-    return Array.from(this.rooms.values())
+  listRooms(gameType?: GameKind): GameRoom[] {
+    const rooms = Array.from(this.rooms.values())
       .filter(room => room.status === 'waiting' && Object.keys(room.players).length < room.maxPlayers)
       .sort((a, b) => b.createdAt - a.createdAt);
+    
+    if (gameType) {
+      return rooms.filter(room => room.gameType === gameType);
+    }
+    return rooms;
   }
 
   cleanup(): void {

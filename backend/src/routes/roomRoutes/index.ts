@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { roomManager } from '../../realtime/RoomManager';
+import type { GameKind } from '../../realtime/gameTypes';
 
 export default async function roomRoutes(app: FastifyInstance) {
   // Create a new room
@@ -9,10 +10,11 @@ export default async function roomRoutes(app: FastifyInstance) {
       const body = await z.object({
         name: z.string().min(1).max(50),
         ownerId: z.string(),
-        ownerUsername: z.string()
+        ownerUsername: z.string(),
+        gameType: z.enum(['pong', 'game2', 'test']).optional().default('pong')
       }).parseAsync((req as any).body);
       
-      const room = roomManager.createRoom(body.ownerId, body.ownerUsername, body.name);
+      const room = roomManager.createRoom(body.ownerId, body.ownerUsername, body.name, body.gameType);
       reply.code(201);
       return room;
     } catch (error) {
@@ -171,8 +173,9 @@ export default async function roomRoutes(app: FastifyInstance) {
   });
 
   // List available rooms
-  app.get('/rooms', async () => {
-    return { rooms: roomManager.listRooms() };
+  app.get('/rooms', async (req, reply) => {
+    const query = req.query as { gameType?: GameKind };
+    return { rooms: roomManager.listRooms(query.gameType) };
   });
 
   // Get player's current room

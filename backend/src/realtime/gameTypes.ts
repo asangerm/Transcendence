@@ -75,10 +75,15 @@ export type GameRoom = {
   ownerId: string;
   ownerUsername: string;
   players: {
+    // Pong players
     top?: { id: string; username: string; ready: boolean };
     bottom?: { id: string; username: string; ready: boolean };
+    // Game2 players
+    player1?: { id: string; username: string; ready: boolean };
+    player2?: { id: string; username: string; ready: boolean };
   };
   gameId?: string; // Set when game starts
+  gameType?: GameKind; // Type of game (pong, game2, etc.)
   createdAt: number;
   maxPlayers: number;
   status: 'waiting' | 'in_progress' | 'finished';
