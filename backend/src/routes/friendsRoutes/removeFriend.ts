@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
 import { requireAuth } from "../../middleware/authMiddleware";
 
-export default async function deleteFriendRoute(app: FastifyInstance) {
-  app.delete("/:userId/:friendId", { preHandler: [requireAuth] }, async (req, reply) => {
+export default async function removeFriend(app: FastifyInstance) {
+  app.delete("/remove/:userId/:friendId", { preHandler: [requireAuth] }, async (req, reply) => {
 	try {
 	  const { friendId } = req.params as { friendId: string };
 	  const { userId } = req.params as { userId: string };
@@ -38,7 +38,7 @@ export default async function deleteFriendRoute(app: FastifyInstance) {
 
 	  // supprimer l'ami
 	  app.db
-		.prepare("DELETE FROM friend WHERE user_id = ? AND friend_id = ?)")
+		.prepare("DELETE FROM friends WHERE user_id = ? AND friend_id = ?")
 		.run(userId, friendId);
 
 	  return reply.status(201).send({

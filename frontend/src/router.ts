@@ -15,6 +15,7 @@ const routes: Route[] = [
     { path: '/pong', component: () => import('./pages/pong').then(m => m.renderPong()), requiresAuth: true },
     { path: '/game2', component: () => import('./pages/game2').then(m => m.renderGame2()), requiresAuth: true },
     { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()), requiresAuth: true },
+    { path: '/friends', component: () => import('./pages/friends').then(m => m.renderFriends()), requiresAuth: true },
     { path: '/login', component: () => import('./pages/login').then(m => m.renderLogin()), guestOnly: true },
     { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()), guestOnly: true },
     { path: '/register', component: () => import('./pages/register').then(m => m.renderRegister()), guestOnly: true },
@@ -58,7 +59,6 @@ async function handleRoute() {
 			import('./pages/visit-profile').then(m => m.renderProfile(username));
 		}
 		else {
-			console.log(window.location.pathname)
 			window.location.pathname.replace(path, '/');
 			navigateTo('/');
 		}

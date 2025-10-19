@@ -22,7 +22,7 @@ import modifyAvatar from "./userRoutes/avatar";
 // Friends
 import getFriends from "./friendsRoutes/getFriends";
 import addFriend from "./friendsRoutes/addFriend";
-import removeFriend from "./friendsRoutes/deleteFriend";
+import removeFriend from "./friendsRoutes/removeFriend";
 
 
 
@@ -46,9 +46,8 @@ export default async function routes(app: FastifyInstance) {
   app.register(exportData, { prefix: "/users" });
   app.register(modifyAvatar, { prefix: "/users" });
 
-  
   // Friends
   app.register(getFriends, { prefix: "/friends" });
-  app.register(addFriend, { prefix: "/friends/add" });
-  app.register(removeFriend, { prefix: "/friends/remove" });
+  app.register(addFriend, { prefix: "/friends" });
+  app.register(removeFriend, { prefix: "/friends" });
 }

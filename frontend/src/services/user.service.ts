@@ -13,6 +13,7 @@ export interface Friend {
   friend_name: string;
   avatar_url: string;
   is_online: number;
+  since: Date;
 }
 
 export interface Match {

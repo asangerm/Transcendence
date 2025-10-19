@@ -26,10 +26,10 @@ export class UserProfileComponent {
 			const currentUser = AuthStore.getUser();
 
 			if (username) {
-				if (currentUser && currentUser?.display_name == username) {
+				if (currentUser && currentUser?.display_name === username) {
 					this.isOwnProfile = true;
 				}
-				else if (currentUser && currentUser?.display_name != username) {
+				else if (currentUser && currentUser?.display_name !== username) {
 					this.isOwnProfile = false;
 				}
 			} else if (!username && currentUser) {
@@ -415,7 +415,7 @@ private renderMatchHistory(): string {
 	}
 
 	return this.userProfile.matchHistory.map(match => {
-		const isVictory = match.winner_id == this.userProfile?.id;
+		const isVictory = match.winner_id === this.userProfile?.id;
 		const bgClass = isVictory ? 'bg-green-500/5 border-green-500' : 'bg-red-500/10 border-red-500';
 		const badgeClass = isVictory ? 'bg-success' : 'bg-danger';
 		const badgeText = isVictory ? 'VICTOIRE' : 'DÉFAITE';
@@ -441,7 +441,7 @@ private renderMatchHistory(): string {
 				<div class="flex flex-col">
 					<span class="text-xl font-semibold">${safeGameName}</span>
 					<a href="/profile/" class="text-lg text-gray-600 dark:text-gray-400">vs ${safeOpponentName}</a>
-					${match.game_name == 'PONG' ? `
+					${match.game_name === 'PONG' ? `
 					<span class="text-sm font-medium">Score : ${match.score_p1} / ${match.score_p2}</span>
 					`:``}
 				</div>
@@ -638,7 +638,7 @@ private async handleAddFriend(): Promise<void> {
 			return;
 		}
 		await UserService.addFriend(user.id, this.userProfile.id);
-		this.render();
+		this.loadUserData(this.userProfile.display_name);
 	} catch (error: any) {
 		this.showError(error.message || 'Failed to add friend');
 	}
@@ -654,7 +654,7 @@ private async handleRemoveFriend(): Promise<void> {
 			return;
 		}
 		await UserService.removeFriend(user.id, this.userProfile.id);
-		this.render();
+		this.loadUserData(this.userProfile.display_name);
 	} catch (error: any) {
 		this.showError(error.message || 'Failed to remove friend');
 	}

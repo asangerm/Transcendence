@@ -11,6 +11,7 @@ export default async function getFriends(app: FastifyInstance) {
           u.id AS friend_id,
           u.display_name AS friend_name,
           u.avatar_url,
+		  u.is_online,
           f.created_at AS since
         FROM friends f
         JOIN users u ON f.friend_id = u.id

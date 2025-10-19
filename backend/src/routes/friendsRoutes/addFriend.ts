@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
 import { requireAuth } from "../../middleware/authMiddleware";
 
-export default async function addFriendRoute(app: FastifyInstance) {
-  app.post("/:userId/:friendId", { preHandler: [requireAuth] }, async (req, reply) => {
+export default async function addFriend(app: FastifyInstance) {
+  app.post("/add/:userId/:friendId", { preHandler: [requireAuth] }, async (req, reply) => {
     try {
       const { friendId } = req.params as { friendId: string };
       const { userId } = req.params as { userId: string };
