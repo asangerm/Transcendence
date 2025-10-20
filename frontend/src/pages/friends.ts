@@ -1,4 +1,4 @@
-import { FriendsListComponent } from '../components/FriendsComp';
+import { FriendsListComponent } from '../components/FriendList';
 import { AuthService } from '../services/auth.service';
 import { navigateTo } from '../router';
 

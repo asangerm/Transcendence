@@ -55,6 +55,23 @@ export class FriendsListComponent {
 			${this.isOwnList ? "Mes amis" : "Amis de cet utilisateur"}
 			</h2>
 
+			<div class="flex justify-end w-full mb-6">
+				<div class="relative w-72 flex flex-row border dark:border-gray-200 border-2 rounded-lg">
+					<input
+						type="search"
+						id="search"
+						name="search"
+						class="w-full bg-gray-300 px-4 py-2 text-black placeholder-black rounded-l-sm transition-all duration-300"
+						placeholder="Chercher un utilisateur"
+					>
+					<div class="bg-gray-300 border border-4 border-gray-300 rounded-r-sm">
+						<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 16 16">
+						<path fill="#000000" fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06zM10.5 7a3.5 3.5 0 1 1-7 0a3.5 3.5 0 0 1 7 0" clip-rule="evenodd"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+
 			<div class="flex flex-col gap-6">
 			${this.friends
 				.map((friend) => {
@@ -119,19 +136,24 @@ export class FriendsListComponent {
 	}
 
 	private attachListeners(): void {
+		const searchInput = document.getElementById('search') as HTMLInputElement;
+
+		searchInput.addEventListener("input", async () => {
+			console.log('Valeur actuelle :', searchInput.value);
+		});
 
 		this.container.addEventListener("click", async (e) => {
-		const target = e.target as HTMLElement;
-		const action = target.dataset.action;
-		const friendId = target.dataset.friendId;
+			const target = e.target as HTMLElement;
+			const action = target.dataset.action;
+			const friendId = target.dataset.friendId;
 
-		if (!action || !friendId) return;
+			if (!action || !friendId) return;
 
-		if (action === "remove" && this.isOwnList) {
-			await this.handleRemoveFriend(parseInt(friendId));
-		} else if (action === "duel") {
-			this.handleChallengeFriend(parseInt(friendId));
-		}
+			if (action === "remove" && this.isOwnList) {
+				await this.handleRemoveFriend(parseInt(friendId));
+			} else if (action === "duel") {
+				this.handleChallengeFriend(parseInt(friendId));
+			}
 		});
 	}
 
