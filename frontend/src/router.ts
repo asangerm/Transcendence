@@ -50,13 +50,15 @@ async function handleRoute() {
     const path = window.location.pathname;
     const route = routes.find(route => route.path === path);
 	
-	if (path.startsWith('/profile/')) {
+	if (path.startsWith('/profile/') || path.startsWith('/friends/')) {
 		const parts = path.split('/');
 		const username = parts[2];
 		const user = await UserService.getUserProfile(username);
-		console.log(user)
-		if (user) {
+		if (user && parts[1] === "profile") {
 			import('./pages/visit-profile').then(m => m.renderProfile(username));
+		}
+		else if (user && parts[1] === "friends") {
+			import('./pages/friends').then(m => m.renderFriends(username));
 		}
 		else {
 			window.location.pathname.replace(path, '/');

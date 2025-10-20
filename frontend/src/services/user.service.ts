@@ -123,7 +123,7 @@ export class UserService {
 
   static async searchUsers(query: string): Promise<User[]> {
     const response = await apiService.get(`/users/search?q=${encodeURIComponent(query)}`);
-    return response.data;
+    return response.data.users;
   }
 
   static async anonymizeAccount(userId: number): Promise<{ message: string }> {

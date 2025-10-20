@@ -1,5 +1,5 @@
 import { UserService, UserProfile, UserStats, Friend } from '../services/user.service';
-import { AuthService, User } from '../services/auth.service';
+import { AuthService } from '../services/auth.service';
 import { AuthStore } from '../stores/auth.store';
 import { sanitizeHtml, sanitizeInput, escapeHtml } from '../utils/sanitizer';
 
@@ -87,7 +87,7 @@ private render(): void {
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
 			<!-- Profile Card -->
 			<div class="relative bg-primary dark:bg-primary-dark rounded-2xl p-6 border border-white/10">
-				<a href="/profile" class="absolute z-40 top-5 right-5 flex flex-col items-center transform transition-all duration-300 hover:scale-105">
+				<a href="/friends/${safeDisplayName}" class="absolute z-40 top-5 right-5 flex flex-col items-center transform transition-all duration-300 hover:scale-105">
 					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20">
 						<path fill="#e8e8e8" d="M10 9a3 3 0 1 0 0-6a3 3 0 0 0 0 6ZM6 8a2 2 0 1 1-4 0a2 2 0 0 1 4 0Zm-4.51 7.326a.78.78 0 0 1-.358-.442a3 3 0 0 1 4.308-3.516a6.484 6.484 0 0 0-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 0 1-2.07-.655Zm14.95.654a4.97 4.97 0 0 0 2.07-.654a.78.78 0 0 0 .357-.442a3 3 0 0 0-4.308-3.517a6.484 6.484 0 0 1 1.907 3.96a2.32 2.32 0 0 1-.026.654ZM18 8a2 2 0 1 1-4 0a2 2 0 0 1 4 0ZM5.304 16.19a.844.844 0 0 1-.277-.71a5 5 0 0 1 9.947 0a.843.843 0 0 1-.277.71A6.975 6.975 0 0 1 10 18a6.974 6.974 0 0 1-4.696-1.81Z"/>
 					</svg>
@@ -355,9 +355,6 @@ private fillModifyForm() {
 }
 
 private renderStats(game: string): string{
-		console.log('Rendering stats for game:', game);
-		console.log('User stats:', this.userStats);
-
 		// Vérifier que userStats existe et est un tableau
 		if (!this.userStats || !Array.isArray(this.userStats)) {
 			console.warn('UserStats not available or not an array:', this.userStats);
@@ -481,47 +478,7 @@ private attachEventListeners(): void {
 	const arrow = document.getElementById('dropdownArrow') as HTMLButtonElement;
 	const pongbtn = document.getElementById("pongChoice") as HTMLButtonElement
 	const aowbtn = document.getElementById("aowChoice") as HTMLButtonElement
-	const modifyPhoto = document.getElementById("modify-photo") as HTMLButtonElement;
-	const profilePhoto = document.getElementById("profile-photo") as HTMLDivElement;
-	const avatarDropdown = document.getElementById("avatarDropdown") as HTMLDivElement;
-	const uploadAvatarBtn = this.container.querySelector('#uploadAvatar-btn') as HTMLButtonElement;
-	const deleteAvatarBtn = this.container.querySelector('#deleteAvatar-btn') as HTMLButtonElement;
 
-	if (modifyPhoto) {
-		profilePhoto.addEventListener('mouseenter', () => {
-			modifyPhoto.classList.remove("opacity-0");
-			modifyPhoto.classList.add("opacity-80");
-		});
-		profilePhoto.addEventListener('mouseleave', () => {
-			modifyPhoto.classList.add("opacity-0");
-			modifyPhoto.classList.remove("opacity-80");
-			
-		});
-		modifyPhoto.addEventListener('click', (e) => {
-			if(avatarDropdown.classList.contains("scale-0"))
-			{
-				avatarDropdown.classList.remove("scale-0");
-				avatarDropdown.classList.add("scale-100");
-			}
-			else
-			{
-				avatarDropdown.classList.add("scale-0");
-				avatarDropdown.classList.remove("scale-100");
-			}
-
-		});
-		uploadAvatarBtn?.addEventListener('click', async () => {
-			avatarDropdown.classList.add("scale-0");
-			avatarDropdown.classList.remove("scale-100");
-			await this.handleModifyAvatar();
-		});
-		deleteAvatarBtn?.addEventListener('click', async () => {
-			avatarDropdown.classList.add("scale-0");
-			avatarDropdown.classList.remove("scale-100");
-			await this.handleDeleteAvatar();
-		});
-		
-	}
 
 	arrow.addEventListener('click', (e) => {
 		e.preventDefault();
@@ -562,8 +519,48 @@ private attachEventListeners(): void {
 		const anonymizeBtn = this.container.querySelector('#anonymize-btn');
 		const deleteBtn = this.container.querySelector('#delete-btn');
 		const exportBtn = this.container.querySelector('#export-btn');
+		const modifyPhoto = document.getElementById("modify-photo") as HTMLButtonElement;
+		const profilePhoto = document.getElementById("profile-photo") as HTMLDivElement;
+		const avatarDropdown = document.getElementById("avatarDropdown") as HTMLDivElement;
+		const uploadAvatarBtn = this.container.querySelector('#uploadAvatar-btn') as HTMLButtonElement;
+		const deleteAvatarBtn = this.container.querySelector('#deleteAvatar-btn') as HTMLButtonElement;
 
 
+		if (modifyPhoto) {
+			profilePhoto.addEventListener('mouseenter', () => {
+				modifyPhoto.classList.remove("opacity-0");
+				modifyPhoto.classList.add("opacity-80");
+			});
+			profilePhoto.addEventListener('mouseleave', () => {
+				modifyPhoto.classList.add("opacity-0");
+				modifyPhoto.classList.remove("opacity-80");
+				
+			});
+			modifyPhoto.addEventListener('click', (e) => {
+				if(avatarDropdown.classList.contains("scale-0"))
+				{
+					avatarDropdown.classList.remove("scale-0");
+					avatarDropdown.classList.add("scale-100");
+				}
+				else
+				{
+					avatarDropdown.classList.add("scale-0");
+					avatarDropdown.classList.remove("scale-100");
+				}
+
+			});
+			uploadAvatarBtn?.addEventListener('click', async () => {
+				avatarDropdown.classList.add("scale-0");
+				avatarDropdown.classList.remove("scale-100");
+				await this.handleModifyAvatar();
+			});
+			deleteAvatarBtn?.addEventListener('click', async () => {
+				avatarDropdown.classList.add("scale-0");
+				avatarDropdown.classList.remove("scale-100");
+				await this.handleDeleteAvatar();
+			});
+			
+		}
 
 		editBtn?.addEventListener('click', () => {
 			editModal?.classList.remove('hidden');
@@ -623,8 +620,6 @@ private isHeMyFriend(): boolean {
 	if (!currentUser || !this.currentUserFriends) return false;
 
 	// Vérifie si le profil consulté est dedans
-	console.log("Mes amis : ", this.currentUserFriends);
-	console.log(this.currentUserFriends.some(friend => friend.friend_id === this.userProfile?.id));
 	return this.currentUserFriends.some(friend => friend.friend_id === this.userProfile?.id);
 }
 
