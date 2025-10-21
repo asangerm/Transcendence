@@ -554,53 +554,82 @@ private attachEventListeners(): void {
         addFriendBtn?.addEventListener('click', this.handleAddFriend.bind(this));
     }
 
-    // Optionnel : bouton "mot de passe oublié" dans la page login/forgot
-    const forgotPasswordBtn = document.querySelector('#forgot-password-btn') as HTMLButtonElement;
-    forgotPasswordBtn?.addEventListener('click', () => navigateTo('/change-password'));
 }
 
 private async handleProfileUpdate(event: Event): Promise<void> {
-	event.preventDefault();
+  event.preventDefault();
 
-	const form = event.target as HTMLFormElement;
-	const formData = new FormData(form);
+  const form = event.target as HTMLFormElement;
+  const formData = new FormData(form);
 
-	const displayName = sanitizeInput(formData.get('displayName') as string);
-	const email = sanitizeInput(formData.get('email') as string);
+  const displayName = sanitizeInput(formData.get('displayName') as string);
+  const email = sanitizeInput(formData.get('email') as string);
 
-	if (!displayName || !email) {
-		this.showError('Le nom et l’email sont requis.');
-		return;
-	}
+  if (!displayName || !email) {
+    this.showError('Le nom et l’email sont requis.');
+    return;
+  }
 
-	try {
-		const updatedUser = await UserService.updateProfile({
-			display_name: displayName,
-			email: email,
-		});
+  if (!this.userProfile) {
+    this.showError('Profil introuvable.');
+    return;
+  }
 
-		if (this.userProfile) {
-			this.userProfile.display_name = updatedUser.display_name;
-			this.userProfile.email = updatedUser.email;
-		}
+  try {
+    const oldDisplayName = this.userProfile.display_name; // 👈 on garde l'ancien nom
 
-		if (this.isOwnProfile) {
-			const currentUser = AuthStore.getUser();
-			if (currentUser) {
-				currentUser.display_name = updatedUser.display_name;
-				currentUser.email = updatedUser.email;
-				AuthStore.setUser(currentUser);
-			}
-		}
-		const nameElement = this.container.querySelector('h2');
-		if (nameElement) nameElement.textContent = updatedUser.display_name;
+    const updatedUser = await UserService.updateInfos(
+      { display_name: displayName, email },
+      this.userProfile.id
+    );
 
-		this.showSuccess('Profil mis à jour avec succès !');
+    // ✅ Redirection si le nom a changé
+    if (this.isOwnProfile && displayName !== oldDisplayName) {
+      window.history.pushState({}, '', `/profile/${encodeURIComponent(displayName)}`);
+    }
 
-	} catch (error: any) {
-		this.showError(error.message || 'Impossible de mettre à jour le profil.');
-	}
+    // ✅ Mise à jour locale après comparaison
+    this.userProfile.display_name = updatedUser.display_name;
+    this.userProfile.email = updatedUser.email;
+
+    if (this.isOwnProfile) {
+      const currentUser = AuthStore.getUser();
+      if (currentUser) {
+        currentUser.display_name = updatedUser.display_name;
+        currentUser.email = updatedUser.email;
+        AuthStore.setUser(currentUser);
+      }
+    }
+
+    const nameElement = this.container.querySelector('h2');
+    if (nameElement) nameElement.textContent = updatedUser.display_name;
+
+    this.showSuccess('Profil mis à jour avec succès !');
+  } catch (error: any) {
+    console.error('Erreur de mise à jour :', error);
+
+    let backendMessage = 'Impossible de mettre à jour le profil.';
+
+    if (error.response) {
+      if (error.response.data?.message) {
+        backendMessage = error.response.data.message;
+      } else if (error.response.status === 400) {
+        backendMessage = 'Données invalides. Vérifiez votre saisie.';
+      } else if (error.response.status === 404) {
+        backendMessage = 'Utilisateur introuvable.';
+      } else if (error.response.status >= 500) {
+        backendMessage = 'Erreur serveur. Réessayez plus tard.';
+      }
+    } else if (error.message) {
+      backendMessage = error.message;
+    }
+
+    this.showError(backendMessage);
+  }
 }
+
+
+
 
 
 private async handleAddFriend(): Promise<void> {
