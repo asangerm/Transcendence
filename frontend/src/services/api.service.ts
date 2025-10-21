@@ -73,6 +73,10 @@ export class ApiService {
     return this.api.patch(url, data, config);
   }
 
+  async put<T = any>(url: string, data = {}, config = {}): Promise<AxiosResponse<T>> {
+    return this.api.put(url, data, config);
+  }
+
   async delete<T = any>(url: string, config = {}): Promise<AxiosResponse<T>> {
     return this.api.delete(url, config);
   }

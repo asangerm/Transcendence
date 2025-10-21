@@ -230,32 +230,13 @@ private render(): void {
 							maxlength="50"
 						>
 					</div>
-					<div>
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mot de Passe</label>
-						<input 
-							id="password-modify"
-							type="text" 
-							name="password" 
-							value=""
-							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-							required
-							minlength="3"
-							maxlength="50"
-						>
+					<!-- Bouton Modifier mdp -->
+					<div class="mb-4">
+							<a href="/change-password" 
+							class="w-full px-4 py-2 mb-4 text-sm font-medium text-red-600 border border-red-600 rounded-md hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900/20 inline-block text-center transition-colors">
+							Modifier le mot de passe
+						</a>
 					</div>
-					<div>
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirmer le Mot de Passe</label>
-						<input 
-							id="confirmPassword-modify"
-							type="text" 
-							name="confirmPassword" 
-							value=""
-							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-							required
-							minlength="3"
-							maxlength="50"
-						>
-							</div>
 							<div class="flex justify-end space-x-3">
 								<button 
 									type="button" 
@@ -482,146 +463,145 @@ private updateGameStats(gameName: string): void {
 }
 
 private attachEventListeners(): void {
-	const dropdown = document.getElementById('gameDropdown') as HTMLDivElement;
-	const arrow = document.getElementById('dropdownArrow') as HTMLButtonElement;
-	const pongbtn = document.getElementById("pongChoice") as HTMLButtonElement
-	const aowbtn = document.getElementById("aowChoice") as HTMLButtonElement
-	const modifyPhoto = document.getElementById("modify-photo") as HTMLButtonElement;
-	const profilePhoto = document.getElementById("profile-photo") as HTMLDivElement;
-	const avatarDropdown = document.getElementById("avatarDropdown") as HTMLDivElement;
-	const uploadAvatarBtn = this.container.querySelector('#uploadAvatar-btn') as HTMLButtonElement;
-	const deleteAvatarBtn = this.container.querySelector('#deleteAvatar-btn') as HTMLButtonElement;
+    // Dropdown jeu
+    const dropdown = this.container.querySelector('#gameDropdown') as HTMLDivElement;
+    const arrow = this.container.querySelector('#dropdownArrow') as HTMLButtonElement;
+    const pongBtn = this.container.querySelector("#pongChoice") as HTMLButtonElement;
+    const aowBtn = this.container.querySelector("#aowChoice") as HTMLButtonElement;
 
-	if (modifyPhoto) {
-		profilePhoto.addEventListener('mouseenter', () => {
-			modifyPhoto.classList.remove("opacity-0");
-			modifyPhoto.classList.add("opacity-80");
-		});
-		profilePhoto.addEventListener('mouseleave', () => {
-			modifyPhoto.classList.add("opacity-0");
-			modifyPhoto.classList.remove("opacity-80");
-			
-		});
-		modifyPhoto.addEventListener('click', (e) => {
-			if(avatarDropdown.classList.contains("scale-0"))
-			{
-				avatarDropdown.classList.remove("scale-0");
-				avatarDropdown.classList.add("scale-100");
-			}
-			else
-			{
-				avatarDropdown.classList.add("scale-0");
-				avatarDropdown.classList.remove("scale-100");
-			}
+    arrow?.addEventListener('click', (e) => {
+        e.preventDefault();
+        dropdown?.classList.toggle('invisible');
+        dropdown?.classList.toggle('scale-100');
+        dropdown?.classList.toggle('scale-0');
+        arrow.classList.toggle("rotate-180");
+    });
 
-		});
-		uploadAvatarBtn?.addEventListener('click', async () => {
-			avatarDropdown.classList.add("scale-0");
-			avatarDropdown.classList.remove("scale-100");
-			await this.handleModifyAvatar();
-		});
-		deleteAvatarBtn?.addEventListener('click', async () => {
-			avatarDropdown.classList.add("scale-0");
-			avatarDropdown.classList.remove("scale-100");
-			await this.handleDeleteAvatar();
-		});
-		
-	}
+    pongBtn?.addEventListener('click', () => {
+        dropdown?.classList.add('invisible', 'scale-0');
+        dropdown?.classList.remove('scale-100');
+        arrow?.classList.remove("rotate-180");
+        this.updateGameStats('PONG');
+    });
 
-	arrow.addEventListener('click', (e) => {
-		e.preventDefault();
-		if (dropdown.classList.contains("invisible")) {
-			dropdown.classList.add("scale-100");
-			dropdown.classList.remove("scale-0");
-		}
-		else {
-			dropdown.classList.remove("scale-100");
-			dropdown.classList.add("scale-0");
-		}
-		arrow.classList.toggle("rotate-180");
-		dropdown.classList.toggle("invisible");
-	});
+    aowBtn?.addEventListener('click', () => {
+        dropdown?.classList.add('invisible', 'scale-0');
+        dropdown?.classList.remove('scale-100');
+        arrow?.classList.remove("rotate-180");
+        this.updateGameStats('AGE OF WAR');
+    });
 
-	pongbtn.addEventListener("click", () => {
-		dropdown.classList.remove("scale-100");
-		dropdown.classList.add("scale-0");
-		dropdown.classList.toggle("invisible");
-		arrow.classList.toggle("rotate-180");
-		this.updateGameStats('PONG');
-	});
+    // Avatar modifier / uploader
+    const modifyPhoto = this.container.querySelector("#modify-photo") as HTMLButtonElement;
+    const profilePhoto = this.container.querySelector("#profile-photo") as HTMLDivElement;
+    const avatarDropdown = this.container.querySelector("#avatarDropdown") as HTMLDivElement;
+    const uploadAvatarBtn = this.container.querySelector('#uploadAvatar-btn') as HTMLButtonElement;
+    const deleteAvatarBtn = this.container.querySelector('#deleteAvatar-btn') as HTMLButtonElement;
 
-	aowbtn.addEventListener("click", () => {
-		dropdown.classList.remove("scale-100");
-		dropdown.classList.add("scale-0");
-		dropdown.classList.toggle("invisible");
-		arrow.classList.toggle("rotate-180");
-		this.updateGameStats('AGE OF WAR');
-	});
+    if (modifyPhoto && profilePhoto && avatarDropdown) {
+        profilePhoto.addEventListener('mouseenter', () => {
+            modifyPhoto.classList.remove("opacity-0");
+            modifyPhoto.classList.add("opacity-80");
+        });
+        profilePhoto.addEventListener('mouseleave', () => {
+            modifyPhoto.classList.add("opacity-0");
+            modifyPhoto.classList.remove("opacity-80");
+        });
+        modifyPhoto.addEventListener('click', () => {
+            avatarDropdown.classList.toggle("scale-0");
+            avatarDropdown.classList.toggle("scale-100");
+        });
+    }
 
-	if (this.isOwnProfile) {
+    uploadAvatarBtn?.addEventListener('click', async () => {
+        avatarDropdown.classList.add("scale-0");
+        avatarDropdown.classList.remove("scale-100");
+        await this.handleModifyAvatar();
+    });
 
-		const editBtn = this.container.querySelector('#edit-profile');
-		const editModal = this.container.querySelector('#edit-profile-modal');
-		const cancelBtn = this.container.querySelector('#cancel-edit');
-		const editForm = this.container.querySelector('#edit-profile-form') as HTMLFormElement;
-		const logoutBtn = this.container.querySelector('#logout-btn');
-		const anonymizeBtn = this.container.querySelector('#anonymize-btn');
-		const deleteBtn = this.container.querySelector('#delete-btn');
-		const exportBtn = this.container.querySelector('#export-btn');
+    deleteAvatarBtn?.addEventListener('click', async () => {
+        avatarDropdown.classList.add("scale-0");
+        avatarDropdown.classList.remove("scale-100");
+        await this.handleDeleteAvatar();
+    });
 
+    // Si on est sur notre propre profil
+    if (this.isOwnProfile) {
+        const editBtn = this.container.querySelector('#edit-profile') as HTMLButtonElement;
+        const editModal = this.container.querySelector('#edit-profile-modal') as HTMLDivElement;
+        const cancelBtn = this.container.querySelector('#cancel-edit') as HTMLButtonElement;
+        const editForm = this.container.querySelector('#edit-profile-form') as HTMLFormElement;
+        const logoutBtn = this.container.querySelector('#logout-btn') as HTMLButtonElement;
+        const anonymizeBtn = this.container.querySelector('#anonymize-btn') as HTMLButtonElement;
+        const deleteBtn = this.container.querySelector('#delete-btn') as HTMLButtonElement;
+        const exportBtn = this.container.querySelector('#export-btn') as HTMLButtonElement;
 
+        // Ouvrir modal modifier profil
+        editBtn?.addEventListener('click', () => {
+            editModal?.classList.remove('hidden');
+            this.fillModifyForm();
+        });
 
-		editBtn?.addEventListener('click', () => {
-			editModal?.classList.remove('hidden');
-			this.fillModifyForm();
-		});
-		cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
-		editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
-		logoutBtn?.addEventListener('click', this.handleLogout.bind(this));
-		anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
-		deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
-		exportBtn?.addEventListener('click', () => this.handleExportData());
-	} 
-	else {
-		const addFriendBtn = this.container.querySelector('#add-friend');
-		addFriendBtn?.addEventListener('click', this.handleAddFriend.bind(this));
-	}
+        cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
+        editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
+        logoutBtn?.addEventListener('click', this.handleLogout.bind(this));
+        anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
+        deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
+        exportBtn?.addEventListener('click', () => this.handleExportData());
+    } else {
+        // Ajouter ami si ce n'est pas son profil
+        const addFriendBtn = this.container.querySelector('#add-friend') as HTMLButtonElement;
+        addFriendBtn?.addEventListener('click', this.handleAddFriend.bind(this));
+    }
+
+    // Optionnel : bouton "mot de passe oublié" dans la page login/forgot
+    const forgotPasswordBtn = document.querySelector('#forgot-password-btn') as HTMLButtonElement;
+    forgotPasswordBtn?.addEventListener('click', () => navigateTo('/change-password'));
 }
 
 private async handleProfileUpdate(event: Event): Promise<void> {
 	event.preventDefault();
-	
+
 	const form = event.target as HTMLFormElement;
 	const formData = new FormData(form);
+
 	const displayName = sanitizeInput(formData.get('displayName') as string);
+	const email = sanitizeInput(formData.get('email') as string);
+
+	if (!displayName || !email) {
+		this.showError('Le nom et l’email sont requis.');
+		return;
+	}
 
 	try {
-	await UserService.updateProfile({ display_name: displayName });
-	this.userProfile!.display_name = displayName;
-	
-	// Mettre à jour le store si c'est le profil de l'utilisateur connecté
-	if (this.isOwnProfile) {
-		const currentUser = AuthStore.getUser();
-		if (currentUser) {
-		currentUser.display_name = displayName;
-		AuthStore.setUser(currentUser);
+		const updatedUser = await UserService.updateProfile({
+			display_name: displayName,
+			email: email,
+		});
+
+		if (this.userProfile) {
+			this.userProfile.display_name = updatedUser.display_name;
+			this.userProfile.email = updatedUser.email;
 		}
-	}
-	
-	// Mettre à jour l'affichage de manière sécurisée
-	const nameElement = this.container.querySelector('h2');
-	if (nameElement) {
-		nameElement.textContent = displayName;
-	}
-	
-	const modal = this.container.querySelector('#edit-profile-modal');
-	modal?.classList.add('hidden');
-	
-	this.showSuccess('Profile updated successfully!');
+
+		if (this.isOwnProfile) {
+			const currentUser = AuthStore.getUser();
+			if (currentUser) {
+				currentUser.display_name = updatedUser.display_name;
+				currentUser.email = updatedUser.email;
+				AuthStore.setUser(currentUser);
+			}
+		}
+		const nameElement = this.container.querySelector('h2');
+		if (nameElement) nameElement.textContent = updatedUser.display_name;
+
+		this.showSuccess('Profil mis à jour avec succès !');
+
 	} catch (error: any) {
-	this.showError(error.message || 'Failed to update profile');
+		this.showError(error.message || 'Impossible de mettre à jour le profil.');
 	}
 }
+
 
 private async handleAddFriend(): Promise<void> {
 	if (!this.userProfile) return;

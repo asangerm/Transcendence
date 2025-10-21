@@ -137,6 +137,11 @@ export class UserService {
     return response.data;
   }
 
+  static async changePassword(userId: number, oldPassword: string, newPassword: string): Promise<{ message: string }> {
+    const response = await apiService.put(`/users/${userId}/password`, { oldPassword, newPassword });
+    return response.data;
+  }
+
   static async anonymizeAccount(userId: number): Promise<{ message: string }> {
     const response = await apiService.post(`/users/${userId}/anonymize`);
     return response.data;

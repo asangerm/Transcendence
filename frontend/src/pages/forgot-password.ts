@@ -1,78 +1,62 @@
-export function renderForgotPassword() {
-    const content = `
-        <div class="h-full w-full pt-10 flex items-center justify-center">
-            <div class="max-w-md w-full mx-auto">
-                <div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg p-8 transform transition-all duration-300 hover:shadow-2xl">
-                    <h2 class="text-3xl font-bold text-center mb-8">Réinitialisation du mot de passe</h2>
-                    
-                    <form id="forgotPasswordForm" class="space-y-6" novalidate>
-                        <div>
-                            <p class="text-muted dark:text-muted-dark mb-6 text-center">
-                                Entrez votre adresse email pour recevoir un lien de réinitialisation de mot de passe.
-                            </p>
-                        </div>
+export async function renderForgotPassword() {
+  const app = document.getElementById('app');
+  if (!app) return;
 
-                        <!-- Email Input -->
-                        <div>
-                            <label for="email" class="block text-sm font-medium mb-2">
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                required
-                                class="w-full px-4 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
-                                placeholder="Entrez votre email"
-                            >
-                        </div>
+  app.innerHTML = `
+    <div class="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div class="bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-8 w-full max-w-md">
+        <h2 class="text-2xl font-semibold text-center text-gray-800 dark:text-white mb-6">
+          Mot de passe oublié
+        </h2>
 
-                        <!-- Submit Button -->
-                        <button
-                            type="submit"
-                            class="w-full button-primary"
-                        >
-                            Envoyer le lien
-                        </button>
+        <p class="text-center text-gray-600 dark:text-gray-300 mb-6 text-sm">
+          Entrez votre adresse e-mail pour recevoir les instructions de réinitialisation.
+        </p>
 
-                        <!-- Back to Login Link -->
-                        <div class="text-center mt-4">
-                            <a href="/login" class="text-link hover:text-link-hover dark:text-link-dark dark:hover:text-link-hover-dark transition-all duration-300">
-                                Retour à la connexion
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    `;
+        <form id="forgot-form" class="space-y-4">
+          <input 
+            type="email" 
+            id="email" 
+            placeholder="Votre adresse e-mail" 
+            required
+            class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+          />
 
-    const app = document.getElementById('app');
-    if (app) {
-        app.innerHTML = content;
-        
+          <div id="message" class="hidden text-center text-sm mt-2"></div>
 
-        const email = (document.getElementById('email') as HTMLInputElement);
+          <button 
+            type="submit"
+            class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition"
+          >
+            Envoyer le lien
+          </button>
 
-        email.addEventListener('blur', () => {
-            if (email.value.trim())
-                email.classList.remove('error-input', 'shake-animation');
-        });
+          <a href="/login" 
+            class="block text-center text-sm text-gray-500 dark:text-gray-300 mt-4 hover:underline">
+            Retour à la connexion
+          </a>
+        </form>
+      </div>
+    </div>
+  `;
 
-        // Add form submission handler
-        const form = document.getElementById('forgotPasswordForm');
-        if (form) {
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                email.classList.remove('error-input', 'shake-animation');
-                if (!email.value.trim()) {
-                    email.classList.add('error-input', 'shake-animation');
-                    setTimeout(() => email.classList.remove('shake-animation'), 1000);
-                }
-                else {
-                    // Envoyer Requete au backend
-                }
-            });
-        }
-    }
-} 
+  const form = document.getElementById('forgot-form') as HTMLFormElement;
+  const messageDiv = document.getElementById('message') as HTMLDivElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = (document.getElementById('email') as HTMLInputElement).value;
+    messageDiv.classList.remove('hidden');
+    messageDiv.classList.remove('text-red-500', 'text-green-600');
+    messageDiv.textContent = 'Envoi en cours...';
+    messageDiv.classList.add('text-gray-500');
+
+    // Pas encore de backend → simple simulation
+    setTimeout(() => {
+      messageDiv.classList.remove('text-gray-500');
+      messageDiv.classList.add('text-green-600');
+      messageDiv.textContent = `Si un compte existe pour ${email}, un lien de réinitialisation vous a été envoyé.`;
+    }, 1000);
+  });
+}

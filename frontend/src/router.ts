@@ -16,10 +16,12 @@ const routes: Route[] = [
     { path: '/game2', component: () => import('./pages/game2').then(m => m.renderGame2()), requiresAuth: true },
     { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()), requiresAuth: true },
     { path: '/login', component: () => import('./pages/login').then(m => m.renderLogin()), guestOnly: true },
-    { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()), guestOnly: true },
     { path: '/register', component: () => import('./pages/register').then(m => m.renderRegister()), guestOnly: true },
     { path: '/terms', component: () => import('./pages/terms').then(m => m.renderTerms()), requiresAuth: false },
-    { path: '/privacy', component: () => import('./pages/privacy').then(m => m.renderPrivacy()), requiresAuth: false }
+    { path: '/privacy', component: () => import('./pages/privacy').then(m => m.renderPrivacy()), requiresAuth: false },
+    { path: '/change-password', component: () => import('./pages/change-password').then(m => m.renderChangePassword()), requiresAuth: true },
+    { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()), guestOnly: true }
+
 ];
 
 export function initRouter() {
