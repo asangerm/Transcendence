@@ -24,7 +24,7 @@ export class LoginForm {
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
               Or
-              <a href="/register" class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+              <a href="/register" class="links-style">
                 create a new account
               </a>
             </p>
@@ -72,7 +72,7 @@ export class LoginForm {
               </div>
 
               <div class="text-sm">
-                <a href="/forgot-password" class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                <a href="/forgot-password" class="links-style">
                   Forgot your password?
                 </a>
               </div>

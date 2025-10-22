@@ -567,7 +567,7 @@ private attachEventListeners(): void {
 			this.fillModifyForm();
 		});
 		cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
-		editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
+		// editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
 	    anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
 		deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
 		exportBtn?.addEventListener('click', () => this.handleExportData());
@@ -595,8 +595,8 @@ private async handleProfileUpdate(event: Event): Promise<void> {
 	if (this.isOwnProfile) {
 		const currentUser = AuthStore.getUser();
 		if (currentUser) {
-		currentUser.display_name = displayName;
-		AuthStore.setUser(currentUser);
+			currentUser.display_name = displayName;
+			AuthStore.setUser(currentUser);
 		}
 	}
 	
