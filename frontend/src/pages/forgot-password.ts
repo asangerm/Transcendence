@@ -2,9 +2,23 @@ export async function renderForgotPassword() {
   const app = document.getElementById('app');
   if (!app) return;
 
+
+    const style = document.createElement('style');
+  style.innerHTML = `
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+  `;
+  document.head.appendChild(style);
+
+
+
   app.innerHTML = `
-    <div class="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div class="bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-8 w-full max-w-md">
+    <div class="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
+      <div class="bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-8 w-full max-w-md mt-[-400px]">
         <h2 class="text-2xl font-semibold text-center text-gray-800 dark:text-white mb-6">
           Mot de passe oublié
         </h2>

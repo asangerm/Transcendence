@@ -556,77 +556,84 @@ private attachEventListeners(): void {
 
 }
 
+
 private async handleProfileUpdate(event: Event): Promise<void> {
-  event.preventDefault();
+	event.preventDefault();
 
-  const form = event.target as HTMLFormElement;
-  const formData = new FormData(form);
+	const form = event.target as HTMLFormElement;
+	const formData = new FormData(form);
 
-  const displayName = sanitizeInput(formData.get('displayName') as string);
-  const email = sanitizeInput(formData.get('email') as string);
+	const displayName = sanitizeInput(formData.get('displayName') as string);
+	const email = sanitizeInput(formData.get('email') as string);
 
-  if (!displayName || !email) {
-    this.showError('Le nom et l’email sont requis.');
-    return;
-  }
+	if (!displayName || !email) {
+		alert('Le nom et l’email sont requis.');
+		return;
+	}
 
-  if (!this.userProfile) {
-    this.showError('Profil introuvable.');
-    return;
-  }
+	if (!this.userProfile) {
+		alert('Profil introuvable.');
+		return;
+	}
 
-  try {
-    const oldDisplayName = this.userProfile.display_name; // 👈 on garde l'ancien nom
+	try {
+		// 🔹 Appel API pour mettre à jour les infos
+		const updatedUser = await UserService.updateInfos(
+			{ display_name: displayName, email },
+			this.userProfile.id
+		);
 
-    const updatedUser = await UserService.updateInfos(
-      { display_name: displayName, email },
-      this.userProfile.id
-    );
+		// ✅ Message de succès du backend
+		alert('Profil mis à jour avec succès !');
 
-    // ✅ Redirection si le nom a changé
-    if (this.isOwnProfile && displayName !== oldDisplayName) {
-      window.history.pushState({}, '', `/profile/${encodeURIComponent(displayName)}`);
-    }
+		// 🔹 Mise à jour locale
+		this.userProfile.display_name = updatedUser.display_name;
+		this.userProfile.email = updatedUser.email;
 
-    // ✅ Mise à jour locale après comparaison
-    this.userProfile.display_name = updatedUser.display_name;
-    this.userProfile.email = updatedUser.email;
+		// 🔹 Met à jour le store global
+		const currentUser = AuthStore.getUser();
+		if (currentUser) {
+			const newUser = {
+				...currentUser,
+				display_name: updatedUser.display_name,
+				email: updatedUser.email,
+			};
+			AuthStore.setUser(newUser); // <-- NavBar se met à jour automatiquement VOIR NAV BARRRRRRRRRRRRRRR PROBLEMEEEEEEEEEE
+		}
 
-    if (this.isOwnProfile) {
-      const currentUser = AuthStore.getUser();
-      if (currentUser) {
-        currentUser.display_name = updatedUser.display_name;
-        currentUser.email = updatedUser.email;
-        AuthStore.setUser(currentUser);
-      }
-    }
+		// ✅ Ferme le modal
+		const editModal = document.querySelector('#edit-profile-modal') as HTMLDivElement;
+		if (editModal) editModal.classList.add('hidden');
 
-    const nameElement = this.container.querySelector('h2');
-    if (nameElement) nameElement.textContent = updatedUser.display_name;
+		// ✅ Redirige vers le nouveau profil si le display_name a changé
+		const newProfileUrl = `/profile/${encodeURIComponent(updatedUser.display_name)}`; // NAVIGATE TO !!!!!!!!!!!!!!!!!!
+		if (window.location.pathname !== newProfileUrl) {
+			if (window.router && typeof window.router.navigate === 'function') {
+				window.router.navigate(newProfileUrl);
+			} else {
+				window.location.href = newProfileUrl;
+			}
+		}
 
-    this.showSuccess('Profil mis à jour avec succès !');
-  } catch (error: any) {
-    console.error('Erreur de mise à jour :', error);
+	} catch (error: any) {
+		console.error('Erreur de mise à jour :', error);
 
-    let backendMessage = 'Impossible de mettre à jour le profil.';
+		const backendMessage =
+			error.response?.data?.message ||
+			error.message ||
+			'Impossible de mettre à jour le profil.';
 
-    if (error.response) {
-      if (error.response.data?.message) {
-        backendMessage = error.response.data.message;
-      } else if (error.response.status === 400) {
-        backendMessage = 'Données invalides. Vérifiez votre saisie.';
-      } else if (error.response.status === 404) {
-        backendMessage = 'Utilisateur introuvable.';
-      } else if (error.response.status >= 500) {
-        backendMessage = 'Erreur serveur. Réessayez plus tard.';
-      }
-    } else if (error.message) {
-      backendMessage = error.message;
-    }
-
-    this.showError(backendMessage);
-  }
+		alert('Erreur : ' + backendMessage);
+	}
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -719,7 +726,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 
 	const confirmed = confirm(
 		"⚠️ Êtes-vous sûr de vouloir SUPPRIMER DÉFINITIVEMENT votre compte ?\n\n" +
-		"👉 Conséquences :\n" +
+		"  Conséquences :\n" +
 		"- Votre compte sera entièrement effacé de notre base de données.\n" +
 		"- Vous ne pourrez plus jamais vous reconnecter.\n" +
 		"- Vos amis perdront la relation avec vous.\n" +
