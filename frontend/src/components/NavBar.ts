@@ -50,7 +50,7 @@ export class NavBar {
 	}
 
 	private getFullAvatarUrl(avatarUrl: string | null): string {
-		if (!avatarUrl) return 'http://localhost:8000/uploads/avatars/default.png';
+		if (!avatarUrl) return 'http://localhost:8000/uploads/default.png';
 		if (avatarUrl.startsWith('http')) return avatarUrl;
 		return `http://localhost:8000${avatarUrl}`;
 	}

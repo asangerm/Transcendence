@@ -17,7 +17,7 @@ export class UserProfileComponent {
 	}
 
 	private getFullAvatarUrl(avatarUrl: string | null): string {
-		if (!avatarUrl) return '/uploads/avatars/default.png';
+		if (!avatarUrl) return '/uploads/default.png';
 		if (avatarUrl.startsWith('http')) return avatarUrl;
 		return `http://localhost:8000${avatarUrl}`;
 	}
@@ -818,7 +818,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 
 	private async handleDeleteAvatar(): Promise<void> {
 		try {
-			const defaultAvatar = '/uploads/avatars/default.png';
+			const defaultAvatar = '/uploads/default.png';
 			await UserService.deleteAvatar();
 			if (this.userProfile) {
 			this.userProfile.avatar_url = defaultAvatar;
@@ -833,7 +833,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 		const navAvatar = document.getElementById('navBar-avatar') as HTMLImageElement;
 		if (navAvatar) 
 		{
-			navAvatar.src = this.getFullAvatarUrl(this.userProfile?.avatar_url || '/uploads/avatars/default.png');
+			navAvatar.src = this.getFullAvatarUrl(this.userProfile?.avatar_url || '/uploads/default.png');
 		}
 	}
 
