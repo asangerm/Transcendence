@@ -15,6 +15,7 @@ const routes: Route[] = [
     { path: '/pong', component: () => import('./pages/pong').then(m => m.renderPong()), requiresAuth: true },
     { path: '/game2', component: () => import('./pages/game2').then(m => m.renderGame2()), requiresAuth: true },
     { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()), requiresAuth: true },
+    { path: '/friends', component: () => import('./pages/friends').then(m => m.renderFriends()), requiresAuth: true },
     { path: '/login', component: () => import('./pages/login').then(m => m.renderLogin()), guestOnly: true },
     { path: '/register', component: () => import('./pages/register').then(m => m.renderRegister()), guestOnly: true },
     { path: '/terms', component: () => import('./pages/terms').then(m => m.renderTerms()), requiresAuth: false },
@@ -51,16 +52,17 @@ async function handleRoute() {
     const path = window.location.pathname;
     const route = routes.find(route => route.path === path);
 	
-	if (path.startsWith('/profile/')) {
+	if (path.startsWith('/profile/') || path.startsWith('/friends/')) {
 		const parts = path.split('/');
 		const username = parts[2];
 		const user = await UserService.getUserProfile(username);
-		console.log(user)
-		if (user) {
+		if (user && parts[1] === "profile") {
 			import('./pages/visit-profile').then(m => m.renderProfile(username));
 		}
+		else if (user && parts[1] === "friends") {
+			import('./pages/friends').then(m => m.renderFriends(username));
+		}
 		else {
-			console.log(window.location.pathname)
 			window.location.pathname.replace(path, '/');
 			navigateTo('/');
 		}
