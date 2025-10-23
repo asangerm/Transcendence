@@ -2,6 +2,7 @@ import { UserService, UserProfile, UserStats } from '../services/user.service';
 import { AuthService, User } from '../services/auth.service';
 import { AuthStore } from '../stores/auth.store';
 import { sanitizeHtml, sanitizeInput, escapeHtml } from '../utils/sanitizer';
+import { navigateTo } from '../router';
 
 export class UserProfileComponent {
 	private container: HTMLElement;
@@ -556,86 +557,65 @@ private attachEventListeners(): void {
 
 }
 
-
 private async handleProfileUpdate(event: Event): Promise<void> {
-	event.preventDefault();
+    event.preventDefault();
 
-	const form = event.target as HTMLFormElement;
-	const formData = new FormData(form);
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
 
-	const displayName = sanitizeInput(formData.get('displayName') as string);
-	const email = sanitizeInput(formData.get('email') as string);
+    const displayName = sanitizeInput(formData.get('displayName') as string);
+    const email = sanitizeInput(formData.get('email') as string);
 
-	if (!displayName || !email) {
-		alert('Le nom et l’email sont requis.');
-		return;
-	}
+    if (!displayName || !email) {
+        alert('Le nom et l’email sont requis.');
+        return;
+    }
 
-	if (!this.userProfile) {
-		alert('Profil introuvable.');
-		return;
-	}
+    if (!this.userProfile) {
+        alert('Profil introuvable.');
+        return;
+    }
 
-	try {
-		// 🔹 Appel API pour mettre à jour les infos
-		const updatedUser = await UserService.updateInfos(
-			{ display_name: displayName, email },
-			this.userProfile.id
-		);
+    try {
+        const updatedUser = await UserService.updateInfos(
+            { display_name: displayName, email },
+            this.userProfile.id
+        );
 
-		// ✅ Message de succès du backend
-		alert('Profil mis à jour avec succès !');
+        alert('Profil mis à jour avec succès !');
 
-		// 🔹 Mise à jour locale
-		this.userProfile.display_name = updatedUser.display_name;
-		this.userProfile.email = updatedUser.email;
+        this.userProfile.display_name = updatedUser.display_name;
+        this.userProfile.email = updatedUser.email;
 
-		// 🔹 Met à jour le store global
-		const currentUser = AuthStore.getUser();
-		if (currentUser) {
-			const newUser = {
-				...currentUser,
-				display_name: updatedUser.display_name,
-				email: updatedUser.email,
-			};
-			AuthStore.setUser(newUser); // <-- NavBar se met à jour automatiquement VOIR NAV BARRRRRRRRRRRRRRR PROBLEMEEEEEEEEEE
-		}
+        const currentUser = AuthStore.getUser();
+        if (currentUser) {
+            const newUser = {
+                ...currentUser,
+                display_name: updatedUser.display_name,
+                email: updatedUser.email,
+            };
+            AuthStore.setUser(newUser); 
+        }
 
-		// ✅ Ferme le modal
-		const editModal = document.querySelector('#edit-profile-modal') as HTMLDivElement;
-		if (editModal) editModal.classList.add('hidden');
+        const editModal = document.querySelector('#edit-profile-modal') as HTMLDivElement;
+        if (editModal) editModal.classList.add('hidden');
 
-		// ✅ Redirige vers le nouveau profil si le display_name a changé
-		const newProfileUrl = `/profile/${encodeURIComponent(updatedUser.display_name)}`; // NAVIGATE TO !!!!!!!!!!!!!!!!!!
-		if (window.location.pathname !== newProfileUrl) {
-			if (window.router && typeof window.router.navigate === 'function') {
-				window.router.navigate(newProfileUrl);
-			} else {
-				window.location.href = newProfileUrl;
-			}
-		}
+        const newProfileUrl = `/profile/${encodeURIComponent(updatedUser.display_name)}`; 
+        if (window.location.pathname !== newProfileUrl) {
+                navigateTo(newProfileUrl);
+        }
 
-	} catch (error: any) {
-		console.error('Erreur de mise à jour :', error);
+    } catch (error: any) {
+        console.error('Erreur de mise à jour :', error);
 
-		const backendMessage =
-			error.response?.data?.message ||
-			error.message ||
-			'Impossible de mettre à jour le profil.';
+        const backendMessage =
+            error.response?.data?.message ||
+            error.message ||
+            'Impossible de mettre à jour le profil.';
 
-		alert('Erreur : ' + backendMessage);
-	}
+        alert('Erreur : ' + backendMessage);
+    }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,6 +1,13 @@
 import { FastifyInstance } from "fastify";
+import jwt from "jsonwebtoken";
 import { requireAuth } from "../../middleware/authMiddleware";
 import validateUser from "../../validators/validator";
+
+interface User {
+  id: number;
+  email: string;
+  display_name: string;
+}
 
 export default async function updateInfos(app: FastifyInstance) {
   app.put("/:id", { preHandler: [requireAuth] }, async (req, reply) => {
@@ -28,6 +35,20 @@ export default async function updateInfos(app: FastifyInstance) {
 
     // Récupère l'utilisateur mis à jour
     const updatedUser = app.db.prepare("SELECT id, display_name, email FROM users WHERE id = ?").get(userId);
+
+    const token = jwt.sign(
+        { id: userId, email: email, display_name: display_name },
+        process.env.JWT_SECRET || "secret",
+        { expiresIn: "1h" }
+    );
+
+    reply.setCookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
+        maxAge: 60 * 60,
+    });
 
     return reply.send(updatedUser);
   });

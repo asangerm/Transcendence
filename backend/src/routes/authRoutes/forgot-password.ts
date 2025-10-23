@@ -1,4 +1,4 @@
-/*import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { v4 as uuidv4 } from "uuid";
 import { sendResetPasswordEmail } from "../../services/email.service";
 
@@ -37,4 +37,4 @@ export default async function forgotPasswordRoutes(app: FastifyInstance) {
       return reply.status(500).send({ error: true, message: "Erreur interne" });
     }
   });
-}*/
+}
