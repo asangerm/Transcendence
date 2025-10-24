@@ -4,7 +4,7 @@ CREATE TABLE users (
     email          VARCHAR(255) NOT NULL UNIQUE,
     password_hash  VARCHAR(255),
     display_name   VARCHAR(255) NOT NULL UNIQUE,
-    avatar_url     TEXT DEFAULT '/uploads/avatars/default.png',
+    avatar_url     TEXT DEFAULT '/uploads/default.png',
     is_online      INTEGER DEFAULT 0,
     wins           INTEGER DEFAULT 0,
     losses         INTEGER DEFAULT 0,

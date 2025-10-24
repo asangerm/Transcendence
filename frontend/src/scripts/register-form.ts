@@ -115,7 +115,6 @@ export class RegisterFormHandler {
 				if (this.confirmPasswordInput.value !== this.passwordInput.value) {
 					this.confirmPasswVerif.classList.remove('scale-0');
 					this.confirmPasswVerif.classList.add('scale-100');
-					this.confirmPasswVerif.innerHTML = "NAN !";
 				}
 				else if (this.confirmPasswordInput.value !== '' && this.confirmPasswordInput.value === this.passwordInput.value) {
 					this.confirmPasswVerif.classList.remove('scale-100');

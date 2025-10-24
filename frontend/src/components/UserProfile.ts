@@ -2,6 +2,7 @@ import { UserService, UserProfile, UserStats, Friend } from '../services/user.se
 import { AuthService } from '../services/auth.service';
 import { AuthStore } from '../stores/auth.store';
 import { sanitizeHtml, sanitizeInput, escapeHtml } from '../utils/sanitizer';
+import { navigateTo } from '../router';
 
 export class UserProfileComponent {
 	private container: HTMLElement;
@@ -16,7 +17,7 @@ export class UserProfileComponent {
 	}
 
 	private getFullAvatarUrl(avatarUrl: string | null): string {
-		if (!avatarUrl) return '/uploads/avatars/default.png';
+		if (!avatarUrl) return '/uploads/default.png';
 		if (avatarUrl.startsWith('http')) return avatarUrl;
 		return `http://localhost:8000${avatarUrl}`;
 	}
@@ -53,6 +54,16 @@ export class UserProfileComponent {
 			});
 			
 			await this.loadUserData(username);
+			
+			window.addEventListener("beforeunload", () => {
+				const currentUser = AuthStore.getUser();
+				if (!currentUser) return;
+
+				const url = `http://localhost:8000/users/${currentUser.id}/offline`;
+
+				navigator.sendBeacon(url);
+			});
+
 		} catch (error: any) {
 			console.error('Error loading user profile:', error);
 			this.showError(error.message || 'Failed to load profile');
@@ -225,32 +236,13 @@ private render(): void {
 							maxlength="50"
 						>
 					</div>
-					<div>
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mot de Passe</label>
-						<input 
-							id="password-modify"
-							type="text" 
-							name="password" 
-							value=""
-							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-							required
-							minlength="3"
-							maxlength="50"
-						>
+					<!-- Bouton Modifier mdp -->
+					<div class="mb-4">
+							<a href="/change-password" 
+							class="w-full px-4 py-2 mb-4 text-sm font-medium text-red-600 border border-red-600 rounded-md hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900/20 inline-block text-center transition-colors">
+							Modifier le mot de passe
+						</a>
 					</div>
-					<div>
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirmer le Mot de Passe</label>
-						<input 
-							id="confirmPassword-modify"
-							type="text" 
-							name="confirmPassword" 
-							value=""
-							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-							required
-							minlength="3"
-							maxlength="50"
-						>
-							</div>
 							<div class="flex justify-end space-x-3">
 								<button 
 									type="button" 
@@ -581,38 +573,63 @@ private attachEventListeners(): void {
 }
 
 private async handleProfileUpdate(event: Event): Promise<void> {
-	event.preventDefault();
-	
-	const form = event.target as HTMLFormElement;
-	const formData = new FormData(form);
-	const displayName = sanitizeInput(formData.get('displayName') as string);
+    event.preventDefault();
 
-	try {
-	await UserService.updateProfile({ display_name: displayName });
-	this.userProfile!.display_name = displayName;
-	
-	// Mettre à jour le store si c'est le profil de l'utilisateur connecté
-	if (this.isOwnProfile) {
-		const currentUser = AuthStore.getUser();
-		if (currentUser) {
-			currentUser.display_name = displayName;
-			AuthStore.setUser(currentUser);
-		}
-	}
-	
-	// Mettre à jour l'affichage de manière sécurisée
-	const nameElement = this.container.querySelector('h2');
-	if (nameElement) {
-		nameElement.textContent = displayName;
-	}
-	
-	const modal = this.container.querySelector('#edit-profile-modal');
-	modal?.classList.add('hidden');
-	
-	this.showSuccess('Profile updated successfully!');
-	} catch (error: any) {
-	this.showError(error.message || 'Failed to update profile');
-	}
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
+
+    const displayName = sanitizeInput(formData.get('displayName') as string);
+    const email = sanitizeInput(formData.get('email') as string);
+
+    if (!displayName || !email) {
+        alert('Le nom et l’email sont requis.');
+        return;
+    }
+
+    if (!this.userProfile) {
+        alert('Profil introuvable.');
+        return;
+    }
+
+    try {
+        const updatedUser = await UserService.updateInfos(
+            { display_name: displayName, email },
+            this.userProfile.id
+        );
+
+        alert('Profil mis à jour avec succès !');
+
+        this.userProfile.display_name = updatedUser.display_name;
+        this.userProfile.email = updatedUser.email;
+
+        const currentUser = AuthStore.getUser();
+        if (currentUser) {
+            const newUser = {
+                ...currentUser,
+                display_name: updatedUser.display_name,
+                email: updatedUser.email,
+            };
+            AuthStore.setUser(newUser); 
+        }
+
+        const editModal = document.querySelector('#edit-profile-modal') as HTMLDivElement;
+        if (editModal) editModal.classList.add('hidden');
+
+        const newProfileUrl = `/profile/${encodeURIComponent(updatedUser.display_name)}`; 
+        if (window.location.pathname !== newProfileUrl) {
+                navigateTo(newProfileUrl);
+        }
+
+    } catch (error: any) {
+        console.error('Erreur de mise à jour :', error);
+
+        const backendMessage =
+            error.response?.data?.message ||
+            error.message ||
+            'Impossible de mettre à jour le profil.';
+
+        alert('Erreur : ' + backendMessage);
+    }
 }
 
 private isHeMyFriend(): boolean {
@@ -722,7 +739,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 
 	const confirmed = confirm(
 		"⚠️ Êtes-vous sûr de vouloir SUPPRIMER DÉFINITIVEMENT votre compte ?\n\n" +
-		"👉 Conséquences :\n" +
+		"  Conséquences :\n" +
 		"- Votre compte sera entièrement effacé de notre base de données.\n" +
 		"- Vous ne pourrez plus jamais vous reconnecter.\n" +
 		"- Vos amis perdront la relation avec vous.\n" +
@@ -801,7 +818,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 
 	private async handleDeleteAvatar(): Promise<void> {
 		try {
-			const defaultAvatar = '/uploads/avatars/default.png';
+			const defaultAvatar = '/uploads/default.png';
 			await UserService.deleteAvatar();
 			if (this.userProfile) {
 			this.userProfile.avatar_url = defaultAvatar;
@@ -816,7 +833,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 		const navAvatar = document.getElementById('navBar-avatar') as HTMLImageElement;
 		if (navAvatar) 
 		{
-			navAvatar.src = this.getFullAvatarUrl(this.userProfile?.avatar_url || '/uploads/avatars/default.png');
+			navAvatar.src = this.getFullAvatarUrl(this.userProfile?.avatar_url || '/uploads/default.png');
 		}
 	}
 

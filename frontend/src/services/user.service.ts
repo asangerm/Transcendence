@@ -67,10 +67,14 @@ export class UserService {
 		}
 	}
 
-	static async updateProfile(updates: Partial<User>): Promise<User> {
-		const response = await apiService.patch('/users/profile', updates);
-		return response.data;
-	}
+  static async updateInfos(updates: { display_name: string; email: string }, userId?: number): Promise<User> {
+    if (!userId) {
+        throw new Error("User ID is required to update profile.");
+    }
+    const response = await apiService.put(`/users/${userId}`, updates);
+    return response.data;
+}
+
 
   static async uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
     const formData = new FormData();
@@ -124,6 +128,11 @@ export class UserService {
   static async searchUsers(query: string): Promise<User[]> {
     const response = await apiService.get(`/users/search?q=${encodeURIComponent(query)}`);
     return response.data.users;
+  }
+
+  static async changePassword(userId: number, oldPassword: string, newPassword: string): Promise<{ message: string }> {
+    const response = await apiService.put(`/users/${userId}/password`, { oldPassword, newPassword });
+    return response.data;
   }
 
   static async anonymizeAccount(userId: number): Promise<{ message: string }> {

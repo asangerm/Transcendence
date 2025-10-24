@@ -75,7 +75,7 @@ export default async function modifyAvatar(app: FastifyInstance) {
         return reply.status(401).send({ error: true, message: "Unauthorized" });
       }
 
-      const defaultAvatar = "/uploads/avatars/default.png";
+      const defaultAvatar = "/uploads/default.png";
 
       const user = app.db
         .prepare("SELECT avatar_url FROM users WHERE id = ?")

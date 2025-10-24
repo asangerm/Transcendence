@@ -18,10 +18,12 @@ const routes: Route[] = [
     { path: '/friends', component: () => import('./pages/friends').then(m => m.renderFriends("")), requiresAuth: true },
     { path: '/tournaments', component: () => import('./pages/tournaments').then(m => m.renderTournaments()), requiresAuth: true },
     { path: '/login', component: () => import('./pages/login').then(m => m.renderLogin()), guestOnly: true },
-    { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()), guestOnly: true },
     { path: '/register', component: () => import('./pages/register').then(m => m.renderRegister()), guestOnly: true },
     { path: '/terms', component: () => import('./pages/terms').then(m => m.renderTerms()), requiresAuth: false },
-    { path: '/privacy', component: () => import('./pages/privacy').then(m => m.renderPrivacy()), requiresAuth: false }
+    { path: '/privacy', component: () => import('./pages/privacy').then(m => m.renderPrivacy()), requiresAuth: false },
+    { path: '/change-password', component: () => import('./pages/change-password').then(m => m.renderChangePassword()), requiresAuth: true },
+    { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()), guestOnly: true }
+
 ];
 
 export function initRouter() {
