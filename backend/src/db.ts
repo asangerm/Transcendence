@@ -13,14 +13,27 @@ declare module "fastify" {
 async function dbPlugin(fastify: FastifyInstance) {
   // Lecture du chemin de la base depuis DB_PATH ou fallback
   const dbPath = process.env.DB_PATH || path.join(__dirname, "../data/db.sqlite");
-
   const db = new Database(dbPath);
 
-  const tableExists = db.prepare(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
-  ).get();
+  const existingTables = db.prepare(
+    "SELECT name FROM sqlite_master WHERE type='table'"
+  ).all();
 
-  if (!tableExists) {
+  const tableNames = existingTables.map((t: any) => t.name);
+  const expectedTables = ['users', 'friends', 'games', 'matches', 'high_scores', 'sessions', 'two_factor_codes', 'tournaments', 'participants', 'tournament_matches'];
+ 
+  const allTablesExist = expectedTables.every(table => tableNames.includes(table));
+ 
+  if (!allTablesExist) {
+    fastify.log.info("Missing tables detected, recreating schema...");
+
+	// Supprimer toutes les tables existantes
+	for (const table of tableNames) {
+		if (table !== 'sqlite_sequence') { // Ne pas supprimer sqlite_sequence
+			db.exec(`DROP TABLE IF EXISTS ${table}`);
+		}
+	}
+
     const schemaPath = path.join(process.cwd(), "dist", "schema.sql");
     const schema = fs.readFileSync(schemaPath, "utf8");
     db.exec(schema);
