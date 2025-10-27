@@ -3,6 +3,7 @@ interface PlayerState {
     health: number;
 }
 
+
 export interface Game2State {
     id: string;
     kind: 'game2';
@@ -37,18 +38,21 @@ export class Game2SimpleEngine {
 
     applyInput(playerId: string, action: 'hit') {
         if (this.state.gameOver) return;
-        
-        const target = this.state.players.find(p => p.id !== playerId);
+        // Only accept canonical slots
+        if (playerId !== 'player1' && playerId !== 'player2') return;
+
+        const attacker = playerId;
+        const targetId = attacker === 'player1' ? 'player2' : 'player1';
+        const target = this.state.players.find(p => p.id === targetId);
         if (!target) return;
-        
+
         if (action === 'hit') {
             target.health = Math.max(target.health - 10, 0);
             this.state.updatedAt = Date.now();
-            
-            // Check for game over
+
             if (target.health <= 0) {
                 this.state.gameOver = true;
-                this.state.winner = playerId;
+                this.state.winner = attacker;
             }
         }
     }

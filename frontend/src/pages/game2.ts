@@ -1,6 +1,7 @@
-import Phaser from 'phaser';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Use global Phaser provided by the runtime to avoid TS type dependency
+declare const Phaser: any;
 import { Game2Scene } from '../scripts/game2/Game2Scene';
-import { UI2Scene } from '../scripts/game2/UI2Scene';
 
 export function renderGame2() {
     const url = new URL(window.location.href);
@@ -40,14 +41,10 @@ function initGame() {
         parent: 'gameCanvas',
         scale: { mode: Phaser.Scale.ENVELOP, autoCenter: Phaser.Scale.CENTER_BOTH },
         physics: { default: 'arcade' },
-        scene: [UI2Scene, Game2Scene]
+        scene: [Game2Scene]
     };
 
     console.log('Creating Phaser game with config:', config);
     const game = new Phaser.Game(config);
-    
-    // S'assurer que UI2Scene est au premier plan
-    game.scene.bringToTop('UI2Scene');
-    
     console.log('Game created, scenes:', game.scene.scenes);
 }
