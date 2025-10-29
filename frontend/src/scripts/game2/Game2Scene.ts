@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// Use global Phaser provided by the bundler/runtime to avoid TS type dependency
+
 declare const Phaser: any;
 
 export class Game2Scene extends Phaser.Scene {
-    // Explicitly declare events to satisfy TS when Phaser types are not available
     public events!: any;
     private ws!: WebSocket;
     private playerId!: string;
@@ -12,11 +10,12 @@ export class Game2Scene extends Phaser.Scene {
     private maxReconnectAttempts = 5;
     private reconnectDelay = 1000;
     private isReconnecting = false;
-    private ui: { healthText: any; statusText: any; hitButton: any } = {
-        healthText: null as any,
+    private ui: { statusText: any; gridTexts: any[]; gridBgs: any[] } = {
         statusText: null as any,
-        hitButton: null as any
+        gridTexts: [] as any[],
+        gridBgs: [] as any[]
     };
+    private lastState: any = null;
 
     constructor() { super('Game2Scene'); }
 
@@ -25,31 +24,53 @@ export class Game2Scene extends Phaser.Scene {
     create() {
         console.log('Game2Scene create() called');
         
-        // UI elements (merged from UI2Scene)
+        // UI elements
         this.add.rectangle(640, 360, 1280, 720, 0x1a1a1a);
-        this.add.text(640, 100, 'Game2 - Battle Arena', { 
+        this.add.text(640, 100, 'Game2 - Tic-Tac-Toe', { 
             font: '48px Arial', 
             color: '#ffffff' 
         }).setOrigin(0.5);
-        this.ui.healthText = this.add.text(50, 200, 'Connecting...', { 
-            font: '32px Arial', 
-            color: '#ffffff' 
-        });
-        this.ui.statusText = this.add.text(50, 250, 'Waiting for connection...', { 
+        this.ui.statusText = this.add.text(50, 200, 'Waiting for connection...', { 
             font: '24px Arial', 
             color: '#cccccc' 
         });
-        this.ui.hitButton = this.add.text(640, 500, 'HIT', { 
-            font: '48px Arial', 
-            color: '#ffffff',
-            backgroundColor: '#ff4444',
-            padding: { x: 20, y: 10 }
-        })
-        .setOrigin(0.5)
-        .setInteractive()
-        .on('pointerdown', () => { this.hit(); })
-        .on('pointerover', () => { this.ui.hitButton.setStyle({ backgroundColor: '#ff6666' }); })
-        .on('pointerout', () => { this.ui.hitButton.setStyle({ backgroundColor: '#ff4444' }); });
+
+        // Create 3x3 grid of clickable cells
+        const cellSize = 140;
+        const gap = 10;
+        const gridWidth = cellSize * 3 + gap * 2;
+        const startX = 640 - gridWidth / 2;
+        const startY = 280; // vertical position of the grid
+
+        this.ui.gridTexts = [];
+        this.ui.gridBgs = [];
+
+        for (let i = 0; i < 9; i++) {
+            const row = Math.floor(i / 3);
+            const col = i % 3;
+            const x = startX + col * (cellSize + gap) + cellSize / 2;
+            const y = startY + row * (cellSize + gap) + cellSize / 2;
+
+            // create background rectangle first (target for interactions)
+            const bg = this.add.rectangle(x, y, cellSize, cellSize, 0x2a2a2a).setOrigin(0.5);
+            bg.setStrokeStyle(2, 0x444444);
+            bg.setInteractive({ useHandCursor: true });
+            bg.on('pointerdown', () => { 
+                console.log('bg pointerdown', i, 'playerId', this.playerId);
+                this.playCell(i); 
+            });
+
+            // create text above the bg
+            const cell = this.add.text(x, y, '', {
+                font: '96px Arial',
+                color: '#ffffff',
+                align: 'center'
+            }).setOrigin(0.5);
+            cell.setDepth(1);
+
+            this.ui.gridTexts.push(cell);
+            this.ui.gridBgs.push(bg);
+        }
 
         // Get gameId from URL parameters
         const url = new URL(window.location.href);
@@ -127,31 +148,14 @@ export class Game2Scene extends Phaser.Scene {
         this.ws.onmessage = (msg) => {
             try {
                 const data = JSON.parse(msg.data);
-                // console.log('Message received:', data);
+                console.log('WS message received:', data);
                 
-            if (data.type === 'created' && data.gameId) {
-                // Server created the game, just update our gameId - no need to reconnect
-                console.log('Game created with gameId:', data.gameId);
-                this.gameId = data.gameId;
-                // Don't reconnect - the connection is already established and working
-            } else if (data.type === 'state' && data.state?.players) {
-                    const players = data.state.players;
-                    const p1 = players.find((p: any) => p.id === 'player1');
-                    const p2 = players.find((p: any) => p.id === 'player2');
-                    if (p1 && p2) {
-                        const p1Label = p1.id === this.playerId ? 'You' : 'Player 1';
-                        const p2Label = p2.id === this.playerId ? 'You' : 'Player 2';
-                        this.ui.healthText.setText(`${p1Label}: ${p1.health} HP    ${p2Label}: ${p2.health} HP`);
-                        if (p1.health <= 0) {
-                            this.ui.statusText.setText('Player 2 Wins!').setStyle({ color: '#44ff44' });
-                            this.ui.hitButton.setVisible(false);
-                        } else if (p2.health <= 0) {
-                            this.ui.statusText.setText('Player 1 Wins!').setStyle({ color: '#44ff44' });
-                            this.ui.hitButton.setVisible(false);
-                        } else {
-                            this.ui.statusText.setText('Game in progress...').setStyle({ color: '#cccccc' });
-                        }
-                    }
+                if (data.type === 'created' && data.gameId) {
+                    console.log('Game created with gameId:', data.gameId);
+                    this.gameId = data.gameId;
+                } else if (data.type === 'state' && data.state?.board) {
+                    this.lastState = data.state;
+                    this.renderState(data.state);
                 } else if (data.type === 'error') {
                     console.error('Server error:', data.message);
                     if (this.events?.emit) this.events.emit('gameError', data.message);
@@ -163,9 +167,63 @@ export class Game2Scene extends Phaser.Scene {
         };
     }
 
-    hit() {
+    private playCell(index: number) {
+        console.log('playCell called for index', index, 'ws readyState', this.ws?.readyState, 'lastState', this.lastState);
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
-        this.ws.send(JSON.stringify({ gameId: this.gameId, playerId: this.playerId, type: 'input', action: 'hit' }));
+        // Optional client-side checks based on last known state
+        if (this.lastState) {
+            if (this.lastState.gameOver) return;
+            if (this.lastState.currentPlayer !== this.playerId) return;
+            if (this.lastState.board?.[index] !== '') return;
+        }
+
+        // Send both shape expected by spec and encoded action understood by server layer
+        this.ws.send(JSON.stringify({
+            gameId: this.gameId,
+            playerId: this.playerId,
+            type: 'input',
+            action: `play:${index}`,
+            cellIndex: index
+        }));
+    }
+
+    private renderState(state: any) {
+        // Update cells
+        if (Array.isArray(state.board) && this.ui.gridTexts.length === 9) {
+            for (let i = 0; i < 9; i++) {
+                const v = state.board[i] || '';
+                this.ui.gridTexts[i].setText(v);
+            }
+        }
+
+        // Update status text
+        if (state.gameOver) {
+            if (state.winner === 'player1') {
+                this.ui.statusText.setText('Player 1 Wins!').setStyle({ color: '#44ff44' });
+            } else if (state.winner === 'player2') {
+                this.ui.statusText.setText('Player 2 Wins!').setStyle({ color: '#44ff44' });
+            } else {
+                this.ui.statusText.setText('Draw!').setStyle({ color: '#cccccc' });
+            }
+        } else {
+            if (state.currentPlayer === this.playerId) {
+                this.ui.statusText.setText('Your turn').setStyle({ color: '#ffffff' });
+            } else {
+                this.ui.statusText.setText('Waiting for opponent').setStyle({ color: '#cccccc' });
+            }
+        }
+
+        // Enable/disable interactivity on the bg rectangles (not on text)
+        const myTurn = !state.gameOver && state.currentPlayer === this.playerId;
+        for (let i = 0; i < this.ui.gridTexts.length; i++) {
+            const bg = this.ui.gridBgs[i];
+            const empty = state.board[i] === '' || state.board[i] == null;
+            if (myTurn && empty) {
+                if (!bg.input || !bg.input.enabled) bg.setInteractive({ useHandCursor: true });
+            } else {
+                if (bg.input && bg.input.enabled) bg.disableInteractive();
+            }
+        }
     }
 
     private attemptReconnect() {
