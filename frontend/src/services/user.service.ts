@@ -8,40 +8,49 @@ export interface UserProfile extends User {
   friends?: Friend[];
 }
 
+export interface Tournament {
+	id?: number;
+	name: string;
+	game: string;
+	status?: string;
+	playersNumber: Number;
+	playersNames: string[];
+}
+
 export interface Friend {
-  friend_id: number;
-  friend_name: string;
-  avatar_url: string;
-  is_online: number;
-  since: Date;
+	friend_id: number;
+	friend_name: string;
+	avatar_url: string;
+	is_online: number;
+	since: Date;
 }
 
 export interface Match {
-  id: number;
-  game_name: string;
-  opponent_name: string;
-  opponent_id: number;
-  score_p1: number;
-  score_p2: number;
-  winner_id: number;
-  played_at: string;
+	id: number;
+	game_name: string;
+	opponent_name: string;
+	opponent_id: number;
+	score_p1: number;
+	score_p2: number;
+	winner_id: number;
+	played_at: string;
 }
 
 export interface UserStats {
-  game_id: number;
-  game_name: string;
-  victories: number;
-  defeats: number;
+	game_id: number;
+	game_name: string;
+	victories: number;
+	defeats: number;
 }
 
 export interface FriendRequest {
-  id: number;
-  sender_id: number;
-  receiver_id: number;
-  sender_name: string;
-  sender_avatar: string;
-  status: string;
-  created_at: string;
+	id: number;
+	sender_id: number;
+	receiver_id: number;
+	sender_name: string;
+	sender_avatar: string;
+	status: string;
+	created_at: string;
 }
 
 export class UserService {
@@ -68,25 +77,25 @@ export class UserService {
 	}
 
   static async updateInfos(updates: { display_name: string; email: string }, userId?: number): Promise<User> {
-    if (!userId) {
-        throw new Error("User ID is required to update profile.");
-    }
-    const response = await apiService.put(`/users/${userId}`, updates);
-    return response.data;
+	if (!userId) {
+		throw new Error("User ID is required to update profile.");
+	}
+	const response = await apiService.put(`/users/${userId}`, updates);
+	return response.data;
 }
 
 
   static async uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
-    const formData = new FormData();
-    formData.append('avatar', file);
-    
-    try {
-      const response = await apiService.uploadFile('/users/avatar', formData);
-      return response.data;
-    } catch (error) {
-      console.error('Upload error:', error);
-      throw error;
-    }
+	const formData = new FormData();
+	formData.append('avatar', file);
+	
+	try {
+		const response = await apiService.uploadFile('/users/avatar', formData);
+		return response.data;
+	} catch (error) {
+		console.error('Upload error:', error);
+		throw error;
+	}
   }
 
   static async deleteAvatar(): Promise<{ avatarUrl: string }> {

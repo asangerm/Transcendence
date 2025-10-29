@@ -25,7 +25,7 @@ CREATE TABLE two_factor_codes (
     method TEXT NOT NULL, -- 'sms' | 'email'
     expires_at DATETIME NOT NULL,
     used INTEGER DEFAULT 0,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Table: friends
@@ -34,8 +34,8 @@ CREATE TABLE friends (
     friend_id  INTEGER NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, friend_id),
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (friend_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Table: games
@@ -56,7 +56,7 @@ CREATE TABLE tournaments (
     winner_id    INTEGER,
     created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (game_id) REFERENCES games(id)
+    FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 );
 CREATE TABLE participants (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,7 +65,7 @@ CREATE TABLE participants (
     seed          INTEGER, -- position initiale dans l’arbre (1, 2, 3, etc.)
     created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (tournament_id) REFERENCES tournaments(id)
+    FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE
 );
 CREATE TABLE tournament_matches (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,11 +80,11 @@ CREATE TABLE tournament_matches (
     finished        INTEGER DEFAULT 0,
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
-    FOREIGN KEY (player1_id) REFERENCES participants(id),
-    FOREIGN KEY (player2_id) REFERENCES participants(id),
-    FOREIGN KEY (winner_id) REFERENCES participants(id),
-    FOREIGN KEY (next_match_id) REFERENCES tournament_matches(id)
+    FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+    FOREIGN KEY (player1_id) REFERENCES participants(id) ON DELETE CASCADE,
+    FOREIGN KEY (player2_id) REFERENCES participants(id) ON DELETE CASCADE,
+    FOREIGN KEY (winner_id) REFERENCES participants(id) ON DELETE CASCADE,
+    FOREIGN KEY (next_match_id) REFERENCES tournament_matches(id) ON DELETE CASCADE
 );
 
 -- Table: matches
@@ -97,21 +97,10 @@ CREATE TABLE matches (
     score_p1            INTEGER NOT NULL,
     score_p2            INTEGER NOT NULL,
     played_at           DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (game_id) REFERENCES games(id),
-    FOREIGN KEY (player1_id) REFERENCES users(id),
-    FOREIGN KEY (player2_id) REFERENCES users(id),
-    FOREIGN KEY (winner_id) REFERENCES users(id)
-);
-
--- Table: high_scores
-CREATE TABLE high_scores (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    game_id     INTEGER NOT NULL,
-    user_id     INTEGER NOT NULL,
-    score       INTEGER NOT NULL,
-    achieved_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (game_id) REFERENCES games(id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
+    FOREIGN KEY (player1_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (player2_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Table: sessions

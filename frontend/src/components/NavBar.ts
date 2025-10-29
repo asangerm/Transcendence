@@ -2,6 +2,7 @@ import { AuthStore } from '../stores/auth.store';
 import { AuthService, User } from '../services/auth.service';
 import UserService, { UserProfile } from '../services/user.service';
 import { escapeHtml } from '../utils/sanitizer';
+import { navigateTo } from '../router';
 
 export class NavBar {
 	private container: HTMLElement;
@@ -193,8 +194,9 @@ export class NavBar {
 	private async handleLogout(): Promise<void> {
 	  try {
 		await AuthService.logoutAsync();
-		window.location.href = '/login';
+		navigateTo('/login');
 	  } catch (error: any) {
+		
 	  }
 	}
 

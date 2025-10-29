@@ -1,4 +1,4 @@
-import { UserService, Friend } from "../services/user.service";
+import { UserService, Tournament } from "../services/user.service";
 import { AuthStore } from "../stores/auth.store";
 import { escapeHtml } from "../utils/sanitizer";
 import { navigateTo } from '../router';
@@ -18,8 +18,8 @@ export class Tournaments {
 
 	private render(): void {
 		this.container.innerHTML = `
-			<div class="h-full from-gray-900 flex items-center justify-center p-6">
-				<div class="bg-gray-800 text-white rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-700">
+			<div class="h-full flex items-center justify-center p-6">
+				<div class="bg-primary dark:bg-primary-dark rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-700">
 					<h2 class="text-4xl font-bold text-center mb-6">
 					Créer un tournoi
 					</h2>
@@ -27,7 +27,7 @@ export class Tournaments {
 					<form id="tournamentForm" class="space-y-6">
 						<!-- Nom du tournoi -->
 						<div>
-							<label for="tournamentName" class="block text-sm font-medium text-gray-300 mb-2">
+							<label for="tournamentName" class="block text-sm font-medium mb-2">
 							Nom du tournoi
 							</label>
 							<input
@@ -35,20 +35,36 @@ export class Tournaments {
 							id="tournamentName"
 							name="tournamentName"
 							placeholder="Ex: Tournoi privé"
-							class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+							class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-muted dark:text-muted-dark border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
 							required
 							/>
 						</div>
 
+						<div>
+							<label for="gameSelect" class="block text-sm font-medium mb-2">
+							Choix du jeu
+							</label>
+							<select
+							id="gameSelect"
+							name="gameSelect"
+							class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-muted dark:text-muted-dark border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+							required
+							>
+								<option value="" disabled selected>Choisissez le Jeu pour le tournoi</option>
+								<option value="pong">PONG</option>
+								<option value="game2">GAME2</option>
+							</select>
+						</div>
+
 						<!-- Nombre de joueurs -->
 						<div>
-							<label for="playerCount" class="block text-sm font-medium text-gray-300 mb-2">
+							<label for="playerCount" class="block text-sm font-medium mb-2">
 							Nombre de joueurs
 							</label>
 							<select
 							id="playerCount"
 							name="playerCount"
-							class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+							class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-muted dark:text-muted-dark border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
 							required
 							>
 								<option value="" disabled selected>Choisissez le nombre de joueurs</option>
@@ -77,15 +93,18 @@ export class Tournaments {
 		form.addEventListener("submit", (e) => {
 			e.preventDefault();
 			const name = document.getElementById('tournamentName') as HTMLInputElement;
+			const gameName = document.getElementById('gameSelect') as HTMLSelectElement;
 			const playerSelect = document.getElementById('playerCount') as HTMLSelectElement;
+			const safeName = escapeHtml(name.value.trim());
+			
 			this.container.innerHTML = `
-				<div class="h-full bg-gray-900 flex items-center justify-center p-6">
-					<div class="bg-gray-800 text-white rounded-2xl shadow-2xl p-8 border border-gray-700">
+				<div class="h-full flex items-center justify-center p-6">
+					<div class="bg-primary dark:bg-primary-dark text-white rounded-2xl shadow-2xl p-8 border border-gray-700">
 						<h2 class="text-4xl font-bold text-center mb-12">
-							Créer le Tournoi '${escapeHtml(name.value.trim())}'
+							Créer le Tournoi '${safeName}'
 						</h2>
 						<form id="playersForm" class="space-y-6"> 
-							${this.handlePlayersNames(Number(playerSelect.value))} 
+							${this.handlePlayersNames(Number(playerSelect.value))}
 							<button
 								type="submit"
 								class="w-full button-primary"
@@ -95,7 +114,13 @@ export class Tournaments {
 						</form>
 					</div>
 				</div>`;
-			;
+			const playersForm = document.getElementById('playersForm') as HTMLFormElement;
+			playersForm.addEventListener("submit", (e) => {
+				e.preventDefault();
+				
+				const tournamentInfos = this.extractTournamentInfos(Number(playerSelect.value), safeName, gameName.value);
+				this.registerTournament(tournamentInfos);
+			});
 		});
 	}
 
@@ -104,7 +129,7 @@ export class Tournaments {
 		for (let i = 1; i <= playersNumber; i++) {
 			if (i === 1)
 				displayInputs += `<div class="w-full flex flex-col gap-6 justify-between items-center">`
-			displayInputs += `<input type="text" name="player${i}" placeholder="Nom du joueur ${i}" class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">`;
+			displayInputs += `<input required type="text" id="player${i}" name="player${i}" placeholder="Nom du joueur ${i}" class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-muted dark:text-muted-dark border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300">`;
 			if (i !== 1 && i % 4 === 0 && i !== playersNumber)
 				displayInputs += `</div> <div class="w-full flex flex-col gap-6 justify-items items-center">`;
 			else if (i === playersNumber)
@@ -113,6 +138,25 @@ export class Tournaments {
 		displayInputs += `</div>`;
 
 		return displayInputs;
+	}
+
+	private extractTournamentInfos(playersNumber: number, tournamentName: string, game: string): Tournament {
+		const playerNames: string[] = [];
+		for (let i  = 1; i <= playersNumber; i++) {
+			const player =  document.getElementById(`player${i}`) as HTMLInputElement;
+			playerNames.push(player.value);
+		}
+		const tournamentInfos: Tournament = {
+			name: tournamentName,
+			game: game,
+			playersNumber: playersNumber,
+			playersNames: playerNames,
+ 		};
+		return tournamentInfos;
+	}
+
+	private registerTournament(tournamentInfos: Tournament) {
+		console.log('tournament : ', tournamentInfos);
 	}
 }
 
