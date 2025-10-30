@@ -39,6 +39,8 @@ async function dbPlugin(fastify: FastifyInstance) {
     const schema = fs.readFileSync(schemaPath, "utf8");
     db.exec(schema);
     db.exec("PRAGMA foreign_keys = ON;");
+    db.exec("INSERT INTO games (name, description) VALUES ('Pong', 'Le classique jeu de tennis de table revisité')");
+    db.exec("INSERT INTO games (name, description) VALUES ('Game2', 'Description du deuxième jeu')");
     fastify.log.info("Database schema created successfully");
   } else {
     fastify.log.info("Database already exists, skipping schema creation");

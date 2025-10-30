@@ -21,7 +21,7 @@ export class Tournaments {
 			<div class="h-full flex items-center justify-center p-6">
 				<div class="bg-primary dark:bg-primary-dark rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-700">
 					<h2 class="text-4xl font-bold text-center mb-6">
-					Créer un tournoi
+						Créer un tournoi
 					</h2>
 
 					<form id="tournamentForm" class="space-y-6">
@@ -51,8 +51,8 @@ export class Tournaments {
 							required
 							>
 								<option value="" disabled selected>Choisissez le Jeu pour le tournoi</option>
-								<option value="pong">PONG</option>
-								<option value="game2">GAME2</option>
+								<option value="Pong">Pong</option>
+								<option value="Game2">Game2</option>
 							</select>
 						</div>
 
@@ -104,7 +104,7 @@ export class Tournaments {
 							Créer le Tournoi '${safeName}'
 						</h2>
 						<form id="playersForm" class="space-y-6"> 
-							${this.handlePlayersNames(Number(playerSelect.value))}
+							${this.displayInputNames(Number(playerSelect.value))}
 							<button
 								type="submit"
 								class="w-full button-primary"
@@ -124,7 +124,7 @@ export class Tournaments {
 		});
 	}
 
-	private handlePlayersNames(playersNumber : number) : string {
+	private displayInputNames(playersNumber : number) : string {
 		let displayInputs = `<div class="flex flex-row gap-6 justify-center">`;
 		for (let i = 1; i <= playersNumber; i++) {
 			if (i === 1)

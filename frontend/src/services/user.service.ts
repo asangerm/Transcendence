@@ -8,15 +8,6 @@ export interface UserProfile extends User {
   friends?: Friend[];
 }
 
-export interface Tournament {
-	id?: number;
-	name: string;
-	game: string;
-	status?: string;
-	playersNumber: Number;
-	playersNames: string[];
-}
-
 export interface Friend {
 	friend_id: number;
 	friend_name: string;

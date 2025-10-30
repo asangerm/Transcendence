@@ -1,0 +1,82 @@
+import { FastifyInstance } from "fastify";
+import { requireAuth } from "../../middleware/authMiddleware";
+
+export interface Tournament {
+	id?: number;
+	name: string;
+	game: string;
+	status?: string;
+	playersNumber: number;
+	playersNames: string[];
+}
+
+// Fisher yates shuffle
+function shuffleArray<T>(array: T[]): T[] {
+	const shuffled = [...array]; 
+	for (let i = shuffled.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1)); // index aléatoire
+		[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // on échange les éléments
+	}
+	return shuffled;
+}
+
+export default async function createTournament(app: FastifyInstance) {
+	app.post("/create", { preHandler: [requireAuth] }, async (req, reply) => {
+		try {
+			const tournamentInfos = req.body as Tournament;
+
+			
+			// Récuperer l'id du jeux choisi
+			const gameId = app.db
+			.prepare("SELECT id FROM games WHERE name = ?")
+			.get(tournamentInfos.game);
+			if (!gameId) { // Si le jeu existe pas
+				return reply.status(409).send({
+					error: true,
+					message: "Can't find wich game to use.",
+       			});
+			}
+
+			// Insertion dans la table tournaments
+			app.db
+			.prepare("INSERT INTO tournaments (name, game_id) VALUES (?, ?)")
+			.run(tournamentInfos.name, tournamentInfos.game);
+
+			// On recupère l'id du tournois qu'on vient de créer
+			const tournamentId = app.db
+			.prepare("SELECT id FROM tournaments WHERE name = ?")
+			.get(tournamentInfos.name);
+
+			// On insère tous les particiants dans la table
+			for (const name of tournamentInfos.playersNames) {
+				app.db
+				.prepare("INSERT INTO participants (tournament_id, name) VALUES (?, ?)")
+				.run(tournamentId, name);
+			}
+			// On recupère tous les participants
+			const players = app.db
+			.prepare("SELECT id FROM participants WHERE tournament_id = ?")
+			.all(tournamentId);
+			const shuffledIds = shuffleArray(players);
+
+			// Génération des matchs du tournoi
+			
+
+
+
+			// On renvoie l'id du tournois créer
+			return reply.status(201).send({
+				success: true,
+				message: "Tournament created successfully.",
+				data: { tournamentId: tournamentId },
+      		});
+		}
+		catch (err) {
+      		console.error(err);
+			return reply.status(500).send({
+				error: true,
+				message: "An unexpected error occurred.",
+			});
+		}
+	});
+}
