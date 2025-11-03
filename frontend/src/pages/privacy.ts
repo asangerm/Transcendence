@@ -19,7 +19,7 @@ export function renderPrivacy() {
         <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
           <li>Authentification et gestion du compte</li>
           <li>Fonctionnement du jeu et interactions entre utilisateurs</li>
-          <li>Amélioration de la sécurité (ex: 2FA)</li>
+          <li>Amélioration de la sécurité</li>
         </ul>
       </section>
 
@@ -38,7 +38,6 @@ export function renderPrivacy() {
         <h2 class="text-2xl font-bold mb-3 text-gray-900 dark:text-gray-100">Sécurité</h2>
         <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
           <li>Mots de passe chiffrés</li>
-          <li>Possibilité d’activer le 2FA</li>
           <li>Chiffrement des secrets sensibles</li>
           <li>Protection contre la force brute</li>
         </ul>
