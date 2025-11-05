@@ -2,6 +2,7 @@ import { apiService } from './api.service';
 
 export interface Tournament {
 	id?: number;
+	creator_id: number;
 	name: string;
 	game: string;
 	status?: string;

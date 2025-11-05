@@ -9,6 +9,12 @@ export interface Tournament {
 	playersNumber: number;
 	playersNames: string[];
 }
+export interface Match {
+	id: number;
+	round: number;
+	match_number: number;
+	next_match_id: number | null;
+}
 
 // Fisher yates shuffle
 function shuffleArray<T>(array: T[]): T[] {
@@ -25,7 +31,6 @@ export default async function createTournament(app: FastifyInstance) {
 		try {
 			const tournamentInfos = req.body as Tournament;
 
-			
 			// Récuperer l'id du jeux choisi
 			const gameId = app.db
 			.prepare("SELECT id FROM games WHERE name = ?")
@@ -38,14 +43,12 @@ export default async function createTournament(app: FastifyInstance) {
 			}
 
 			// Insertion dans la table tournaments
-			app.db
+			const result = app.db
 			.prepare("INSERT INTO tournaments (name, game_id) VALUES (?, ?)")
 			.run(tournamentInfos.name, tournamentInfos.game);
 
 			// On recupère l'id du tournois qu'on vient de créer
-			const tournamentId = app.db
-			.prepare("SELECT id FROM tournaments WHERE name = ?")
-			.get(tournamentInfos.name);
+			const tournamentId = result.lastInsertRowid;
 
 			// On insère tous les particiants dans la table
 			for (const name of tournamentInfos.playersNames) {
@@ -54,15 +57,67 @@ export default async function createTournament(app: FastifyInstance) {
 				.run(tournamentId, name);
 			}
 			// On recupère tous les participants
-			const players = app.db
+			const players = (app.db
 			.prepare("SELECT id FROM participants WHERE tournament_id = ?")
-			.all(tournamentId);
-			const shuffledIds = shuffleArray(players);
+			.all(tournamentId) as { id: number }[]).map(p => p.id);
+			const shuffledIds = shuffleArray<number>(players);
 
 			// Génération des matchs du tournoi
+			const totalRounds = Math.log2(tournamentInfos.playersNumber);
+			let currentRound = totalRounds;
 			
+			let nextRoundMatches: Match[] = [];
+			let currentMatches: Match[] = [];
 
+			while (currentRound > 1) {
+				currentMatches = []
+				let matchesInRound = tournamentInfos.playersNumber / (2 ** currentRound);
+				for (let i = 0; i < matchesInRound; i++) {
+					let nextMatch = null;
+					let positionInNext = null;
+					if (currentRound !== totalRounds) {
+						const nextIndex = Math.floor(i / 2);
+						nextMatch = nextRoundMatches[nextIndex];
+						positionInNext = i % 2 === 0 ? 1 : 2;
+					}
+					const result = app.db
+						.prepare(`
+							INSERT INTO tournament_matches 
+								(tournament_id, round, match_number, next_match_id)
+							VALUES (?, ?, ?, ?)
+						`)
+						.run(tournamentId, currentRound, i + 1, nextMatch?.id ?? null);
 
+					currentMatches.push({
+						id: Number(result.lastInsertRowid),
+						round: currentRound,
+						match_number: i + 1,
+						next_match_id: nextMatch?.id ?? null,
+					});
+				}
+				nextRoundMatches = currentMatches;
+				currentRound--;
+			}
+
+			// gerer le premier round
+			let playerId = 0;
+			let matchesInRound = tournamentInfos.playersNumber / (2 ** currentRound);
+			for (let i = 0; i < matchesInRound; i++) {
+				let nextMatch = null;
+				let positionInNext = null;
+				const nextIndex = Math.floor(i / 2);
+				nextMatch = nextRoundMatches[nextIndex];
+				positionInNext = i % 2 === 0 ? 1 : 2;
+
+				const result = app.db
+					.prepare(`
+						INSERT INTO tournament_matches 
+							(tournament_id, round, match_number, player1_id, player2_id, next_match_id, position_in_next)
+						VALUES (?, ?, ?, ?, ?, ?, ?)
+					`)
+					.run(tournamentId, currentRound, i + 1, shuffledIds[playerId], shuffledIds[playerId + 1], nextMatch?.id ?? null, positionInNext);
+				playerId += 2;
+			}
 
 			// On renvoie l'id du tournois créer
 			return reply.status(201).send({

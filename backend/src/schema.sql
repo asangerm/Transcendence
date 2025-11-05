@@ -9,23 +9,8 @@ CREATE TABLE users (
     wins           INTEGER DEFAULT 0,
     losses         INTEGER DEFAULT 0,
     google_id      VARCHAR(255) UNIQUE,
-    two_factor_method TEXT DEFAULT 'authenticator',
-    phone_number   VARCHAR(20) NULL,
-    two_factor_enabled INTEGER DEFAULT 0,
-    two_factor_secret VARCHAR(255),
     created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at     DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Table pour stocker les codes temporaires (SMS ou email)
-CREATE TABLE two_factor_codes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    code VARCHAR(6) NOT NULL,
-    method TEXT NOT NULL, -- 'sms' | 'email'
-    expires_at DATETIME NOT NULL,
-    used INTEGER DEFAULT 0,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Table: friends
@@ -48,14 +33,16 @@ CREATE TABLE games (
 -- Table: tournaments
 CREATE TABLE tournaments (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    creator_id   INTEGER NOT NULL,
     name         TEXT NOT NULL,
     game_id      INTEGER NOT NULL,
-    status       TEXT DEFAULT 'pending', -- pending | ongoing | finished
+    status       TEXT DEFAULT 'ongoing', -- ongoing | finished
     started_at   DATETIME,
     ended_at     DATETIME,
     winner_id    INTEGER,
     created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
 
+	FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 );
 
