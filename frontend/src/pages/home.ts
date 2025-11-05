@@ -4,9 +4,9 @@ export function renderHome() {
   const isAuth = AuthStore.isAuthenticated(); // Vérifie à l'instant T
 
   const content = `
-    <div class="h-full w-full bg-primary dark:bg-primary-dark">
+    <div class="h-full w-full bg-background dark:bg-background-dark">
       <main class="container mx-auto px-4 py-16">
-        <div class="shadow-2xl rounded-2xl p-10">
+        <div class="shadow-2xl rounded-2xl p-10 bg-primary dark:bg-primary-dark">
           <h1 class="text-5xl font-extrabold text-text mb-6 dark:text-text-dark text-center tracking-tight">
             Bienvenue sur ft_transcendence
           </h1>
@@ -22,7 +22,7 @@ export function renderHome() {
               id="playButton" 
               class="px-8 py-4 text-lg font-bold rounded-xl bg-gradient-to-r from-primary/80 to-primary/60 text-text dark:text-text-dark hover:brightness-110 transition-all duration-300 shadow-lg"
             >
-              🏓Lancer une partie🏰
+              Lancer une partie
             </button>
 
             ${!isAuth ? `
