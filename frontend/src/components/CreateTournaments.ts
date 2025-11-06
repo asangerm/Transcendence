@@ -1,10 +1,10 @@
-import { UserService, Tournament } from "../services/user.service";
+import { Tournament } from "../services/tournament.service";
 import { AuthStore } from "../stores/auth.store";
 import { escapeHtml } from "../utils/sanitizer";
 import { navigateTo } from '../router';
 import { TournamentService } from "../services/tournament.service";
 
-export class Tournaments {
+export class CreateTournaments {
 	private container: HTMLElement;
 	private userId: number | null = null;
 
@@ -149,7 +149,7 @@ export class Tournaments {
 		}
 		const tournamentInfos: Tournament = {
 			name: tournamentName,
-			creator_id: AuthStore.getUser()?.id,
+			creator_id: AuthStore.getUser()!.id,
 			game: game,
 			playersNumber: playersNumber,
 			playersNames: playerNames,
@@ -160,5 +160,6 @@ export class Tournaments {
 	private registerTournament(tournamentInfos: Tournament) {
 		console.log('tournament : ', tournamentInfos);
 		TournamentService.createNewTournament(tournamentInfos);
+		navigateTo("/tournaments");
 	}
 }

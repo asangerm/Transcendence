@@ -10,15 +10,26 @@ export interface Tournament {
 	playersNames: string[];
 }
 
+export interface OngoingTournamentResponse {
+	tournament: Tournament;
+	matches: any[]; // tu peux typer plus précisément si tu as l'interface Match
+}
+
 export class TournamentService {
 	static async createNewTournament(tournamentInfos: Tournament): Promise<Tournament> {
 		const response = await apiService.post('/tournament/create', tournamentInfos);
-		return response.tournament
+		return response.data; // correspond à { tournament: {...} } renvoyé par le backend
 	}
 
-	static async getTournamentByCreator(tournamentInfos: Tournament, userId?: number): Promise<Tournament> {
-		const response = await apiService.post(`/tournament/${userId}`, tournamentInfos);
-		return response.data
+	static async getOngoingTournament(userId: number): Promise<OngoingTournamentResponse | null> {
+		try {
+			const response = await apiService.get(`/tournament/${userId}`);
+			return response.data.data; // car ta route renvoie { success, data: { tournament, matches } }
+		} catch (error: any) {
+			if (error?.response?.status === 404) {
+				return null; // Aucun tournoi en cours
+			}
+			throw error;
+		}
 	}
-
 }
