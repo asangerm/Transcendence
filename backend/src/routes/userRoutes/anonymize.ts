@@ -21,15 +21,9 @@ export default async function anonymizeUser(app: FastifyInstance) {
          SET email = ?, 
              display_name = ?, 
              avatar_url = ?, 
-             password_hash = NULL, 
-             two_factor_secret = NULL, 
-             two_factor_enabled = 0 
+             password_hash = NULL,  
          WHERE id = ?`
       ).run(anonEmail, anonName, anonAvatar, id);
-
-      // --- Supprimer 2FA codes et sessions ---
-      app.db.prepare("DELETE FROM two_factor_codes WHERE user_id = ?").run(id);
-      app.db.prepare("DELETE FROM sessions WHERE user_id = ?").run(id);
 
       // --- Anonymiser friend requests ---
       app.db.prepare(

@@ -11,7 +11,6 @@ export interface User {
   wins: number;
   losses: number;
   google_id?: string;
-  two_factor_enabled: number;
 }
 
 export interface AuthTokens {

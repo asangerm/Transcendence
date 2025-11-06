@@ -8,6 +8,7 @@ export interface Tournament {
 	status?: string;
 	playersNumber: number;
 	playersNames: string[];
+	creator_id: number;
 }
 export interface Match {
 	id: number;
@@ -34,18 +35,21 @@ export default async function createTournament(app: FastifyInstance) {
 			// Récuperer l'id du jeux choisi
 			const gameId = app.db
 			.prepare("SELECT id FROM games WHERE name = ?")
-			.get(tournamentInfos.game);
+			.get(tournamentInfos.game) as { id: number } | undefined;
 			if (!gameId) { // Si le jeu existe pas
 				return reply.status(409).send({
 					error: true,
 					message: "Can't find wich game to use.",
        			});
 			}
+			const gameIdValue = gameId.id;
 
 			// Insertion dans la table tournaments
 			const result = app.db
-			.prepare("INSERT INTO tournaments (name, game_id) VALUES (?, ?)")
-			.run(tournamentInfos.name, tournamentInfos.game);
+			.prepare("INSERT INTO tournaments (name, game_id, creator_id) VALUES (?, ?, ?)")
+			.run(tournamentInfos.name, gameIdValue, tournamentInfos.creator_id);
+			//.prepare("INSERT INTO tournaments (name, game_id) VALUES (?, ?)")
+			//.run(tournamentInfos.name, tournamentInfos.game);
 
 			// On recupère l'id du tournois qu'on vient de créer
 			const tournamentId = result.lastInsertRowid;

@@ -14,7 +14,6 @@ export default async function exportData(app: FastifyInstance & { db: any }) {
       // Récupération des données associées
       const friends = app.db.prepare("SELECT * FROM friends WHERE user_id = ? OR friend_id = ?").all(userId, userId);
       const matches = app.db.prepare("SELECT * FROM matches WHERE player1_id = ? OR player2_id = ?").all(userId, userId);
-      const highScores = app.db.prepare("SELECT * FROM high_scores WHERE user_id = ?").all(userId);
       const sessions = app.db.prepare("SELECT * FROM sessions WHERE user_id = ?").all(userId);
       const friendRequests = app.db.prepare("SELECT * FROM friend_requests WHERE sender_id = ? OR receiver_id = ?").all(userId, userId);
 
@@ -22,7 +21,7 @@ export default async function exportData(app: FastifyInstance & { db: any }) {
       const exportData = {
         generated_at: new Date().toISOString(),
         user,
-        related_data: { friends, friend_requests: friendRequests, matches, high_scores: highScores, sessions },
+        related_data: { friends, friend_requests: friendRequests, matches, sessions },
       };
 
       const fileName = `user_${userId}_export_${Date.now()}.json`;
