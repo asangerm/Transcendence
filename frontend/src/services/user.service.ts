@@ -67,32 +67,32 @@ export class UserService {
 		}
 	}
 
-  static async updateInfos(updates: { display_name: string; email: string }, userId?: number): Promise<User> {
-	if (!userId) {
-		throw new Error("User ID is required to update profile.");
-	}
-	const response = await apiService.put(`/users/${userId}`, updates);
-	return response.data;
-}
-
-
-  static async uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
-	const formData = new FormData();
-	formData.append('avatar', file);
-	
-	try {
-		const response = await apiService.uploadFile('/users/avatar', formData);
+ 	static async updateInfos(updates: { display_name: string; email: string }, userId?: number): Promise<User> {
+		if (!userId) {
+			throw new Error("User ID is required to update profile.");
+		}
+		const response = await apiService.put(`/users/${userId}`, updates);
 		return response.data;
-	} catch (error) {
-		console.error('Upload error:', error);
-		throw error;
 	}
-  }
 
-  static async deleteAvatar(): Promise<{ avatarUrl: string }> {
-    const response = await apiService.delete('/users/avatar');
-    return response.data;
-} 
+
+	static async uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
+		const formData = new FormData();
+		formData.append('avatar', file);
+		
+		try {
+			const response = await apiService.uploadFile('/users/avatar', formData);
+			return response.data;
+		} catch (error) {
+			console.error('Upload error:', error);
+			throw error;
+		}
+	}
+
+	static async deleteAvatar(): Promise<{ avatarUrl: string }> {
+		const response = await apiService.delete('/users/avatar');
+		return response.data;
+	} 
 
 
   static async getUserStats(userId: number): Promise<UserStats[]>  {

@@ -15,4 +15,10 @@ export class TournamentService {
 		const response = await apiService.post('/tournament/create', tournamentInfos);
 		return response.tournament
 	}
+
+	static async getTournamentByCreator(tournamentInfos: Tournament, userId?: number): Promise<Tournament> {
+		const response = await apiService.post(`/tournament/${userId}`, tournamentInfos);
+		return response.data
+	}
+
 }

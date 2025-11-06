@@ -51,6 +51,8 @@ export default async function createTournament(app: FastifyInstance) {
 			//.prepare("INSERT INTO tournaments (name, game_id) VALUES (?, ?)")
 			//.run(tournamentInfos.name, tournamentInfos.game);
 
+			// Rajouter une verif si le creator a deja un tournois en cours
+
 			// On recupère l'id du tournois qu'on vient de créer
 			const tournamentId = result.lastInsertRowid;
 
