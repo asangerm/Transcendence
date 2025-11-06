@@ -30,7 +30,7 @@ export function renderTerms() {
         <h2 class="text-2xl font-bold mb-3 text-gray-900 dark:text-gray-100">4. Responsabilités</h2>
         <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
           <li>L’équipe de développement n’est pas responsable des interruptions, pertes de données ou problèmes liés au service.</li>
-          <li>L’utilisateur est responsable de la sécurité de son compte (mot de passe, 2FA si activé).</li>
+          <li>L’utilisateur est responsable de la sécurité de son compte.</li>
         </ul>
       </section>
 

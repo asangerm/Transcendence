@@ -249,13 +249,13 @@ private render(): void {
 									id="cancel-edit"
 									class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
 								>
-									Cancel
+									Annuler
 								</button>
 								<button 
 									type="submit"
 									class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
 								>
-									Save Changes
+									Sauvegarder
 								</button>
 							</div>
 							<div class="w-80 mx-auto border border-top-6 mt-4"></div>
@@ -704,13 +704,13 @@ private async handleAnonymizeAccount(): Promise<void> {
 	if (!this.userProfile) return;
 
 	const confirmed = confirm(
-		"⚠️ Êtes-vous sûr de vouloir ANONYMISER votre compte ?\n\n" +
-		"👉 Conséquences :\n" +
+		"🚨🚨Êtes-vous sûr de vouloir ANONYMISER votre compte ?🚨🚨\n\n" +
+		" ⚠️Conséquences⚠️ :\n" +
 		"- Votre nom, email et avatar seront remplacés par des données anonymes.\n" +
 		"- Vous resterez inscrit, mais sous un profil anonyme.\n" +
 		"- Vous ne pourrez plus vous connecter.\n" +
-		"- Cette action est irréversible.\n\n" +
-		"Voulez-vous continuer ?"
+		"- ☠️☠️☠️ CETTE ACTION EST IRRÉVERSIBLE ☠️☠️☠️.\n\n" +
+		"Voulez-vous continuer ? 🤷"
 	);
 
 	if (!confirmed) return;
@@ -738,14 +738,14 @@ private async handleAnonymizeAccount(): Promise<void> {
 	if (!this.userProfile) return;
 
 	const confirmed = confirm(
-		"⚠️ Êtes-vous sûr de vouloir SUPPRIMER DÉFINITIVEMENT votre compte ?\n\n" +
-		"  Conséquences :\n" +
+		"🚨🚨Êtes-vous sûr de vouloir SUPPRIMER votre compte ?🚨🚨\n\n" +
+		" ⚠️Conséquences⚠️ :\n" +
 		"- Votre compte sera entièrement effacé de notre base de données.\n" +
 		"- Vous ne pourrez plus jamais vous reconnecter.\n" +
 		"- Vos amis perdront la relation avec vous.\n" +
 		"- Votre historique de matchs sera supprimé.\n\n" +
-		"⚠️ Cette action est IRRÉVERSIBLE.\n\n" +
-		"Voulez-vous continuer ?"
+		"  ☠️☠️☠️ CETTE ACTION EST IRRÉVERSIBLE ☠️☠️☠️.\n\n" +
+		"Voulez-vous continuer ? 🤷"
 	);
 
 	if (!confirmed) return;
