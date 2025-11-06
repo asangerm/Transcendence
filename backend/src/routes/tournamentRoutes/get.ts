@@ -1,6 +1,15 @@
 import { FastifyInstance } from "fastify";
 import { requireAuth } from "../../middleware/authMiddleware";
 
+export interface Tournament {
+	id: number;
+	name: string;
+	gameId: string;
+	status: string;
+	started_at: Date;
+	created_at: Date;
+}
+
 export default async function getOngoingTournament(app: FastifyInstance) {
 	app.get("/:creatorId", { preHandler: [requireAuth] }, async (req, reply) => {
 		try {
@@ -14,7 +23,7 @@ export default async function getOngoingTournament(app: FastifyInstance) {
 					WHERE creator_id = ? AND status = 'ongoing'
 					LIMIT 1
 				`)
-				.get(creatorId);
+				.get(creatorId) as Tournament | undefined;
 
 			if (!tournament) {
 				return reply.status(404).send({
