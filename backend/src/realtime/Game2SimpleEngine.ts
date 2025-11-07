@@ -1,14 +1,17 @@
-interface PlayerState {
-    id: string;
+interface PlayerMeta {
+    userId: string;
+    username?: string;
 }
-
 
 export interface Game2State {
     id: string;
     kind: 'game2';
     createdAt: number;
     updatedAt: number;
-    players: PlayerState[];
+    players: {
+        player1?: PlayerMeta;
+        player2?: PlayerMeta;
+    };
     board: string[]; // 9 cells: 'X', 'O', ''
     currentPlayer: string; // 'player1' | 'player2'
     gameOver: boolean;
@@ -24,10 +27,7 @@ export class Game2SimpleEngine {
             kind: 'game2',
             createdAt: Date.now(),
             updatedAt: Date.now(),
-            players: [
-                { id: 'player1' },
-                { id: 'player2' }
-            ],
+            players: {},
             board: Array(9).fill(''),
             currentPlayer: 'player1',
             gameOver: false,
@@ -37,6 +37,12 @@ export class Game2SimpleEngine {
 
     getState() {
         return this.state;
+    }
+
+    // Set player seat metadata (maps seat -> user)
+    setPlayer(seat: 'player1' | 'player2', player: { id: string; username?: string }): void {
+        this.state.players[seat] = { userId: player.id, username: player.username };
+        this.state.updatedAt = Date.now();
     }
 
     applyInput(playerId: string, action: string) {

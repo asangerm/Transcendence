@@ -10,10 +10,12 @@ export class Game2Scene extends Phaser.Scene {
     private maxReconnectAttempts = 5;
     private reconnectDelay = 1000;
     private isReconnecting = false;
-    private ui: { statusText: any; gridTexts: any[]; gridBgs: any[] } = {
+    private ui: { statusText: any; gridTexts: any[]; gridBgs: any[]; selfText: any; opponentText: any } = {
         statusText: null as any,
         gridTexts: [] as any[],
-        gridBgs: [] as any[]
+        gridBgs: [] as any[],
+        selfText: null as any,
+        opponentText: null as any
     };
     private lastState: any = null;
 
@@ -30,6 +32,14 @@ export class Game2Scene extends Phaser.Scene {
             font: '48px Arial', 
             color: '#ffffff' 
         }).setOrigin(0.5);
+        this.ui.selfText = this.add.text(50, 150, 'Vous: ...', {
+            font: '22px Arial',
+            color: '#ffffff'
+        });
+        this.ui.opponentText = this.add.text(50, 175, 'Adversaire: ...', {
+            font: '22px Arial',
+            color: '#ffffff'
+        });
         this.ui.statusText = this.add.text(50, 200, 'Waiting for connection...', { 
             font: '24px Arial', 
             color: '#cccccc' 
@@ -80,7 +90,8 @@ export class Game2Scene extends Phaser.Scene {
         if (urlPlayer === 'player1' || urlPlayer === 'player2') {
             this.playerId = urlPlayer;
         } else {
-            this.playerId = Math.random() < 0.5 ? 'player1' : 'player2';
+            // Fallback déterministe: par défaut player1 (évite l'aléatoire)
+            this.playerId = 'player1';
         }
 
         const wsUrl = this.gameId
@@ -188,6 +199,17 @@ export class Game2Scene extends Phaser.Scene {
     }
 
     private renderState(state: any) {
+        // Update names from authoritative state
+        try {
+            const mySeat = this.playerId === 'player1' || this.playerId === 'player2' ? this.playerId : 'player1';
+            const oppSeat = mySeat === 'player1' ? 'player2' : 'player1';
+            const players = state.players || {};
+            const me = players?.[mySeat];
+            const opp = players?.[oppSeat];
+            if (this.ui.selfText && me) this.ui.selfText.setText(`Vous: ${me.username || mySeat}`);
+            if (this.ui.opponentText) this.ui.opponentText.setText(`Adversaire: ${opp?.username || oppSeat}`);
+        } catch {}
+
         // Update cells
         if (Array.isArray(state.board) && this.ui.gridTexts.length === 9) {
             for (let i = 0; i < 9; i++) {
@@ -198,10 +220,12 @@ export class Game2Scene extends Phaser.Scene {
 
         // Update status text
         if (state.gameOver) {
-            if (state.winner === 'player1') {
-                this.ui.statusText.setText('Player 1 Wins!').setStyle({ color: '#44ff44' });
-            } else if (state.winner === 'player2') {
-                this.ui.statusText.setText('Player 2 Wins!').setStyle({ color: '#44ff44' });
+            if (state.winner === 'player1' || state.winner === 'player2') {
+                const winnerSeat = state.winner;
+                const players = state.players || {};
+                const winner = players?.[winnerSeat];
+                const winnerName = (winner && winner.username) ? winner.username : (winnerSeat === 'player1' ? 'Player 1' : 'Player 2');
+                this.ui.statusText.setText(`Victoire: ${winnerName}`).setStyle({ color: '#44ff44' });
             } else {
                 this.ui.statusText.setText('Draw!').setStyle({ color: '#cccccc' });
             }

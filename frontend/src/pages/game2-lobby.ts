@@ -1,4 +1,5 @@
 import type { GameRoom, LobbyState } from '../types/lobby';
+import { AuthStore } from '../stores/auth.store';
 
 export function renderGame2Lobby() {
     const content = `
@@ -276,7 +277,15 @@ class Game2Lobby {
             case 'game_started':
                 this.showMessage('Game starting...', 'success');
                 setTimeout(() => {
-                    window.location.href = `/game2?mode=online&gameId=${message.gameId}`;
+                    // Determine seat from current room state if available
+                    let seat = '';
+                    if (this.state.currentRoom) {
+                        const p1 = this.state.currentRoom.players.player1;
+                        const p2 = this.state.currentRoom.players.player2;
+                        if (p1 && p1.id === this.state.playerId) seat = 'player1';
+                        else if (p2 && p2.id === this.state.playerId) seat = 'player2';
+                    }
+                    window.location.href = `/game2?mode=online&gameId=${message.gameId}${seat ? `&player=${seat}` : ''}`;
                 }, 1000);
                 break;
                 
@@ -431,7 +440,8 @@ class Game2Lobby {
             const result = await response.json();
             this.showMessage('Game starting...', 'success');
             setTimeout(() => {
-                window.location.href = `/game2?mode=online&gameId=${result.gameId}`;
+                // Owner is always player1 in our room model
+                window.location.href = `/game2?mode=online&gameId=${result.gameId}&player=player1`;
             }, 1000);
         } catch (error) {
             this.showMessage(error instanceof Error ? error.message : 'Failed to start game', 'error');
@@ -492,9 +502,14 @@ class Game2Lobby {
             // Check if game has started
             if (room.status === 'in_progress' && room.gameId) {
                 this.showMessage('Game starting...', 'success');
-                // Redirect both players to the game
+                // Redirect both players to the game with their assigned seat
+                const p1 = room.players.player1;
+                const p2 = room.players.player2;
+                let seat = '';
+                if (p1 && p1.id === this.state.playerId) seat = 'player1';
+                else if (p2 && p2.id === this.state.playerId) seat = 'player2';
                 setTimeout(() => {
-                    window.location.href = `/game2?mode=online&gameId=${room.gameId}`;
+                    window.location.href = `/game2?mode=online&gameId=${room.gameId}${seat ? `&player=${seat}` : ''}`;
                 }, 1000);
                 return;
             }
@@ -650,12 +665,12 @@ class Game2Lobby {
     private getCurrentUserId(): string {
         // This should be implemented based on your auth system
         // For now, return a mock ID
-        return 'user_' + Math.random().toString(36).substr(2, 9);
+        return AuthStore.getUser()?.id.toString() || '';
     }
 
     private getCurrentUsername(): string {
         // This should be implemented based on your auth system
         // For now, return a mock username
-        return 'Player_' + Math.random().toString(36).substr(2, 5);
+        return AuthStore.getUser()?.display_name || '';
     }
 }

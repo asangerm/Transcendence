@@ -25,7 +25,6 @@ import modifyAvatar from "./userRoutes/avatar";
 import searchUser from "./userRoutes/searchUser";
 
 // RGPD
-import privacyRoute from "./rgpd/privacy";
 import gameRoutes from "./gameRoutes";
 import roomRoutes from "./roomRoutes";
 import { registerRealtime } from "../realtime/ws";
@@ -60,7 +59,6 @@ export default async function routes(app: FastifyInstance) {
   app.register(searchUser, { prefix: "/users" });
 
   //RGPD
-  app.register(privacyRoute, { prefix: "/rgpd" });
   // Games (HTTP)
   app.register(gameRoutes, { prefix: "/api" });
   // Rooms (HTTP)
