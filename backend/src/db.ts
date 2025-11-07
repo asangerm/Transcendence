@@ -14,9 +14,6 @@ async function dbPlugin(fastify: FastifyInstance) {
   // Lecture du chemin de la base depuis DB_PATH ou fallback
   const dbPath = process.env.DB_PATH || path.join(__dirname, "../data/db.sqlite");
 
-  // Crée la DB si elle n'existe pas
-  console.log("📦 Initialisation DB :", dbPath);
-
   const db = new Database(dbPath);
 
   const tableExists = db.prepare(

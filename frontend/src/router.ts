@@ -18,9 +18,14 @@ const routes: Route[] = [
     { path: '/game2', component: () => import('./pages/game2').then(m => m.renderGame2()), requiresAuth: true },
     { path: '/test-engine', component: () => import('./pages/test-engine').then(m => m.renderTestEngine()), requiresAuth: true },
     { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()), requiresAuth: true },
+    { path: '/friends', component: () => import('./pages/friends').then(m => m.renderFriends()), requiresAuth: true },
     { path: '/login', component: () => import('./pages/login').then(m => m.renderLogin()), guestOnly: true },
-    { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()), guestOnly: true },
-    { path: '/register', component: () => import('./pages/register').then(m => m.renderRegister()), guestOnly: true }
+    { path: '/register', component: () => import('./pages/register').then(m => m.renderRegister()), guestOnly: true },
+    { path: '/terms', component: () => import('./pages/terms').then(m => m.renderTerms()), requiresAuth: false },
+    { path: '/privacy', component: () => import('./pages/privacy').then(m => m.renderPrivacy()), requiresAuth: false },
+    { path: '/change-password', component: () => import('./pages/change-password').then(m => m.renderChangePassword()), requiresAuth: true },
+    { path: '/forgot-password', component: () => import('./pages/forgot-password').then(m => m.renderForgotPassword()), guestOnly: true }
+
 ];
 
 export function initRouter() {
@@ -50,16 +55,17 @@ async function handleRoute() {
     const path = window.location.pathname;
     const route = routes.find(route => route.path === path);
 	
-	if (path.startsWith('/profile/')) {
+	if (path.startsWith('/profile/') || path.startsWith('/friends/')) {
 		const parts = path.split('/');
 		const username = parts[2];
 		const user = await UserService.getUserProfile(username);
-		console.log(user)
-		if (user) {
+		if (user && parts[1] === "profile") {
 			import('./pages/visit-profile').then(m => m.renderProfile(username));
 		}
+		else if (user && parts[1] === "friends") {
+			import('./pages/friends').then(m => m.renderFriends(username));
+		}
 		else {
-			console.log(window.location.pathname)
 			window.location.pathname.replace(path, '/');
 			navigateTo('/');
 		}

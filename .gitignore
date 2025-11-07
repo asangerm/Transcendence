@@ -14,6 +14,7 @@ out/
 
 # SQLite DB
 backend/data/db.sqlite
+backend/uploads/avatars
 
 # Misc
 .DS_Store

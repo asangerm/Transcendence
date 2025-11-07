@@ -2,10 +2,12 @@ import fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 import fastifyCookie from "@fastify/cookie";
 import fastifyWebsocket from "@fastify/websocket";
+import fastifyStatic from "@fastify/static";
+import fastifyMultipart from "@fastify/multipart";
 import dbPlugin from "./src/db";
 import routes from "./src/routes";
 import { errorHandler } from "./src/middleware/errorHandler";
-
+import path from "path";
 
 const app = fastify({
   logger: true,
@@ -25,10 +27,24 @@ async function buildServer() {
   await app.register(fastifyCookie, {
     secret: process.env.COOKIE_SECRET || "supersecret", // pour signer les cookies
   });
+  
+  // Servir les fichiers statiques
+  const uploadsPath = path.join(process.cwd(), "uploads");
 
   // WebSocket
   await app.register(fastifyWebsocket);
 
+  await app.register(fastifyStatic, {
+    root: uploadsPath,
+    prefix: "/uploads/", // accessible via http://localhost:8000/uploads/...
+  });
+
+  app.register(fastifyMultipart, {
+    limits: {
+      fileSize: 2 * 1024 * 1024, // 2MB max
+    },
+  });
+  
   // Routes (index.ts)
   app.register(routes);
 

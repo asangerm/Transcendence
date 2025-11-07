@@ -4,15 +4,28 @@ CREATE TABLE users (
     email          VARCHAR(255) NOT NULL UNIQUE,
     password_hash  VARCHAR(255),
     display_name   VARCHAR(255) NOT NULL UNIQUE,
-    avatar_url     TEXT DEFAULT '/uploads/avatars/default.png',
+    avatar_url     TEXT DEFAULT '/uploads/default.png',
     is_online      INTEGER DEFAULT 0,
     wins           INTEGER DEFAULT 0,
     losses         INTEGER DEFAULT 0,
     google_id      VARCHAR(255) UNIQUE,
+    two_factor_method TEXT DEFAULT 'authenticator',
+    phone_number   VARCHAR(20) NULL,
     two_factor_enabled INTEGER DEFAULT 0,
     two_factor_secret VARCHAR(255),
     created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at     DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table pour stocker les codes temporaires (SMS ou email)
+CREATE TABLE two_factor_codes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    code VARCHAR(6) NOT NULL,
+    method TEXT NOT NULL, -- 'sms' | 'email'
+    expires_at DATETIME NOT NULL,
+    used INTEGER DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Table: friends

@@ -13,8 +13,12 @@ initializeTheme();
 // Initialize the router
 initRouter();
 
-// Initial render
-renderHome();
+// Rendu initial + abonnement aux changements d'auth
+const render = () => renderHome();
+AuthStore.subscribe(() => render());
+
+// Premier rendu (AuthStore peut déjà avoir l'utilisateur)
+render();
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeNavigation();

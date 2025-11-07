@@ -14,16 +14,50 @@ export default async function anonymizeUser(app: FastifyInstance) {
     const anonName = `anon_user_${id}`;
     const anonAvatar = "/avatars/default.png";
 
-    app.db.prepare(
-      `UPDATE users 
-       SET email = ?, 
-           display_name = ?, 
-           avatar_url = ?, 
-           password_hash = NULL, 
-           two_factor_secret = NULL, 
-           two_factor_enabled = 0 
-       WHERE id = ?`
-    ).run(anonEmail, anonName, anonAvatar, id);
+    const transaction = app.db.transaction(() => {
+      // --- Anonymiser l'utilisateur ---
+      app.db.prepare(
+        `UPDATE users 
+         SET email = ?, 
+             display_name = ?, 
+             avatar_url = ?, 
+             password_hash = NULL, 
+             two_factor_secret = NULL, 
+             two_factor_enabled = 0 
+         WHERE id = ?`
+      ).run(anonEmail, anonName, anonAvatar, id);
+
+      // --- Supprimer 2FA codes et sessions ---
+      app.db.prepare("DELETE FROM two_factor_codes WHERE user_id = ?").run(id);
+      app.db.prepare("DELETE FROM sessions WHERE user_id = ?").run(id);
+
+      // --- Anonymiser friend requests ---
+      app.db.prepare(
+        `UPDATE friend_requests 
+         SET sender_id = NULL, receiver_id = NULL, status = 'deleted' 
+         WHERE sender_id = ? OR receiver_id = ?`
+      ).run(id, id);
+
+      // --- Supprimer relations d’amis ---
+      app.db.prepare("DELETE FROM friends WHERE user_id = ? OR friend_id = ?").run(id, id);
+
+      // --- Anonymiser high scores ---
+      app.db.prepare("UPDATE high_scores SET user_id = NULL WHERE user_id = ?").run(id);
+
+      // --- Anonymiser matchs ---
+      app.db.prepare(
+        `UPDATE matches 
+         SET player1_id = CASE WHEN player1_id = ? THEN NULL ELSE player1_id END,
+             player2_id = CASE WHEN player2_id = ? THEN NULL ELSE player2_id END,
+             winner_id  = CASE WHEN winner_id  = ? THEN NULL ELSE winner_id END
+         WHERE player1_id = ? OR player2_id = ? OR winner_id = ?`
+      ).run(id, id, id, id, id, id);
+
+      // --- Anonymiser tournaments ---
+      app.db.prepare("UPDATE tournaments SET winner_id = NULL WHERE winner_id = ?").run(id);
+    });
+
+    transaction();
 
     return reply.send({ success: true, message: "User anonymized successfully" });
   });

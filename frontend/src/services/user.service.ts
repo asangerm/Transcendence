@@ -9,10 +9,11 @@ export interface UserProfile extends User {
 }
 
 export interface Friend {
-  id: number;
-  display_name: string;
+  friend_id: number;
+  friend_name: string;
   avatar_url: string;
   is_online: number;
+  since: Date;
 }
 
 export interface Match {
@@ -52,7 +53,8 @@ export class UserService {
 	static async getUserProfile(username: string): Promise<UserProfile | null> {
 		try {
 			const response = await apiService.get(`/users/name/${username}`);
-			// console.log("response data : ",response.data);
+			response.data.user.friends = await this.getUserFriends(response.data.user.id);
+			response.data.user.friendCount = response.data.user.friends.length;
 			return response.data.user;
 		}
 		catch (error: any) {
@@ -65,23 +67,33 @@ export class UserService {
 		}
 	}
 
-	static async updateProfile(updates: Partial<User>): Promise<User> {
-		const response = await apiService.patch('/users/profile', updates);
-		return response.data;
-	}
+  static async updateInfos(updates: { display_name: string; email: string }, userId?: number): Promise<User> {
+    if (!userId) {
+        throw new Error("User ID is required to update profile.");
+    }
+    const response = await apiService.put(`/users/${userId}`, updates);
+    return response.data;
+}
+
 
   static async uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
     const formData = new FormData();
     formData.append('avatar', file);
     
     try {
-      const response = await apiService.uploadFile('/api/users/avatar', formData);
+      const response = await apiService.uploadFile('/users/avatar', formData);
       return response.data;
     } catch (error) {
       console.error('Upload error:', error);
       throw error;
     }
   }
+
+  static async deleteAvatar(): Promise<{ avatarUrl: string }> {
+    const response = await apiService.delete('/users/avatar');
+    return response.data;
+} 
+
 
   static async getUserStats(userId: number): Promise<UserStats[]>  {
     const response = await apiService.get(`/users/${userId}/stats`);
@@ -94,39 +106,54 @@ export class UserService {
   }
 
   static async getUserFriends(userId: number): Promise<Friend[]> {
-    const response = await apiService.get(`/users/${userId}/friends`);
+    const response = await apiService.get(`/friends/${userId}`);
+    return response.data.friends;
+  }
+  static async getUserFriendsWithout(): Promise<Friend[]> {
+    const response = await apiService.get(`/friends`);
     return response.data;
   }
 
-  static async sendFriendRequest(friendId: number): Promise<{ message: string }> {
-    const response = await apiService.post('/users/friends/request', { friendId });
+  static async addFriend(userId: number, friendId: number): Promise<{ message: string }> {
+	console.log("Adding friend:", userId, friendId);
+    const response = await apiService.post(`/friends/add/${userId}/${friendId}`);
     return response.data;
   }
 
-  static async acceptFriendRequest(requestId: number): Promise<{ message: string }> {
-    const response = await apiService.post('/users/friends/accept', { requestId });
-    return response.data;
-  }
-
-  static async rejectFriendRequest(requestId: number): Promise<{ message: string }> {
-    const response = await apiService.post('/users/friends/reject', { requestId });
-    return response.data;
-  }
-
-  static async getPendingFriendRequests(): Promise<FriendRequest[]> {
-    const response = await apiService.get('/users/friends/requests');
-    return response.data;
-  }
-
-  static async removeFriend(friendId: number): Promise<{ message: string }> {
-    const response = await apiService.delete(`/users/friends/${friendId}`);
+  static async removeFriend(userId: number, friendId: number): Promise<{ message: string }> {
+    const response = await apiService.delete(`/friends/remove/${userId}/${friendId}`);
     return response.data;
   }
 
   static async searchUsers(query: string): Promise<User[]> {
     const response = await apiService.get(`/users/search?q=${encodeURIComponent(query)}`);
+    return response.data.users;
+  }
+
+  static async changePassword(userId: number, oldPassword: string, newPassword: string): Promise<{ message: string }> {
+    const response = await apiService.put(`/users/${userId}/password`, { oldPassword, newPassword });
     return response.data;
   }
+
+  static async anonymizeAccount(userId: number): Promise<{ message: string }> {
+    const response = await apiService.post(`/users/${userId}/anonymize`);
+    return response.data;
+  }
+
+  static async deleteAccount(userId: number): Promise<{ message: string }> {
+    const response = await apiService.delete(`/users/${userId}`);
+    return response.data;
+  }
+    
+  static async exportData(userId: number): Promise<Blob> {
+    const response = await apiService.get(`/users/${userId}/export`, {
+      responseType: 'arraybuffer', // Important pour récupérer un Blob
+    });
+    return new Blob([response.data], { type: "application/json" });
+  }
+
+
+  
 }
 
 export default UserService;
