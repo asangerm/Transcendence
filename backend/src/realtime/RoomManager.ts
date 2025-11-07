@@ -211,6 +211,7 @@ export class RoomManager {
     const { id: gameId } = gameManager.createGame(gameType);
     room.gameId = gameId;
     room.status = 'in_progress';
+    console.log('[ROOM] startGame', { roomId, gameId, gameType, ownerId });
 
     // Set players in the game engine based on game type
     const engine = gameManager.getEngine(gameId);
@@ -222,6 +223,7 @@ export class RoomManager {
         if (room.players.player2) {
           (engine as any).setPlayer('player2', { id: room.players.player2.id, username: room.players.player2.username });
         }
+        console.log('[ROOM] set players for game2', { roomId, player1: room.players.player1?.id, player2: room.players.player2?.id });
       } else {
         // Default to pong structure
         if (room.players.top) {

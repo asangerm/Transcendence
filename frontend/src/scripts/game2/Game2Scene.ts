@@ -10,6 +10,7 @@ export class Game2Scene extends Phaser.Scene {
     private maxReconnectAttempts = 5;
     private reconnectDelay = 1000;
     private isReconnecting = false;
+    private allowReconnect = true;
     private ui: { statusText: any; gridTexts: any[]; gridBgs: any[]; selfText: any; opponentText: any } = {
         statusText: null as any,
         gridTexts: [] as any[],
@@ -19,7 +20,18 @@ export class Game2Scene extends Phaser.Scene {
     };
     private lastState: any = null;
 
-    constructor() { super('Game2Scene'); }
+    constructor() {
+        super('Game2Scene');
+        // Fermer le WS proprement si l'utilisateur quitte la page
+        window.addEventListener('beforeunload', () => {
+            try {
+                this.allowReconnect = false;
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.close(1000, 'page_unload');
+                }
+            } catch {}
+        });
+    }
 
     preload() {}
 
@@ -149,7 +161,7 @@ export class Game2Scene extends Phaser.Scene {
             clearTimeout(connectionTimeout);
             console.log('WebSocket closed:', event.code, event.reason);
             // Only attempt reconnection if it's not a normal closure and not during reconnection
-            if (event.code !== 1000 && !this.isReconnecting) {
+            if (this.allowReconnect && event.code !== 1000 && !this.isReconnecting) {
                 if (this.events?.emit) this.events.emit('gameError', `Connection closed: ${event.code} ${event.reason}`);
                 this.ui.statusText.setText(`Connection closed: ${event.code} ${event.reason}`).setStyle({ color: '#ff4444' });
                 this.attemptReconnect();
@@ -229,6 +241,13 @@ export class Game2Scene extends Phaser.Scene {
             } else {
                 this.ui.statusText.setText('Draw!').setStyle({ color: '#cccccc' });
             }
+            // Fermer proprement la connexion après fin de partie
+            try {
+                this.allowReconnect = false;
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.close(1000, 'game_over');
+                }
+            } catch {}
         } else {
             if (state.currentPlayer === this.playerId) {
                 this.ui.statusText.setText('Your turn').setStyle({ color: '#ffffff' });
@@ -277,9 +296,14 @@ export class Game2Scene extends Phaser.Scene {
 
     destroy() {
         if (this.ws) {
-            this.ws.close();
+            try {
+                this.allowReconnect = false;
+                if (this.ws.readyState === WebSocket.OPEN) this.ws.close(1000, 'scene_destroy');
+            } catch {}
             this.ws = null as any;
         }
         super.destroy();
     }
+
+    
 }

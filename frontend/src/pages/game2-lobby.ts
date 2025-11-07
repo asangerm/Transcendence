@@ -6,126 +6,20 @@ export function renderGame2Lobby() {
         <div class="w-full h-full overflow-hidden">
             <main class="container mx-auto px-4 py-8">
                 <div class="bg-primary dark:bg-primary-dark p-8 rounded-lg shadow-md">
-                    <h1 class="text-3xl font-bold mb-6 text-center">Game2 Lobby</h1>
-                    
-                    <!-- Room Creation Section -->
-                    <div id="room-creation" class="mb-8">
-                        <div class="bg-gray-800 p-6 rounded-lg">
-                            <h2 class="text-xl font-semibold mb-4">Create New Room</h2>
-                            <div class="flex gap-4">
-                                <input 
-                                    type="text" 
-                                    id="room-name" 
-                                    placeholder="Enter room name..." 
-                                    class="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-                                    maxlength="50"
-                                />
-                                <button 
-                                    id="create-room-btn" 
-                                    class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
-                                >
-                                    Create Room
-                                </button>
-                            </div>
+                    <h1 class="text-3xl font-bold mb-6 text-center">Game2 - Matchmaking</h1>
+
+                    <div id="mm-block" class="mb-6 bg-gray-800 p-6 rounded-lg text-center">
+                        <p id="mm-status" class="text-lg text-gray-300 mb-4">Clique sur "Chercher une partie" pour trouver un adversaire.</p>
+                        <div class="flex gap-4 justify-center">
+                            <button id="mm-search" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
+                                Chercher une partie
+                            </button>
+                            <button id="mm-cancel" class="px-8 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors hidden">
+                                Annuler
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Room Joining Section -->
-                    <div id="room-joining" class="mb-8">
-                        <div class="bg-gray-800 p-6 rounded-lg">
-                            <h2 class="text-xl font-semibold mb-4">Join Room by ID</h2>
-                            <div class="flex gap-4">
-                                <input 
-                                    type="text" 
-                                    id="room-id" 
-                                    placeholder="Enter room ID..." 
-                                    class="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:outline-none"
-                                />
-                                <button 
-                                    id="join-room-btn" 
-                                    class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
-                                >
-                                    Join Room
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Current Room Section -->
-                    <div id="current-room" class="mb-8 hidden">
-                        <div class="bg-gray-800 p-6 rounded-lg">
-                            <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-xl font-semibold">Current Room: <span id="current-room-name"></span></h2>
-                                <button 
-                                    id="leave-room-btn" 
-                                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
-                                >
-                                    Leave Room
-                                </button>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <!-- Player 1 -->
-                                <div class="bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-semibold mb-2">Player 1</h3>
-                                    <div id="player1" class="text-gray-400">
-                                        <span class="text-sm">Waiting for player...</span>
-                                    </div>
-                                </div>
-                                
-                                <!-- Player 2 -->
-                                <div class="bg-gray-700 p-4 rounded-lg">
-                                    <h3 class="font-semibold mb-2">Player 2</h3>
-                                    <div id="player2" class="text-gray-400">
-                                        <span class="text-sm">Waiting for player...</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="flex gap-4">
-                                <button 
-                                    id="ready-btn" 
-                                    class="px-6 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-semibold transition-colors"
-                                >
-                                    Ready
-                                </button>
-                                <button 
-                                    id="start-game-btn" 
-                                    class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors hidden"
-                                >
-                                    Start Game
-                                </button>
-                                <button 
-                                    id="kick-player-btn" 
-                                    class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors hidden"
-                                >
-                                    Kick Player
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Available Rooms Section -->
-                    <div id="available-rooms">
-                        <div class="bg-gray-800 p-6 rounded-lg">
-                            <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-xl font-semibold">Available Rooms</h2>
-                                <button 
-                                    id="refresh-rooms-btn" 
-                                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors"
-                                >
-                                    Refresh
-                                </button>
-                            </div>
-                            <div id="rooms-list" class="space-y-2">
-                                <div class="text-center text-gray-400 py-4">
-                                    <span>Loading rooms...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Error/Success Messages -->
                     <div id="message-container" class="mt-4"></div>
                 </div>
             </main>
@@ -155,6 +49,7 @@ class Game2Lobby {
     };
 
     private ws: WebSocket | null = null;
+    private mmInterval: any = null;
 
     async init() {
         // Get user info (you might need to implement this based on your auth system)
@@ -162,73 +57,102 @@ class Game2Lobby {
         this.state.username = this.getCurrentUsername();
         
         this.setupEventListeners();
-        this.connectWebSocket();
-        await this.loadAvailableRooms();
     }
 
     private setupEventListeners() {
-        // Create room
-        document.getElementById('create-room-btn')?.addEventListener('click', () => {
-            this.createRoom();
+        document.getElementById('mm-search')?.addEventListener('click', () => {
+            this.startMatchmaking();
         });
-
-        // Join room
-        document.getElementById('join-room-btn')?.addEventListener('click', () => {
-            this.joinRoom();
-        });
-
-        // Leave room
-        document.getElementById('leave-room-btn')?.addEventListener('click', () => {
-            this.leaveRoom();
-        });
-
-        // Ready toggle
-        document.getElementById('ready-btn')?.addEventListener('click', () => {
-            this.toggleReady();
-        });
-
-        // Start game
-        document.getElementById('start-game-btn')?.addEventListener('click', () => {
-            this.startGame();
-        });
-
-        // Kick player
-        document.getElementById('kick-player-btn')?.addEventListener('click', () => {
-            this.kickPlayer();
-        });
-
-        // Refresh rooms
-        document.getElementById('refresh-rooms-btn')?.addEventListener('click', () => {
-            this.loadAvailableRooms();
-        });
-
-        // Enter key handlers
-        document.getElementById('room-name')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.createRoom();
-        });
-
-        document.getElementById('room-id')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.joinRoom();
+        document.getElementById('mm-cancel')?.addEventListener('click', () => {
+            this.cancelMatchmaking();
         });
     }
 
-    private connectWebSocket() {
-        // For now, use polling instead of WebSocket
-        console.log('Using HTTP polling instead of WebSocket for Game2');
-        this.startPolling();
-    }
+    // ==== MATCHMAKING ====
+    private async startMatchmaking() {
+        const statusP = document.getElementById('mm-status');
+        const btnSearch = document.getElementById('mm-search');
+        const btnCancel = document.getElementById('mm-cancel');
+        // Garde: identité requise
+        if (!this.state.playerId || !this.state.username) {
+            this.showMessage('Identité introuvable, veuillez vous reconnecter.', 'error');
+            return;
+        }
+        console.log('[MM][UI] start search', { playerId: this.state.playerId, username: this.state.username });
+        if (statusP) statusP.textContent = 'Recherche d\'adversaire...';
+        btnSearch?.classList.add('hidden');
+        btnCancel?.classList.remove('hidden');
 
-    private startPolling() {
-        // Poll for updates every 1 second for faster response
-        setInterval(() => {
-            if (this.state.currentRoom) {
-                this.loadCurrentRoom();
-            } else {
-                this.loadAvailableRooms();
+        try {
+            const res = await fetch('/api/matchmaking/game2/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ playerId: this.state.playerId, username: this.state.username })
+            });
+            const data = await res.json();
+            console.log('[MM][UI] search response', data);
+            if (!res.ok) {
+                throw new Error(data?.error || 'Matchmaking indisponible');
             }
+            if (data.status === 'matched' && data.gameId && data.seat) {
+                console.log('[MM][UI] matched immediately, redirect');
+                window.location.href = `/game2?mode=online&gameId=${data.gameId}&player=${data.seat}`;
+                return;
+            }
+        } catch (e) {
+            this.showMessage('Erreur: impossible de lancer la recherche', 'error');
+            btnCancel?.classList.add('hidden');
+            btnSearch?.classList.remove('hidden');
+            return;
+        }
+
+        // Poll toutes les secondes pour le statut
+        this.mmInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/matchmaking/status/${this.state.playerId}`);
+                const data = await res.json();
+                console.log('[MM][UI] status', data);
+                if (data.status === 'matched' && data.gameId && data.seat) {
+                    clearInterval(this.mmInterval);
+                    this.mmInterval = null;
+                    console.log('[MM][UI] matched via status, redirect');
+                    window.location.href = `/game2?mode=online&gameId=${data.gameId}&player=${data.seat}`;
+                }
+            } catch {}
         }, 1000);
     }
 
+    private async cancelMatchmaking() {
+        const statusP = document.getElementById('mm-status');
+        const btnSearch = document.getElementById('mm-search');
+        const btnCancel = document.getElementById('mm-cancel');
+        if (this.mmInterval) { clearInterval(this.mmInterval); this.mmInterval = null; }
+        try {
+            await fetch('/api/matchmaking/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ playerId: this.state.playerId })
+            });
+        } catch {}
+        if (statusP) statusP.textContent = 'Recherche annulée.';
+        btnCancel?.classList.add('hidden');
+        btnSearch?.classList.remove('hidden');
+    }
+
+    // Annulation auto si l’utilisateur ferme/quitte la page
+    constructor() {
+        window.addEventListener('beforeunload', () => {
+            if (this.mmInterval) { clearInterval(this.mmInterval); this.mmInterval = null; }
+            if (this.state.playerId) {
+                try {
+                    const blob = new Blob([JSON.stringify({ playerId: this.state.playerId })], { type: 'application/json' });
+                    navigator.sendBeacon('/api/matchmaking/cancel', blob);
+                } catch {}
+            }
+        });
+    }
+
+    // Conservé pour compat: non utilisé en matchmaking
     private handleWebSocketMessage(message: any) {
         switch (message.type) {
             case 'room_created':
@@ -299,41 +223,7 @@ class Game2Lobby {
         }
     }
 
-    private async createRoom() {
-        const roomNameInput = document.getElementById('room-name') as HTMLInputElement;
-        const roomName = roomNameInput.value.trim();
-        
-        if (!roomName) {
-            this.showMessage('Please enter a room name', 'error');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/rooms', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: roomName,
-                    ownerId: this.state.playerId,
-                    ownerUsername: this.state.username,
-                    gameType: 'game2'
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to create room');
-            }
-
-            const room = await response.json();
-            this.state.currentRoom = room;
-            this.state.isOwner = true;
-            this.updateUI();
-            this.showMessage('Room created successfully!', 'success');
-            roomNameInput.value = '';
-        } catch (error) {
-            this.showMessage('Failed to create room', 'error');
-        }
-    }
+    // Les méthodes de room sont conservées mais non utilisées avec le matchmaking.
 
     private async joinRoom() {
         const roomIdInput = document.getElementById('room-id') as HTMLInputElement;

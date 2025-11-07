@@ -27,6 +27,7 @@ import searchUser from "./userRoutes/searchUser";
 // RGPD
 import gameRoutes from "./gameRoutes";
 import roomRoutes from "./roomRoutes";
+import matchmakingRoutes from "./matchmakingRoutes";
 import { registerRealtime } from "../realtime/ws";
 // Friends
 import getFriends from "./friendsRoutes/getFriends";
@@ -63,6 +64,8 @@ export default async function routes(app: FastifyInstance) {
   app.register(gameRoutes, { prefix: "/api" });
   // Rooms (HTTP)
   app.register(roomRoutes, { prefix: "/api" });
+  // Matchmaking (HTTP)
+  app.register(matchmakingRoutes, { prefix: "/api" });
   // Realtime (WS) - includes both game and room WebSocket functionality
   await registerRealtime(app);
   

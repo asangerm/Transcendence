@@ -23,8 +23,21 @@ export async function registerRealtime(app: FastifyInstance) {
     const subs = connections.get(gameId);
     if (!subs) return;
     const payload = JSON.stringify(stateMsg);
-    for (const ws of subs) {
-      try { ws.send(payload); } catch {}
+    for (const ws of Array.from(subs)) {
+      try { 
+        ws.send(payload); 
+      } catch {
+        subs.delete(ws);
+      }
+    }
+    // Cleanup empty subscription sets and finished games
+    if (subs.size === 0) {
+      connections.delete(gameId);
+      const state: any = gameManager.getState(gameId);
+      if (!state || state.gameOver === true) {
+        console.log('[WS] removing finished game with no subscribers', { gameId });
+        gameManager.remove(gameId);
+      }
     }
   };
 
@@ -58,7 +71,7 @@ export async function registerRealtime(app: FastifyInstance) {
   // Update loop and broadcast ~120fps for very smooth ball updates
   setInterval(() => {
     gameManager.tickAll();
-    for (const gameId of connections.keys()) broadcastState(gameId);
+    for (const gameId of Array.from(connections.keys())) broadcastState(gameId);
   }, 8);
 
   // Health check endpoint for WebSocket
@@ -204,7 +217,17 @@ export async function registerRealtime(app: FastifyInstance) {
     });
 
     connection.socket.on('close', () => {
-      connections.get(gameId)?.delete(connection.socket);
+      // Remove this socket from ALL game subscriptions
+      for (const [gid, set] of Array.from(connections.entries())) {
+        if (set.delete(connection.socket) && set.size === 0) {
+          connections.delete(gid);
+          const state: any = gameManager.getState(gid);
+          if (!state || state.gameOver === true) {
+            console.log('[WS] removing finished game after last socket closed', { gameId: gid });
+            gameManager.remove(gid);
+          }
+        }
+      }
     });
   });
 
