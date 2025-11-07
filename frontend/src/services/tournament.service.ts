@@ -16,6 +16,7 @@ export interface OngoingTournamentResponse {
 }
 
 export class TournamentService {
+
 	static async createNewTournament(tournamentInfos: Tournament): Promise<Tournament> {
 		const response = await apiService.post('/tournament/create', tournamentInfos);
 		return response.data; // correspond à { tournament: {...} } renvoyé par le backend
@@ -32,4 +33,14 @@ export class TournamentService {
 			throw error;
 		}
 	}
+
+	static async deleteTournament(tournamentId: number): Promise<void> {
+		try {
+			await apiService.delete(`/tournament/${tournamentId}`);
+		} catch (error: any) {
+			console.error("Erreur suppression tournoi :", error);
+			throw error;
+		}
+	}
+
 }
