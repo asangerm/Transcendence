@@ -559,7 +559,7 @@ private attachEventListeners(): void {
 			this.fillModifyForm();
 		});
 		cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
-		editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
+		// editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
 	    anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
 		deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
 		exportBtn?.addEventListener('click', () => this.handleExportData());

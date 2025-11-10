@@ -21,7 +21,7 @@ body {
 }
 
 .links-style {
-	@apply text-link dark:text-link-dark hover:text-link-hover dark:hover:text-link-hover-dark ml-1 transition-all duration-300;
+	@apply font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400;
 }
 
 .error-text {

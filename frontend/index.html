@@ -1,55 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>ft_transcendence</title>
-	<script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
-	<script src="https://accounts.google.com/gsi/client" async defer onload="console.log('Google SDK loaded')" onerror="console.error('Failed to load Google SDK')"></script>
-</head>
-<body class="pt-16 bg-background text-text dark:bg-background-dark dark:text-text-dark">
-	<!-- Theme Switcher Button -->
-	<button 
-		id="theme-toggle" 
-		class="fixed bottom-4 left-4 p-3 rounded-lg bg-background-dark dark:bg-background shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-110 focus:outline-none ring-1 ring-muted dark:ring-muted-dark z-50"
-		aria-label="Toggle dark mode"
-	>
-		<!-- Sun icon (shown in dark mode) -->
-		<svg 
-			id="theme-toggle-light-icon" 
-			class="hidden w-6 h-6 text-text-dark dark:text-text" 
-			fill="none" 
-			viewBox="0 0 24 24" 
-			stroke="currentColor"
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>ft_transcendence</title>
+		<script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
+		<script src="https://accounts.google.com/gsi/client" async defer onload="console.log('Google SDK loaded')" onerror="console.error('Failed to load Google SDK')"></script>
+	</head>
+	<body class="pt-16 bg-background text-text dark:bg-background-dark dark:text-text-dark">
+		<!-- Theme Switcher Button -->
+		<button 
+			id="theme-toggle" 
+			class="fixed bottom-4 left-4 p-3 rounded-lg bg-background-dark dark:bg-background shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-110 focus:outline-none ring-1 ring-muted dark:ring-muted-dark z-50"
+			aria-label="Toggle dark mode"
 		>
-			<path 
-				stroke-linecap="round" 
-				stroke-linejoin="round" 
-				stroke-width="2" 
-				d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-			/>
-		</svg>
-		<!-- Moon icon (shown in light mode) -->
-		<svg 
-			id="theme-toggle-dark-icon" 
-			class="hidden w-6 h-6 text-text-dark dark:text-text" 
-			fill="none" 
-			viewBox="0 0 24 24" 
-			stroke="currentColor"
-		>
-			<path 
-				stroke-linecap="round" 
-				stroke-linejoin="round" 
-				stroke-width="2" 
-				d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-			/>
-		</svg>
-	</button>
+			<!-- Sun icon (shown in dark mode) -->
+			<svg 
+				id="theme-toggle-light-icon" 
+				class="hidden w-6 h-6 text-text-dark dark:text-text" 
+				fill="none" 
+				viewBox="0 0 24 24" 
+				stroke="currentColor"
+			>
+				<path 
+					stroke-linecap="round" 
+					stroke-linejoin="round" 
+					stroke-width="2" 
+					d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+				/>
+			</svg>
+			<!-- Moon icon (shown in light mode) -->
+			<svg 
+				id="theme-toggle-dark-icon" 
+				class="hidden w-6 h-6 text-text-dark dark:text-text" 
+				fill="none" 
+				viewBox="0 0 24 24" 
+				stroke="currentColor"
+			>
+				<path 
+					stroke-linecap="round" 
+					stroke-linejoin="round" 
+					stroke-width="2" 
+					d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+				/>
+			</svg>
+		</button>
 
-	<div id="navbar-container"></div>
-	<div id="app" class="bg-background dark:bg-background-dark text-text dark:text-text-dark">
-		
-	</div>
-	<script type="module" src="/src/main.ts"></script>
-</body>
+		<div id="navbar-container"></div>
+		<div id="app" class="bg-background dark:bg-background-dark text-text dark:text-text-dark ">
+		</div>
+
+		<script type="module" src="/src/main.ts"></script>
+	</body>
+	<footer class="bg-background dark:bg-background-dark text-text dark:text-text-dark py-8 mt-8">
+		<div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+			
+			<!-- Nom du site -->
+			<div class="text-center md:text-left">
+				<h2 class="text-xl font-semibold">ft_transcendence</h2>
+				<p class="text-sm text-gray-400">© 2025 ft_transcendence. Tous droits réservés.</p>
+			</div>
+
+			<!-- Liens légaux -->
+			<div class="flex flex-col justify-items items-center space-x-6 text-sm">
+				<a href="/terms" class="links-style">Conditions d’utilisation</a>
+				<a href="/privacy" class="links-style">Politique de confidentialité</a>
+			</div>
+
+		</div>
+
+		<!-- Ligne de séparation -->
+		<div class="border-t border-gray-700 mt-6 pt-4 text-center text-xs text-gray-500">
+			<p>Développé par l'equipe NYNJA</p>
+		</div>
+	</footer>
+
 </html> 

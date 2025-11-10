@@ -27,9 +27,6 @@ export default async function deleteUser(app: FastifyInstance) {
 
       // Transaction sécurisée pour supprimer toutes les données liées
       const transaction = app.db.transaction(() => {
-        console.log("Deleting two_factor_codes...");
-        app.db.prepare("DELETE FROM two_factor_codes WHERE user_id = ?").run(userId);
-
         console.log("Deleting sessions...");
         app.db.prepare("DELETE FROM sessions WHERE user_id = ?").run(userId);
 

@@ -24,7 +24,7 @@ export class LoginForm {
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
               Ou
-              <a href="/register" class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+              <a href="/register" class="links-style">
                 créer un nouveau compte
               </a>
             </p>
@@ -72,7 +72,7 @@ export class LoginForm {
               </div>
 
               <div class="text-sm">
-                <a href="/forgot-password" class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                <a href="/forgot-password" class="links-style">
                   Mot de passe oublié ?
                 </a>
               </div>
@@ -126,7 +126,7 @@ export class LoginForm {
 
   private async handleSubmit(event: Event): Promise<void> {
     event.preventDefault();
-    
+
     const form = event.target as HTMLFormElement;
     const formData = new FormData(form);
     const credentials: LoginCredentials = {

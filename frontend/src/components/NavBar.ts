@@ -2,6 +2,7 @@ import { AuthStore } from '../stores/auth.store';
 import { AuthService, User } from '../services/auth.service';
 import UserService, { UserProfile } from '../services/user.service';
 import { escapeHtml } from '../utils/sanitizer';
+import { navigateTo } from '../router';
 
 export class NavBar {
 	private container: HTMLElement;
@@ -86,6 +87,15 @@ export class NavBar {
 
 						<!-- Desktop menu -->
 						<div class="hidden md:flex items-center space-x-6">
+							${this.isAuth ? `
+							<a href="/tournaments" data-nav class="flex flex-row justify-items items-center gap-2 py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">
+								<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 1664 1472">
+									<path fill="#ffffffff" d="M1472 1216H192q-24 0-44 38.5t-20 89.5t20 89.5t44 38.5h1280q24 0 44-38.5t20-89.5t-20-89.5t-44-38.5zM128 128q-53 0-90.5 37.5T0 256t37.5 90.5T128 384l80 703h1248l80-703q53 0 90.5-37.5T1664 256t-37.5-90.5T1536 128t-90.5 37.5T1408 256q0 56 41 94q-153 183-207 236.5t-90 53.5q-34 0-83-66.5T899 301q28-17 44.5-46t16.5-63q0-53-37.5-90.5T832 64t-90.5 37.5T704 192q0 34 16.5 63t44.5 46Q644 507 595 573.5T512 640q-36 0-90-53.5T215 350q41-38 41-94q0-53-37.5-90.5T128 128z"/>
+								</svg>
+								Tournois
+							</a>
+							`
+							: ``}
 							<a href="/games" data-nav class="flex flex-row justify-items items-center gap-2 py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">
 								<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20">
 									<path fill="#ffffffff" d="M15.9 5.5C15.3 4.5 14.2 4 13 4H7c-1.2 0-2.3.5-2.9 1.5c-2.3 3.5-2.8 8.8-1.2 9.9c1.6 1.1 5.2-3.7 7.1-3.7s5.4 4.8 7.1 3.7c1.6-1.1 1.1-6.4-1.2-9.9zM8 9H7v1H6V9H5V8h1V7h1v1h1v1zm5.4.5c0 .5-.4.9-.9.9s-.9-.4-.9-.9s.4-.9.9-.9s.9.4.9.9zm1.9-2c0 .5-.4.9-.9.9s-.9-.4-.9-.9s.4-.9.9-.9s.9.4.9.9z"/>
@@ -184,8 +194,9 @@ export class NavBar {
 	private async handleLogout(): Promise<void> {
 	  try {
 		await AuthService.logoutAsync();
-		window.location.href = '/login';
+		navigateTo('/login');
 	  } catch (error: any) {
+		
 	  }
 	}
 

@@ -34,6 +34,11 @@ import getFriends from "./friendsRoutes/getFriends";
 import addFriend from "./friendsRoutes/addFriend";
 import removeFriend from "./friendsRoutes/removeFriend";
 
+// Tournaments
+import createTournament from "./tournamentRoutes/create";
+import getOngoingTournament from "./tournamentRoutes/get";
+import deleteTournament from "./tournamentRoutes/delete";
+
 
 
 export default async function routes(app: FastifyInstance) {
@@ -73,4 +78,10 @@ export default async function routes(app: FastifyInstance) {
   app.register(getFriends, { prefix: "/friends" });
   app.register(addFriend, { prefix: "/friends" });
   app.register(removeFriend, { prefix: "/friends" });
+
+  // Tournaments
+  app.register(createTournament, { prefix: "/tournament" });
+  app.register(getOngoingTournament, { prefix: "/tournament" });
+  app.register(deleteTournament, { prefix: "/tournament" });
+
 }
