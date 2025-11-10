@@ -20,18 +20,7 @@ export class Game2Scene extends Phaser.Scene {
     };
     private lastState: any = null;
 
-    constructor() {
-        super('Game2Scene');
-        // Fermer le WS proprement si l'utilisateur quitte la page
-        window.addEventListener('beforeunload', () => {
-            try {
-                this.allowReconnect = false;
-                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                    this.ws.close(1000, 'page_unload');
-                }
-            } catch {}
-        });
-    }
+    constructor() { super('Game2Scene'); }
 
     preload() {}
 
@@ -305,5 +294,16 @@ export class Game2Scene extends Phaser.Scene {
         super.destroy();
     }
 
-    
+    // Fermer le WS proprement si l'utilisateur quitte la page
+    constructor() { 
+        super('Game2Scene');
+        window.addEventListener('beforeunload', () => {
+            try {
+                this.allowReconnect = false;
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.close(1000, 'page_unload');
+                }
+            } catch {}
+        });
+    }
 }

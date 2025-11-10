@@ -78,7 +78,6 @@ class Game2Lobby {
             this.showMessage('Identité introuvable, veuillez vous reconnecter.', 'error');
             return;
         }
-        console.log('[MM][UI] start search', { playerId: this.state.playerId, username: this.state.username });
         if (statusP) statusP.textContent = 'Recherche d\'adversaire...';
         btnSearch?.classList.add('hidden');
         btnCancel?.classList.remove('hidden');
@@ -90,12 +89,10 @@ class Game2Lobby {
                 body: JSON.stringify({ playerId: this.state.playerId, username: this.state.username })
             });
             const data = await res.json();
-            console.log('[MM][UI] search response', data);
             if (!res.ok) {
                 throw new Error(data?.error || 'Matchmaking indisponible');
             }
             if (data.status === 'matched' && data.gameId && data.seat) {
-                console.log('[MM][UI] matched immediately, redirect');
                 window.location.href = `/game2?mode=online&gameId=${data.gameId}&player=${data.seat}`;
                 return;
             }
@@ -111,11 +108,9 @@ class Game2Lobby {
             try {
                 const res = await fetch(`/api/matchmaking/status/${this.state.playerId}`);
                 const data = await res.json();
-                console.log('[MM][UI] status', data);
                 if (data.status === 'matched' && data.gameId && data.seat) {
                     clearInterval(this.mmInterval);
                     this.mmInterval = null;
-                    console.log('[MM][UI] matched via status, redirect');
                     window.location.href = `/game2?mode=online&gameId=${data.gameId}&player=${data.seat}`;
                 }
             } catch {}
@@ -144,10 +139,7 @@ class Game2Lobby {
         window.addEventListener('beforeunload', () => {
             if (this.mmInterval) { clearInterval(this.mmInterval); this.mmInterval = null; }
             if (this.state.playerId) {
-                try {
-                    const blob = new Blob([JSON.stringify({ playerId: this.state.playerId })], { type: 'application/json' });
-                    navigator.sendBeacon('/api/matchmaking/cancel', blob);
-                } catch {}
+                navigator.sendBeacon('/api/matchmaking/cancel', JSON.stringify({ playerId: this.state.playerId }));
             }
         });
     }
