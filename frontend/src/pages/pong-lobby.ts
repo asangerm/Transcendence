@@ -1,4 +1,5 @@
 import type { GameRoom, LobbyState } from '../types/lobby';
+import { AuthStore } from '../stores/auth.store';
 
 export function renderPongLobby() {
     const content = `
@@ -7,10 +8,23 @@ export function renderPongLobby() {
                 <div class="bg-primary dark:bg-primary-dark p-8 rounded-lg shadow-md">
                     <h1 class="text-3xl font-bold mb-6 text-center">Pong Lobby</h1>
                     
+                    <!-- Local Section -->
+                    <div id="local-section" class="mb-8">
+                        <div class="bg-gray-800 p-2 pl-4 rounded-xl flex items-center">
+                            <h2 class="text-xl font-semibold">Local</h2>
+                            <button 
+                                id="play-local-btn" 
+                                class="ml-auto px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
+                            >
+                                Play Locally
+                            </button>
+                        </div>
+                    </div>
+                    
                     <!-- Room Creation Section -->
                     <div id="room-creation" class="mb-8">
-                        <div class="bg-gray-800 p-6 rounded-lg">
-                            <h2 class="text-xl font-semibold mb-4">Create New Room</h2>
+                        <div class="bg-gray-800 p-2 rounded-xl">
+                            <h2 class="text-xl font-semibold ml-2 mb-2">Create New Room</h2>
                             <div class="flex gap-4">
                                 <input 
                                     type="text" 
@@ -31,8 +45,8 @@ export function renderPongLobby() {
 
                     <!-- Room Joining Section -->
                     <div id="room-joining" class="mb-8">
-                        <div class="bg-gray-800 p-6 rounded-lg">
-                            <h2 class="text-xl font-semibold mb-4">Join Room by ID</h2>
+                        <div class="bg-gray-800 p-2 rounded-xl">
+                            <h2 class="text-xl font-semibold ml-2 mb-2">Join Room by ID</h2>
                             <div class="flex gap-4">
                                 <input 
                                     type="text" 
@@ -669,14 +683,10 @@ class PongLobby {
     }
 
     private getCurrentUserId(): string {
-        // This should be implemented based on your auth system
-        // For now, return a mock ID
-        return 'user_' + Math.random().toString(36).substr(2, 9);
+        return AuthStore.getUser()?.id.toString() || '';
     }
 
     private getCurrentUsername(): string {
-        // This should be implemented based on your auth system
-        // For now, return a mock username
-        return 'Player_' + Math.random().toString(36).substr(2, 5);
+        return AuthStore.getUser()?.display_name || '';
     }
 }

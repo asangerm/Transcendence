@@ -17,6 +17,16 @@ CREATE TABLE users (
     updated_at     DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE duel_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player1_id INTEGER NOT NULL,
+    player2_id INTEGER NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (player1_id) REFERENCES users(id),
+    FOREIGN KEY (player2_id) REFERENCES users(id)
+);
+
 -- Table pour stocker les codes temporaires (SMS ou email)
 CREATE TABLE two_factor_codes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
