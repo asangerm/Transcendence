@@ -148,7 +148,7 @@ import { TournamentService, Tournament } from "../services/tournament.service";
 								</span>
 							</h3>
 							<button id="startMatchBtn"
-								class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-md transition-all">
+								class="px-6 py-3 button-primary">
 								Lancer ce match
 							</button>
 						`

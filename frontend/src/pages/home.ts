@@ -20,14 +20,14 @@ export function renderHome() {
           <div class="flex flex-wrap justify-center gap-6 mb-16">
             <button 
               id="playButton" 
-              class="px-8 py-4 text-lg font-bold rounded-xl bg-gradient-to-r from-primary/80 to-primary/60 text-text dark:text-text-dark hover:brightness-110 transition-all duration-300 shadow-lg"
+              class="px-8 py-4 button-primary"
             >
               Lancer une partie
             </button>
 
             ${!isAuth ? `
               <a href="/register" data-nav
-                class="px-8 py-4 text-lg font-bold rounded-xl bg-gradient-to-r from-primary/70 to-primary/50 text-text dark:text-text-dark hover:brightness-110 transition-all duration-300 shadow-lg"
+                class="px-8 py-4 text-lg button-secondary"
               >
                 😮 Pas encore inscrit ?🫵👇
               </a>
