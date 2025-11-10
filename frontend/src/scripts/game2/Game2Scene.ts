@@ -20,8 +20,6 @@ export class Game2Scene extends Phaser.Scene {
     };
     private lastState: any = null;
 
-    constructor() { super('Game2Scene'); }
-
     preload() {}
 
     create() {
