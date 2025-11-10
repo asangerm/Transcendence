@@ -10,13 +10,17 @@ type Engine = PongEngine | TestEngine | Game2SimpleEngine;
 export class GameManager {
   private games: Map<string, Engine> = new Map();
 
-  createGame(kind: GameKind = 'pong'): { id: string } {
+  createGame(kind: GameKind = 'pong', topPlayer?: { id: string; username?: string }, bottomPlayer?: { id: string; username?: string }): { id: string } {
     const id = randomUUID();
     let engine: Engine;
     
     switch (kind) {
       case 'pong':
-        engine = new PongEngine(id);
+        {
+          const tp = topPlayer ?? { id: randomUUID() };
+          const bp = bottomPlayer ?? { id: randomUUID() };
+          engine = new PongEngine(id, tp, bp);
+        }
         break;
       case 'test':
         engine = new TestEngine(id);
@@ -46,11 +50,23 @@ export class GameManager {
   }
 
   tickAll(): void {
-    for (const g of this.games.values()) g.update();
+    for (const g of this.games.values()) {
+      g.update();
+    }
   }
 
   remove(id: string): void {
     this.games.delete(id);
+  }
+
+  forfeit(id: string, side: 'top' | 'bottom'): boolean {
+    const engine = this.games.get(id);
+    if (!engine) return false;
+    if ('forfeit' in engine && typeof (engine as any).forfeit === 'function') {
+      (engine as any).forfeit(side);
+      return true;
+    }
+    return false;
   }
 }
 

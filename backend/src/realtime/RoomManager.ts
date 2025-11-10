@@ -44,6 +44,8 @@ export class RoomManager {
     
     this.rooms.set(roomId, room);
     this.playerRooms.set(ownerId, roomId);
+
+    console.log('[ROOM] createRoom', { roomId, ownerId, ownerUsername, gameType });
     
     return room;
   }
@@ -208,7 +210,7 @@ export class RoomManager {
 
     // Create the game
     const gameType = (room.gameType || 'pong') as GameKind;
-    const { id: gameId } = gameManager.createGame(gameType);
+    const { id: gameId } = gameManager.createGame(gameType, room.players.top as { id: string; username?: string }, room.players.bottom as { id: string; username?: string });
     room.gameId = gameId;
     room.status = 'in_progress';
     console.log('[ROOM] startGame', { roomId, gameId, gameType, ownerId });
@@ -249,7 +251,6 @@ export class RoomManager {
 
   listRooms(gameType?: GameKind): GameRoom[] {
     const rooms = Array.from(this.rooms.values())
-      .filter(room => room.status === 'waiting' && Object.keys(room.players).length < room.maxPlayers)
       .sort((a, b) => b.createdAt - a.createdAt);
     
     if (gameType) {
@@ -271,6 +272,16 @@ export class RoomManager {
         }
       }
     }
+  }
+
+  deleteRoom(roomId: string): { success: boolean } {
+    const room = this.rooms.get(roomId);
+    if (!room) return { success: false };
+    for (const player of Object.values(room.players)) {
+      this.playerRooms.delete(player.id);
+    }
+    this.rooms.delete(roomId);
+    return { success: true };
   }
 }
 

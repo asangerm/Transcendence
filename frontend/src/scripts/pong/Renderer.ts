@@ -102,7 +102,7 @@ export class Renderer {
 		if (existing) return existing;
 		if (!this.scene3d) throw new Error('Renderer not initialized');
 		let mesh: any;
-		const { MeshBuilder, StandardMaterial, Color3 } = this.babylon ?? {};
+		const { MeshBuilder, StandardMaterial, Color3, DynamicTexture, Texture } = this.babylon ?? {};
 		if (obj.type === 'box') {
 			mesh = MeshBuilder.CreateBox(obj.name, { size: 1 }, this.scene3d);
 		} else if (obj.type === 'sphere') {
@@ -112,6 +112,60 @@ export class Renderer {
 		}
 		const mat = new StandardMaterial(`${obj.name}-mat`, this.scene3d);
 		mat.diffuseColor = new Color3(obj.color.r, obj.color.g, obj.color.b);
+		// Apply simple procedural textures per object request
+		if (obj.texture) {
+			try {
+				if (obj.texture === 'checker') {
+					const size = 256;
+					const cells = 8;
+					const dt = new DynamicTexture(`${obj.name}-checker`, { width: size, height: size }, this.scene3d, false);
+					const ctx = dt.getContext();
+					const c1 = `rgb(${Math.floor(obj.color.r*255)},${Math.floor(obj.color.g*255)},${Math.floor(obj.color.b*255)})`;
+					const c2 = `rgb(${Math.floor(obj.color.r*128)},${Math.floor(obj.color.g*128)},${Math.floor(obj.color.b*128)})`;
+					const cellSize = size / cells;
+					for (let y=0; y<cells; y++) {
+						for (let x=0; x<cells; x++) {
+							ctx.fillStyle = (x + y) % 2 === 0 ? c1 : c2;
+							ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
+						}
+					}
+					dt.update(false);
+					mat.diffuseTexture = dt;
+					mat.specularColor = new Color3(0.1, 0.1, 0.1);
+				} else if (obj.texture === 'metal') {
+					const size = 256;
+					const dt = new DynamicTexture(`${obj.name}-metal`, { width: size, height: size }, this.scene3d, false);
+					const ctx = dt.getContext();
+					const base = Math.floor(Math.max(obj.color.r, obj.color.g, obj.color.b) * 180) + 50;
+					const grad = ctx.createLinearGradient(0, 0, size, size);
+					grad.addColorStop(0, `rgb(${base},${base},${base})`);
+					grad.addColorStop(0.5, `rgb(${base+30},${base+30},${base+30})`);
+					grad.addColorStop(1, `rgb(${base-10},${base-10},${base-10})`);
+					ctx.fillStyle = grad;
+					ctx.fillRect(0, 0, size, size);
+					dt.update(false);
+					mat.diffuseTexture = dt;
+					mat.specularColor = new Color3(0.8, 0.8, 0.8);
+					mat.specularPower = 128;
+				} else if (obj.texture === 'glossy') {
+					mat.specularColor = new Color3(1, 1, 1);
+					mat.specularPower = 256;
+				} else if (obj.texture.startsWith('http') || obj.texture.startsWith('/')) {
+					const tex = new Texture(obj.texture, this.scene3d, true);
+					// Tile texture based on object footprint
+					try {
+						const sx = Math.max(1, Math.floor(Math.abs(obj.size.x)));
+						const sz = Math.max(1, Math.floor(Math.abs(obj.size.z)));
+						(tex as any).uScale = sx;
+						(tex as any).vScale = sz;
+					} catch {}
+					mat.diffuseTexture = tex;
+					mat.specularColor = new Color3(0.25, 0.25, 0.25);
+				}
+			} catch (e) {
+				console.warn(`Texture creation failed for ${obj.name}`, e);
+			}
+		}
 		mesh.material = mat;
 		this.meshByName.set(obj.name, mesh);
 		return mesh;

@@ -151,6 +151,33 @@ export default async function roomRoutes(app: FastifyInstance) {
     }
   });
 
+  // Cancel a room (any participant can cancel, room is deleted)
+  app.post('/rooms/:id/cancel', async (req, reply) => {
+    try {
+      const params = await z.object({
+        id: z.string()
+      }).parseAsync(req.params);
+      const body = await z.object({
+        playerId: z.string()
+      }).parseAsync((req as any).body);
+      const room = roomManager.getRoom(params.id);
+      if (!room) {
+        reply.code(404);
+        return { error: 'Room not found' };
+      }
+      const isParticipant = Object.values(room.players).some(p => p.id === body.playerId);
+      if (!isParticipant) {
+        reply.code(403);
+        return { error: 'Not authorized to cancel this room' };
+      }
+      roomManager.deleteRoom(params.id);
+      return { success: true };
+    } catch (error) {
+      reply.code(400);
+      return { error: 'Invalid request' };
+    }
+  });
+
   // Get room details
   app.get('/rooms/:id', async (req, reply) => {
     try {

@@ -47,12 +47,38 @@ export class Pong {
             this.realtime.setOnState((state) => this.applyServerState(state));
             await this.realtime.connect(gameId);
             // attach keyboard -> ws
+            this.controller.setPlayer(opts.side || 'top');
+            this.controller.setMatchType('online');
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('mode', 'online');
+                url.searchParams.set('gameId', gameId);
+                if (opts.side) url.searchParams.set('side', opts.side);
+                window.history.replaceState({}, '', url.toString());
+            } catch {}
+
             const keyHandler = (e: KeyboardEvent) => this.handleOnlineKey(e, opts.side);
             window.addEventListener('keydown', keyHandler, { passive: true });
             window.addEventListener('keyup', keyHandler);
             // Start passive render loop in case of missed frames
             this.loop();
         } else {
+            this.online = true;
+            const gameId = await this.createGame();
+            this.realtime = new PongRealtimeClient();
+            this.realtime.setOnState((state) => this.applyServerState(state));
+            await this.realtime.connect(gameId);
+            this.controller.setPlayer('local');
+            this.controller.setMatchType('local');
+            const keyHandler = (e: KeyboardEvent) => this.handleLocalKey(e);
+            window.addEventListener('keydown', keyHandler, { passive: true });
+            window.addEventListener('keyup', keyHandler);
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('mode', 'local');
+                url.searchParams.set('gameId', gameId);
+                window.history.replaceState({}, '', url.toString());
+            } catch {}
             this.loop();
         }
     }
@@ -63,10 +89,6 @@ export class Pong {
             this.rafId = null;
         }
         this.renderer.unmount();
-    }
-
-    applyRemoteInput(input: UserInputState): void {
-        this.controller.applyRemoteInput(input);
     }
 
     private loop = (): void => {
@@ -179,8 +201,8 @@ export class Pong {
         const key = e.key.toLowerCase();
         
         // Only handle keys for the player's assigned side
-        const leftKey = side === 'top' ? 'o' : 'r';
-        const rightKey = side === 'top' ? 'l' : 'f';
+        const leftKey = 'z';
+        const rightKey = 'x';
         
         if (isDown || isUp) {
             if (key === leftKey) {
@@ -201,21 +223,38 @@ export class Pong {
         this.sendInputState();
     }
     
+    private handleLocalKey(e: KeyboardEvent): void {
+        if (!this.realtime || this.controller.getMatchType() !== 'local') return;
+        const isDown = e.type === 'keydown' && !e.repeat;
+        const isUp = e.type === 'keyup';
+        const key = e.key.toLowerCase();
+        const keys = ['a','z','k','m'];
+        if ((isDown || isUp) && keys.includes(key)) {
+            this.onlineKeys[key] = isDown ? true : false;
+            this.sendInputState();
+        }
+    }
+    
     private sendInputState(): void {
         if (!this.realtime) return;
-        
+        if ((this.controller as any).getMatchType && this.controller.getMatchType() === 'local') {
+            const topLeft = this.onlineKeys['z'] ? 1 : 0;
+            const topRight = this.onlineKeys['a'] ? 1 : 0;
+            const bottomLeft = this.onlineKeys['m'] ? 1 : 0;
+            const bottomRight = this.onlineKeys['k'] ? 1 : 0;
+            this.realtime.sendPaddleInput('top', topLeft, topRight);
+            this.realtime.sendPaddleInput('bottom', bottomLeft, bottomRight);
+            return;
+        }
         // Determine which paddle this player controls based on their side
         const playerSide = this.getPlayerSide();
-        
         if (playerSide === 'top') {
-            // Player 1 controls top paddle with O/L keys
-            const left = this.onlineKeys['o'] ? 1 : 0;
-            const right = this.onlineKeys['l'] ? 1 : 0;
+            const left = this.onlineKeys['x'] ? 1 : 0;
+            const right = this.onlineKeys['z'] ? 1 : 0;
             this.realtime.sendPaddleInput('top', left, right);
         } else if (playerSide === 'bottom') {
-            // Player 2 controls bottom paddle with R/F keys
-            const left = this.onlineKeys['r'] ? 1 : 0;
-            const right = this.onlineKeys['f'] ? 1 : 0;
+            const left = this.onlineKeys['z'] ? 1 : 0;
+            const right = this.onlineKeys['x'] ? 1 : 0;
             this.realtime.sendPaddleInput('bottom', left, right);
         }
     }

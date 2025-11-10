@@ -17,6 +17,11 @@ export class Paddle {
         this.moveRight = moveRight;
     }
 
+    setControls(moveLeft: string, moveRight: string): void {
+        this.moveLeft = moveLeft.toLowerCase();
+        this.moveRight = moveRight.toLowerCase();
+    }
+
     update(deltaTime: number, keys: { [key: string]: boolean }): void {
         // Get current position
         const currentX = this.position[0];

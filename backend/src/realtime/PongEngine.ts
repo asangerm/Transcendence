@@ -19,7 +19,7 @@ export class PongEngine {
   private readonly PADDLE_HALF_WIDTH = 5; // paddle half width
   private readonly FIXED_DT = 1/60; // Fixed timestep for consistent physics (60fps)
 
-  constructor(id: string) {
+  constructor(id: string, topPlayer: { id: string; username?: string }, bottomPlayer: { id: string; username?: string }) {
     this.state = {
       id,
       kind: 'pong',
@@ -67,6 +67,13 @@ export class PongEngine {
     };
   }
 
+  forfeit(side: 'top' | 'bottom'): void {
+    if (this.state.gameOver) return;
+    this.state.gameOver = true;
+    this.state.winner = side === 'top' ? 'bottom' : 'top';
+    this.state.updatedAt = Date.now();
+  }
+
   applyInput(inputData: Record<string, number>): void {
     // Update inputs based on received data (matching TestEngine pattern)
     // Only process fields that are present in the JSON (skip noOp fields)
@@ -100,17 +107,6 @@ export class PongEngine {
     }
   }
 
-  // Legacy method for backward compatibility
-  applyInputLegacy(side: 'top' | 'bottom', action: 'moveLeft' | 'moveRight' | 'stop'): void {
-    if (action === 'moveLeft') {
-      this.inputs[side].left = 1; this.inputs[side].right = 0;
-    } else if (action === 'moveRight') {
-      this.inputs[side].right = 1; this.inputs[side].left = 0;
-    } else if (action === 'stop') {
-      this.inputs[side].left = 0; this.inputs[side].right = 0;
-    }
-  }
-
   setPaddleX(side: 'top' | 'bottom', x: number): void {
     this.state.paddles[side].position.x = x;
   }
@@ -120,6 +116,12 @@ export class PongEngine {
     
     // Store previous state for interpolation
     this.previousState = { ...this.state };
+    if (this.state.gameOver || this.state.scores.top >= 10 || this.state.scores.bottom >= 10) {
+      this.state.gameOver = true;
+      this.state.winner = this.state.scores.top > this.state.scores.bottom ? 'top' : 'bottom';
+      this.state.updatedAt = now;
+      return;
+    }
     
     // Use fixed timestep for consistent physics
     const dt = this.FIXED_DT;
