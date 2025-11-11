@@ -17,9 +17,48 @@ body {
 }
 
 .button-secondary {
-	@apply px-6 py-3 border-2 border-button text-button font-medium rounded-lg hover:bg-button hover:text-text-dark transform transition-all duration-300 hover:scale-105 dark:border-button-dark dark:text-button-dark dark:hover:bg-button-dark dark:hover:text-text;
+	@apply px-4 py-3 border-2 border-button text-button font-medium rounded-lg hover:bg-button hover:text-text-dark transform transition-all duration-300 hover:scale-105 dark:border-button-dark dark:text-button-dark dark:hover:bg-button-dark dark:hover:text-text;
 }
 
 .links-style {
-	@apply text-link dark:text-link-dark hover:text-link-hover dark:hover:text-link-hover-dark ml-1 transition-all duration-300;
+	@apply font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400;
+}
+
+.error-text {
+	@apply text-text-error dark:text-text-error_dark;
+}
+
+.success-text {
+	@apply text-text-success dark:text-text-success_dark;
+}
+
+.warning-text {
+	@apply text-text-warning dark:text-text-warning_dark;
+}
+
+.error-bg {
+	@apply bg-text-error dark:bg-text-error_dark;
+}
+
+.success-bg {
+	@apply bg-text-success dark:bg-text-success_dark;
+}
+
+.warning-bg {
+	@apply bg-text-warning dark:bg-text-warning_dark;
+}
+
+@keyframes shake {
+	0%, 100% { transform: translateX(0); }
+	10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+	20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake-animation {
+	animation: shake 1s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+.error-input {
+	border-color: rgb(239, 68, 68) !important;
+	box-shadow: 0 0 0 1px rgb(239, 68, 68) !important;
 }

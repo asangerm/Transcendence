@@ -1,0 +1,39 @@
+{
+    "camera": {
+        "position": [0, 0, 10],
+        "rotation": [0, 0, 0],
+        "fov": 75,
+        "aspectX": 16,
+        "aspectY": 9
+    },
+    "objects": [
+        {
+            "name": "arena",
+            "type": "box",
+            "position": [0, -0.25, 0],
+            "size": [100, 0.5, 50],
+            "color": [0.1, 0.2, 0.1]
+        },
+        {
+            "name": "ball",
+            "type": "sphere",
+            "position": [0, 0, 0],
+            "size": [2, 2, 2],
+            "color": [1, 0, 0]
+        },
+        {
+            "name": "paddle_top",
+            "type": "box",
+            "position": [0, 0, 24],
+            "size": [20, 5, 1],
+            "color": [0, 1, 0]
+        },
+        {
+            "name": "paddle_bottom",
+            "type": "box",
+            "position": [0, 0, -24],
+            "size": [20, 5, 1],
+            "color": [0, 0, 1]
+        }
+    ]
+}

@@ -1,24 +1,32 @@
-FROM node:20-alpine
+# Image de base avec Node.js
+FROM node:20-bookworm
 
+# Crée le répertoire de travail
 WORKDIR /app
 
-# Install OpenSSL and other required dependencies
-RUN apk add --no-cache openssl openssl-dev sqlite
+# Installer les outils nécessaires pour compiler les dépendances natives
+RUN apt-get update && \
+    apt-get install -y python3 g++ make sqlite3 && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy package files
+# Copier les fichiers de dépendances
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Installer les dépendances et compiler better-sqlite3
+RUN npm install --build-from-source && \
+    npm rebuild better-sqlite3 --build-from-source
 
-# Copy the rest of the application
+# Copier tout le code source
 COPY . .
 
-# Make init script executable
-RUN chmod +x init.sh
+# Compiler le TypeScript
+RUN npm run build
 
-# Expose port 8000
+# Copier schema.sql dans le bon dossier pour que le backend le trouve
+RUN cp src/schema.sql dist/schema.sql
+
+# Expose le port du backend
 EXPOSE 8000
 
-# Start the application with initialization
-CMD ["/bin/sh", "./init.sh"] 
+# Lancer le backend
+CMD ["npm", "start"]

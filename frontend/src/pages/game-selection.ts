@@ -1,6 +1,6 @@
 export function renderGameSelection() {
     const content = `
-        <div class="min-h-screen">
+        <div class="h-full w-full">
             <main class="container mx-auto px-4 py-8">
                 <h1 class="text-4xl font-bold text-center mb-12">Sélection des Jeux</h1>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
@@ -11,7 +11,7 @@ export function renderGameSelection() {
                                 <img 
                                     src="../../images/pong-image.jpg" 
                                     alt="Pong Game" 
-                                    class="w-full h-full object-contain transition-opacity duration-300 group-hover:opacity-90"
+                                    class="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90"
                                 >
                                 <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
                                     <span class="text-white text-2xl font-bold opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
@@ -20,8 +20,8 @@ export function renderGameSelection() {
                                 </div>
                             </div>
                             <div class="p-6">
-                                <h2 class="text-2xl font-bold mb-2">Pong</h2>
-                                <p class="text-muted dark:text-muted-dark">Le classique jeu de tennis de table revisité</p>
+                                <h2 class="text-2xl font-bold mb-2">Pong 3D (local / pvp en ligne)</h2>
+                                <p class="text-muted dark:text-muted-dark">"Deux raquettes, une balle, et un chaos spatial où frapper correctement devient un sport de haut niveau."</p>
                             </div>
                         </div>
                     </a>
@@ -31,19 +31,19 @@ export function renderGameSelection() {
                         <div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
                             <div class="relative aspect-video bg-secondary dark:bg-secondary-dark">
                                 <img 
-                                    src="../../images/ageOfWar.jpg" 
+                                    src="../../images/tictactoe.png" 
                                     alt="Second Game" 
-                                    class="w-full h-full object-contain transition-opacity duration-300 group-hover:opacity-90"
+                                    class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 group-hover:opacity-90"
                                 >
                                 <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
                                     <span class="text-white text-2xl font-bold opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                                        Jouer au Jeu 2
+                                        Jouer au Tic-tac-toe
                                     </span>
                                 </div>
                             </div>
                             <div class="p-6">
-                                <h2 class="text-2xl font-bold mb-2">Jeu 2</h2>
-                                <p class="text-muted dark:text-muted-dark">Description du deuxième jeu</p>
+                                <h2 class="text-2xl font-bold mb-2">Tic-tac-toe (pvp en ligne)</h2>
+                                <p class="text-muted dark:text-muted-dark">"Le fameux jeu où deux adversaires s’affrontent pour prouver qui sait mieux dessiner des croix et des ronds… et finissent toujours par égalité."</p>
                             </div>
                         </div>
                     </a>
