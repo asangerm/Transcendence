@@ -5,7 +5,7 @@ export function renderTerms() {
 
       <section class="mb-6">
         <h2 class="text-2xl font-bold mb-3 text-gray-900 dark:text-gray-100">1. Objet</h2>
-        <p class="text-gray-700 dark:text-gray-300">Le présent document définit les conditions d’utilisation du site web <b>Transcendence</b>, développée dans le cadre du cursus 42.</p>
+        <p class="text-gray-700 dark:text-gray-300">Le présent document définit les conditions d’utilisation du site web <b>ft_transcendence</b>, développée dans le cadre du cursus 42.</p>
       </section>
 
       <section class="mb-6">

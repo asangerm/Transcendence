@@ -57,20 +57,7 @@ export class LoginForm {
                 >
               </div>
             </div>
-
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <input 
-                  id="remember-me" 
-                  name="remember-me" 
-                  type="checkbox" 
-                  class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                >
-                <label for="remember-me" class="ml-2 block text-sm text-gray-900 dark:text-white">
-                  Se souvenir de moi
-                </label>
-              </div>
-
+            <div class="flex justify-center">
               <div class="text-sm">
                 <a href="/forgot-password" class="links-style">
                   Mot de passe oublié ?
@@ -99,7 +86,7 @@ export class LoginForm {
                   <div class="w-full border-t border-gray-300"></div>
                 </div>
                 <div class="relative flex justify-center text-sm">
-                  <span class="px-2 bg-gray-50 text-gray-500 dark:bg-gray-900 dark:text-gray-400">ou continuer</span>
+                  <span class="px-2 bg-gray-50 text-gray-500 dark:bg-gray-900 dark:text-gray-400">ou continuer avec</span>
                 </div>
               </div>
 
