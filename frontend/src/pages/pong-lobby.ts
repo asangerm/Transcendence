@@ -130,6 +130,9 @@ class PongLobby {
 	private selectedOpponentName: string = '';
 	private duels: any[] = [];
 	private hasPendingOwnRequest: boolean = false;
+	private isLoadingDuels: boolean = false;
+	private lastNonEmptyDuels: any[] = [];
+	private hasLoadedDuelsOnce: boolean = false;
 
     async init() {
         this.state.playerId = this.getCurrentUserId();
@@ -287,37 +290,42 @@ class PongLobby {
 	}
 
 	private async loadDuels() {
+		if (this.isLoadingDuels) return;
+		this.isLoadingDuels = true;
 		try {
 			const res = await fetch(`/api/duels/${this.state.playerId}`, {
 				credentials: 'include'
 			});
 			if (!res.ok) throw new Error();
 			const data = await res.json();
-			this.duels = data.duels || [];
+			const nextDuels = data.duels || [];
+			this.duels = nextDuels;
+			if (nextDuels.length) {
+				this.lastNonEmptyDuels = nextDuels;
+			}
+			this.hasLoadedDuelsOnce = true;
 			this.hasPendingOwnRequest = this.duels.some((d: any) => d.requester_id?.toString() === this.state.playerId && d.status === 'pending');
-			this.updateDuelSelectionUI();
-			this.updateDuelsList();
 		} catch {
-			this.duels = [];
-			this.hasPendingOwnRequest = false;
+			// Keep previous duels on error to avoid UI flicker
+		} finally {
 			this.updateDuelSelectionUI();
 			this.updateDuelsList();
+			this.isLoadingDuels = false;
 		}
 	}
 
 	private updateDuelsList() {
 		const list = document.getElementById('duels-list');
 		if (!list) return;
-		if (!this.duels.length) {
+		const duelsToRender = this.duels.length ? this.duels : (this.hasLoadedDuelsOnce && this.lastNonEmptyDuels.length ? this.lastNonEmptyDuels : []);
+		if (!duelsToRender.length) {
 			list.innerHTML = `
                 <div class="w-full flex justify-center items-center text-gray-400 py-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-circle-icon lucide-loader-circle animate-spin">
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                    </svg>
+                    ${this.isLoadingDuels ? '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-circle-icon lucide-loader-circle animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>' : '<span>Aucune demande</span>'}
                 </div>`;
 			return;
 		}
-		list.innerHTML = this.duels.map((d: any) => {
+		list.innerHTML = duelsToRender.map((d: any) => {
 			const meRequester = d.requester_id?.toString() === this.state.playerId;
 			const meChallenged = d.challenged_id?.toString() === this.state.playerId;
 			const label = `${d.requester_username} vs ${d.challenged_username}`;

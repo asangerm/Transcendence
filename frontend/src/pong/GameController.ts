@@ -7,6 +7,7 @@ import type { UserInputState } from '../scripts/pong/gameState';
 export type ControllerSnapshot = {
     scene: Scene;
     ballSpeed: number;
+    scores: { top: number; bottom: number };
 };
 
 type ControllerOptions = {
@@ -25,6 +26,7 @@ export class GameController {
     private topControls: { left: string; right: string };
     private bottomControls: { left: string; right: string };
     private matchType: 'online' | 'local' = 'online';
+    private scores: { top: number; bottom: number };
 
     constructor(options: ControllerOptions = {}) {
         this.scene = new Scene();
@@ -36,7 +38,7 @@ export class GameController {
         this.onStateUpdated = null;
         this.topControls = options.topControls ?? { left: 'z', right: 'x' };
         this.bottomControls = options.bottomControls ?? { left: 'c', right: 'v' };
-
+        this.scores = { top: 0, bottom: 0 };
         // Initialize entities from scene description
         const ballObject = this.scene.getObjects().find(o => o.name === 'ball');
         if (ballObject) {
@@ -83,6 +85,14 @@ export class GameController {
         return this.ball?.speed ?? 0;
     }
 
+    setScores(scores: { top: number; bottom: number }): void {
+        this.scores = { top: scores.top, bottom: scores.bottom };
+    }
+
+    getScores(): { top: number; bottom: number } {
+        return this.scores;
+    }
+
     update(): ControllerSnapshot {
         const currentTime = performance.now();
         let deltaTime = (currentTime - this.lastTime) / 1000;
@@ -103,8 +113,10 @@ export class GameController {
 
         const snapshot: ControllerSnapshot = {
             scene: this.scene,
-            ballSpeed: this.ball?.speed ?? 0
+            ballSpeed: this.ball?.speed ?? 0,
+            scores: { top: this.scores.top, bottom: this.scores.bottom }
         };
+        
         if (this.onStateUpdated) this.onStateUpdated(snapshot);
         return snapshot;
     }
