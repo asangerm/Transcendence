@@ -1,4 +1,3 @@
-
 declare const Phaser: any;
 
 export class Game2Scene extends Phaser.Scene {
@@ -11,48 +10,55 @@ export class Game2Scene extends Phaser.Scene {
     private reconnectDelay = 1000;
     private isReconnecting = false;
     private allowReconnect = true;
-    private ui: { statusText: any; gridTexts: any[]; gridBgs: any[]; selfText: any; opponentText: any } = {
+    private ui: { statusText: any; gridTexts: any[]; gridBgs: any[]; selfText: any; opponentText: any; turnNameText?: any; resultText?: any } = {
         statusText: null as any,
         gridTexts: [] as any[],
         gridBgs: [] as any[],
         selfText: null as any,
-        opponentText: null as any
+        opponentText: null as any,
+        turnNameText: null as any,
+        resultText: null as any
     };
     private lastState: any = null;
+    private gridZones: any[] = [];
+    private gridGraphics: any[] = [];
+    private gridCellsPositions: { x: number; y: number }[] = [];
+    private winGraphics: any = null;
+    private overlayDim: any = null;
+    private replayContainer: any = null;
+    private cellSizeRef: number = 140;
+    private finishedFlagKey(gameId: string) { return `game2-finished:${gameId}`; }
 
     preload() {}
 
     create() {
-        console.log('Game2Scene create() called');
         
         // UI elements
         this.add.rectangle(640, 360, 1280, 720, 0x1a1a1a);
-        this.add.text(640, 100, 'Game2 - Tic-Tac-Toe', { 
-            font: '48px Arial', 
-            color: '#ffffff' 
-        }).setOrigin(0.5);
-        this.ui.selfText = this.add.text(50, 150, 'Vous: ...', {
-            font: '22px Arial',
-            color: '#ffffff'
-        });
-        this.ui.opponentText = this.add.text(50, 175, 'Adversaire: ...', {
-            font: '22px Arial',
-            color: '#ffffff'
-        });
-        this.ui.statusText = this.add.text(50, 200, 'Waiting for connection...', { 
+        // Titre in-canvas supprimé pour un affichage plus épuré
+        // Remplacer les labels debug par une ligne de statut unique
+        this.ui.statusText = this.add.text(50, 160, '', { 
             font: '24px Arial', 
             color: '#cccccc' 
         });
+        // Nom coloré affiché à la suite du label quand c'est au tour de l'adversaire
+        this.ui.turnNameText = this.add.text(50, 160, '', {
+            font: '24px Arial',
+            color: '#1e90ff'
+        }).setAlpha(0);
 
         // Create 3x3 grid of clickable cells
         const cellSize = 140;
         const gap = 10;
         const gridWidth = cellSize * 3 + gap * 2;
         const startX = 640 - gridWidth / 2;
-        const startY = 280; // vertical position of the grid
+        const startY = 200; // vertical position of the grid (centré visuellement)
 
         this.ui.gridTexts = [];
         this.ui.gridBgs = [];
+        this.gridZones = [];
+        this.gridGraphics = [];
+        this.gridCellsPositions = [];
 
         for (let i = 0; i < 9; i++) {
             const row = Math.floor(i / 3);
@@ -60,13 +66,26 @@ export class Game2Scene extends Phaser.Scene {
             const x = startX + col * (cellSize + gap) + cellSize / 2;
             const y = startY + row * (cellSize + gap) + cellSize / 2;
 
-            // create background rectangle first (target for interactions)
-            const bg = this.add.rectangle(x, y, cellSize, cellSize, 0x2a2a2a).setOrigin(0.5);
-            bg.setStrokeStyle(2, 0x444444);
-            bg.setInteractive({ useHandCursor: true });
-            bg.on('pointerdown', () => { 
-                console.log('bg pointerdown', i, 'playerId', this.playerId);
-                this.playCell(i); 
+            // draw rounded tile via Graphics
+            const g = this.add.graphics({ x, y });
+            g.fillStyle(0x2a2a2a, 1);
+            g.fillRoundedRect(-cellSize / 2, -cellSize / 2, cellSize, cellSize, 12);
+            g.lineStyle(2, 0x444444, 1);
+            g.strokeRoundedRect(-cellSize / 2, -cellSize / 2, cellSize, cellSize, 12);
+
+            // interactive zone on top
+            const zone = this.add.zone(x, y, cellSize, cellSize).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            zone.on('pointerdown', () => {
+                this.playCell(i);
+            });
+            zone.on('pointerover', () => {
+                this.tweens.add({ targets: g, scale: 1.03, duration: 120, ease: 'Sine.out' });
+            });
+            zone.on('pointerout', () => {
+                this.tweens.add({ targets: g, scale: 1.0, duration: 120, ease: 'Sine.out' });
+            });
+            zone.on('pointerdown', () => {
+                this.tweens.add({ targets: g, scale: 0.97, duration: 80, yoyo: true, ease: 'Quad.out' });
             });
 
             // create text above the bg
@@ -78,8 +97,41 @@ export class Game2Scene extends Phaser.Scene {
             cell.setDepth(1);
 
             this.ui.gridTexts.push(cell);
-            this.ui.gridBgs.push(bg);
+            this.ui.gridBgs.push(zone); // keep same array for interactivity control
+            this.gridZones.push(zone);
+            this.gridGraphics.push(g);
+            this.gridCellsPositions.push({ x, y });
         }
+        this.cellSizeRef = cellSize;
+
+        // Texte de résultat (au-dessus de la grille, sous le titre)
+        this.ui.resultText = this.add.text(640, startY - 44, '', {
+            font: '42px Arial',
+            color: '#cccccc',
+            align: 'center'
+        }).setOrigin(0.5);
+        this.ui.resultText.setDepth(20);
+
+        // Bouton Rejouer (caché par défaut)
+        const maxY = this.gridCellsPositions.reduce((m, p) => Math.max(m, p.y), 0);
+        const bw = 220;
+        const bh = 56;
+        const bx = 640;
+        const by = maxY + this.cellSizeRef / 2 + 44;
+        this.replayContainer = this.add.container(0, 0).setDepth(25).setVisible(false);
+        const btnG = this.add.graphics({ x: bx, y: by });
+        btnG.fillStyle(0x00c2ff, 1);
+        btnG.fillRoundedRect(-bw / 2, -bh / 2, bw, bh, 12);
+        const btnLabel = this.add.text(bx, by, 'Rejouer', { font: '24px Arial', color: '#001018' }).setOrigin(0.5);
+        const btnZone = this.add.zone(bx, by, bw, bh).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        btnZone.on('pointerover', () => this.tweens.add({ targets: btnG, scale: 1.05, duration: 120 }));
+        btnZone.on('pointerout', () => this.tweens.add({ targets: btnG, scale: 1.0, duration: 120 }));
+        btnZone.on('pointerdown', () => {
+            import('../../router').then(m => m.navigateTo('/game2-lobby')).catch(() => {
+                window.location.href = '/game2-lobby';
+            });
+        });
+        this.replayContainer.add([btnG, btnLabel, btnZone]);
 
         // Get gameId from URL parameters
         const url = new URL(window.location.href);
@@ -92,65 +144,62 @@ export class Game2Scene extends Phaser.Scene {
             // Fallback déterministe: par défaut player1 (évite l'aléatoire)
             this.playerId = 'player1';
         }
+        // Si cette partie a été terminée précédemment, rediriger vers le lobby
+        try {
+            if (this.gameId && sessionStorage.getItem(this.finishedFlagKey(this.gameId)) === '1') {
+                this.goToLobby();
+                return;
+            }
+        } catch {}
 
         const wsUrl = this.gameId
             ? `ws://localhost:8000/ws?gameId=${this.gameId}`
             : `ws://localhost:8000/ws`;
-        console.log('Creating WebSocket connection. URL:', wsUrl);
         
         try {
             this.ws = new WebSocket(wsUrl);
-            console.log('WebSocket object created, readyState:', this.ws.readyState);
             this.setupWebSocketHandlers();
         } catch (error) {
-            console.error('Failed to create WebSocket connection:', error);
             this.events.emit('connectionFailed');
         }
     }
 
     private setupWebSocketHandlers() {
-        console.log('Setting up WebSocket handlers, readyState:', this.ws.readyState);
         
         // Add a timeout to detect if connection is not established
         const connectionTimeout = setTimeout(() => {
             if (this.ws.readyState === WebSocket.CONNECTING) {
-                console.error('WebSocket connection timeout');
                 this.events.emit('gameError', 'Connection timeout - WebSocket failed to connect');
             }
         }, 5000);
         
         this.ws.onopen = () => {
             clearTimeout(connectionTimeout);
-            console.log('WebSocket connected to:', this.ws.url);
-            console.log('WebSocket readyState:', this.ws.readyState);
             if (this.events?.emit) this.events.emit('connectionEstablished');
             if (!this.gameId) {
-                this.ui.statusText.setText('Connected! Creating game...').setStyle({ color: '#44ff44' });
                 // Request to create a game - server will generate the actual gameId
                 this.ws.send(JSON.stringify({
                     type: 'create_game',
                     kind: 'game2'
                 }));
             } else {
-                this.ui.statusText.setText(`Connected to game ${this.gameId}`).setStyle({ color: '#44ff44' });
+                // already have a gameId; no UI debug message
             }
         };
 
-        this.ws.onerror = (error) => {
+        this.ws.onerror = () => {
             clearTimeout(connectionTimeout);
-            console.error('WebSocket error:', error);
             if (this.events?.emit) this.events.emit('gameError', 'Connection error occurred');
-            this.ui.statusText.setText('Connection error occurred').setStyle({ color: '#ff4444' });
+            // no UI debug message
             this.attemptReconnect();
         };
 
         this.ws.onclose = (event) => {
             clearTimeout(connectionTimeout);
-            console.log('WebSocket closed:', event.code, event.reason);
             // Only attempt reconnection if it's not a normal closure and not during reconnection
             if (this.allowReconnect && event.code !== 1000 && !this.isReconnecting) {
                 if (this.events?.emit) this.events.emit('gameError', `Connection closed: ${event.code} ${event.reason}`);
-                this.ui.statusText.setText(`Connection closed: ${event.code} ${event.reason}`).setStyle({ color: '#ff4444' });
+                // no UI debug message
                 this.attemptReconnect();
             }
         };
@@ -158,27 +207,22 @@ export class Game2Scene extends Phaser.Scene {
         this.ws.onmessage = (msg) => {
             try {
                 const data = JSON.parse(msg.data);
-                console.log('WS message received:', data);
                 
                 if (data.type === 'created' && data.gameId) {
-                    console.log('Game created with gameId:', data.gameId);
                     this.gameId = data.gameId;
                 } else if (data.type === 'state' && data.state?.board) {
                     this.lastState = data.state;
                     this.renderState(data.state);
                 } else if (data.type === 'error') {
-                    console.error('Server error:', data.message);
                     if (this.events?.emit) this.events.emit('gameError', data.message);
-                    this.ui.statusText.setText(`Error: ${data.message}`).setStyle({ color: '#ff4444' });
+                    // no UI debug message
                 }
             } catch (error) {
-                console.error('Error parsing message:', error);
             }
         };
     }
 
     private playCell(index: number) {
-        console.log('playCell called for index', index, 'ws readyState', this.ws?.readyState, 'lastState', this.lastState);
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
         // Optional client-side checks based on last known state
         if (this.lastState) {
@@ -198,22 +242,18 @@ export class Game2Scene extends Phaser.Scene {
     }
 
     private renderState(state: any) {
-        // Update names from authoritative state
-        try {
-            const mySeat = this.playerId === 'player1' || this.playerId === 'player2' ? this.playerId : 'player1';
-            const oppSeat = mySeat === 'player1' ? 'player2' : 'player1';
-            const players = state.players || {};
-            const me = players?.[mySeat];
-            const opp = players?.[oppSeat];
-            if (this.ui.selfText && me) this.ui.selfText.setText(`Vous: ${me.username || mySeat}`);
-            if (this.ui.opponentText) this.ui.opponentText.setText(`Adversaire: ${opp?.username || oppSeat}`);
-        } catch {}
+        // Récupérer les noms (sans affichage des labels debug)
+        let mySeat = this.playerId === 'player1' || this.playerId === 'player2' ? this.playerId : 'player1';
+        let oppSeat = mySeat === 'player1' ? 'player2' : 'player1';
+        const players = state.players || {};
+        const opp = players?.[oppSeat];
 
-        // Update cells
+        // Update cells (with colored marks)
         if (Array.isArray(state.board) && this.ui.gridTexts.length === 9) {
             for (let i = 0; i < 9; i++) {
                 const v = state.board[i] || '';
-                this.ui.gridTexts[i].setText(v);
+                const color = v === 'X' ? '#00e5ff' : v === 'O' ? '#ff2bd1' : '#ffffff';
+                this.ui.gridTexts[i].setText(v).setColor(color);
             }
         }
 
@@ -221,25 +261,69 @@ export class Game2Scene extends Phaser.Scene {
         if (state.gameOver) {
             if (state.winner === 'player1' || state.winner === 'player2') {
                 const winnerSeat = state.winner;
-                const players = state.players || {};
-                const winner = players?.[winnerSeat];
-                const winnerName = (winner && winner.username) ? winner.username : (winnerSeat === 'player1' ? 'Player 1' : 'Player 2');
-                this.ui.statusText.setText(`Victoire: ${winnerName}`).setStyle({ color: '#44ff44' });
+                const iWon = winnerSeat === this.playerId;
+                // Afficher uniquement "Victoire" (vert) ou "Défaite" (rouge) au-dessus de la grille
+                if (this.ui.resultText) {
+                    this.ui.resultText
+                        .setText(iWon ? 'Victoire' : 'Défaite')
+                        .setStyle({ color: iWon ? '#44ff44' : '#ff4444' });
+                }
+                // vider la ligne de gauche
+                this.ui.statusText.setText('');
+                // draw winning line
+                const win = this.detectWinningLine(state.board);
+                if (win) {
+                    const lineColor = winnerSeat === 'player2' ? 0xff2bd1 : 0x00e5ff; // O -> magenta, X -> cyan
+                    this.drawWinLine(win[0], win[2], lineColor);
+                }
             } else {
-                this.ui.statusText.setText('Draw!').setStyle({ color: '#cccccc' });
+                // Égalité (gris)
+                if (this.ui.resultText) {
+                    this.ui.resultText.setText('Égalité').setStyle({ color: '#cccccc' });
+                }
+                this.ui.statusText.setText('');
             }
+            // masquer le nom coloré
+            if (this.ui.turnNameText) this.ui.turnNameText.setText('').setAlpha(0);
+            // dim overlay
+            if (!this.overlayDim) {
+                this.overlayDim = this.add.rectangle(640, 360, 1280, 720, 0x000000, 0.45);
+                this.overlayDim.setDepth(10);
+            } else {
+                this.overlayDim.setAlpha(0.45).setVisible(true);
+            }
+            // afficher bouton Rejouer
+            if (this.replayContainer) this.replayContainer.setVisible(true);
             // Fermer proprement la connexion après fin de partie
             try {
                 this.allowReconnect = false;
                 if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                     this.ws.close(1000, 'game_over');
                 }
+                // Marquer cette partie comme terminée pour empêcher la restauration via retour arrière
+                if (this.gameId) {
+                    sessionStorage.setItem(this.finishedFlagKey(this.gameId), '1');
+                }
             } catch {}
         } else {
+            // effacer le résultat si la partie n'est pas terminée
+            if (this.ui.resultText) this.ui.resultText.setText('');
+            if (this.overlayDim) this.overlayDim.setVisible(false);
+            if (this.winGraphics) { this.winGraphics.destroy(); this.winGraphics = null; }
+            if (this.replayContainer) this.replayContainer.setVisible(false);
             if (state.currentPlayer === this.playerId) {
-                this.ui.statusText.setText('Your turn').setStyle({ color: '#ffffff' });
+                this.ui.statusText.setText('Votre tour').setStyle({ color: '#ffffff' });
+                if (this.ui.turnNameText) this.ui.turnNameText.setText('').setAlpha(0);
             } else {
-                this.ui.statusText.setText('Waiting for opponent').setStyle({ color: '#cccccc' });
+                // "Au tour de [nom]" avec nom de couleur différente
+                const oppName = opp?.username || (oppSeat === 'player1' ? 'Player 1' : 'Player 2');
+                this.ui.statusText.setText('Au tour de ').setStyle({ color: '#cccccc' });
+                // positionner le nom à la suite du label
+                const sx = this.ui.statusText.x + this.ui.statusText.width + 6;
+                const sy = this.ui.statusText.y;
+                if (this.ui.turnNameText) {
+                    this.ui.turnNameText.setPosition(sx, sy).setText(oppName).setStyle({ color: '#1e90ff' }).setAlpha(1);
+                }
             }
         }
 
@@ -256,22 +340,48 @@ export class Game2Scene extends Phaser.Scene {
         }
     }
 
+    private detectWinningLine(board: string[]): number[] | null {
+        const lines = [
+            [0,1,2],[3,4,5],[6,7,8],
+            [0,3,6],[1,4,7],[2,5,8],
+            [0,4,8],[2,4,6]
+        ];
+        for (const line of lines) {
+            const [a,b,c] = line;
+            const v = board[a];
+            if (v && v === board[b] && v === board[c]) return line;
+        }
+        return null;
+    }
+
+    private drawWinLine(a: number, c: number, color: number = 0x00e5ff) {
+        try {
+            if (this.winGraphics) { this.winGraphics.destroy(); this.winGraphics = null; }
+            const ax = this.gridCellsPositions[a].x;
+            const ay = this.gridCellsPositions[a].y;
+            const cx = this.gridCellsPositions[c].x;
+            const cy = this.gridCellsPositions[c].y;
+            const g = this.add.graphics();
+            g.lineStyle(8, color, 1);
+            g.strokeLineShape(new Phaser.Geom.Line(ax, ay, cx, cy));
+            g.setDepth(15);
+            this.winGraphics = g;
+        } catch {}
+    }
+
     private attemptReconnect() {
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-            console.error('Max reconnection attempts reached');
             this.events.emit('connectionFailed');
             return;
         }
 
         this.isReconnecting = true;
         this.reconnectAttempts++;
-        console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
         
         setTimeout(() => {
             if (this.ws) {
                 this.ws.close();
             }
-            console.log('Creating new WebSocket connection for reconnection...');
             const wsUrl = this.gameId
                 ? `ws://localhost:8000/ws?gameId=${this.gameId}`
                 : `ws://localhost:8000/ws`;
@@ -303,5 +413,29 @@ export class Game2Scene extends Phaser.Scene {
                 }
             } catch {}
         });
+        // Si la page est restaurée depuis le cache (retour arrière), rediriger si la partie est marquée finie
+        window.addEventListener('pageshow', (e: any) => {
+            try {
+                const persisted = !!(e && e.persisted);
+                const url = new URL(window.location.href);
+                const gid = url.searchParams.get('gameId') || '';
+                if (persisted && gid && sessionStorage.getItem(this.finishedFlagKey(gid)) === '1') {
+                    this.goToLobby();
+                }
+            } catch {}
+        });
+    }
+
+    private goToLobby() {
+        try {
+            // Navigation SPA si disponible
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            import('../../router').then(m => m.navigateTo('/')).catch(() => {
+                window.location.href = '/';
+            });
+        } catch {
+            window.location.href = '/';
+        }
     }
 }
+
