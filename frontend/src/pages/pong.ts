@@ -1,7 +1,7 @@
-import { PongGame } from '../scripts/pong/pong';
+import { PongGame } from "../scripts/pong/pong";
 
 export function renderPong() {
-    const content = `
+  const content = `
         <div class="w-full h-full overflow-hidden">
             <main class="container mx-auto px-4 py-8">
                 <div class="bg-primary dark:bg-primary-dark p-8 rounded-lg shadow-md">
@@ -39,32 +39,34 @@ export function renderPong() {
         </div>
     `;
 
-    const app = document.getElementById('app');
-    if (app) {
-        app.innerHTML = content;
+  const app = document.getElementById("app");
+  if (app) {
+    app.innerHTML = content;
 
-        // Initialize game
-        const pongGame = new PongGame();
-        pongGame.mount(document.getElementById('gameCanvas') as HTMLElement);
+    // Initialize game
+    const pongGame = new PongGame();
+    pongGame.mount(document.getElementById("gameCanvas") as HTMLElement);
 
-        // Setup AI controls
-        const enableAITopBtn = document.getElementById('enableAITop');
-        const enableAIBottomBtn = document.getElementById('enableAIBottom');
-        const disableAIBtn = document.getElementById('disableAI');
-        const difficultySelect = document.getElementById('aiDifficulty') as HTMLSelectElement;
+    // Setup AI controls
+    const enableAITopBtn = document.getElementById("enableAITop");
+    const enableAIBottomBtn = document.getElementById("enableAIBottom");
+    const disableAIBtn = document.getElementById("disableAI");
+    const difficultySelect = document.getElementById(
+      "aiDifficulty"
+    ) as HTMLSelectElement;
 
-        enableAITopBtn?.addEventListener('click', () => {
-            const difficulty = difficultySelect.value as 'easy' | 'medium' | 'hard';
-            pongGame.enableAI('top', difficulty);
-        });
+    enableAITopBtn?.addEventListener("click", () => {
+      const difficulty = difficultySelect.value as "easy" | "medium" | "hard";
+      pongGame.enableAI("top", difficulty);
+    });
 
-        enableAIBottomBtn?.addEventListener('click', () => {
-            const difficulty = difficultySelect.value as 'easy' | 'medium' | 'hard';
-            pongGame.enableAI('bottom', difficulty);
-        });
+    enableAIBottomBtn?.addEventListener("click", () => {
+      const difficulty = difficultySelect.value as "easy" | "medium" | "hard";
+      pongGame.enableAI("bottom", difficulty);
+    });
 
-        disableAIBtn?.addEventListener('click', () => {
-            pongGame.disableAI();
-        });
-    }
-} 
+    disableAIBtn?.addEventListener("click", () => {
+      pongGame.disableAI();
+    });
+  }
+}
