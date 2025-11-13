@@ -20,7 +20,7 @@ async function dbPlugin(fastify: FastifyInstance) {
   ).all();
 
   const tableNames = existingTables.map((t: any) => t.name);
-  const expectedTables = ['users', 'friends', 'games', 'matches', 'tournaments', 'participants', 'tournament_matches'];
+  const expectedTables = ['users', 'friends', 'games', 'matches', 'tournaments', 'participants', 'tournament_matches', 'duel_requests'];
  
   const allTablesExist = expectedTables.every(table => tableNames.includes(table));
  

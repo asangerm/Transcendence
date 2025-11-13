@@ -47,15 +47,13 @@ CREATE TABLE tournaments (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     creator_id   INTEGER NOT NULL,
     name         TEXT NOT NULL,
-    game_id      INTEGER NOT NULL,
     status       TEXT DEFAULT 'ongoing', -- ongoing | finished
     started_at   DATETIME,
     ended_at     DATETIME,
     winner_id    INTEGER,
     created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-	FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
+	FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE participants (

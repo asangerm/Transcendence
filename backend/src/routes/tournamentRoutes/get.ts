@@ -18,7 +18,7 @@ export default async function getOngoingTournament(app: FastifyInstance) {
 			const tournament = app.db
 				.prepare(`
 					SELECT 
-						id, name, game_id, status, started_at, created_at
+						id, name, status, started_at, created_at
 					FROM tournaments
 					WHERE creator_id = ? AND status = 'ongoing'
 					LIMIT 1

@@ -41,22 +41,6 @@ export class CreateTournaments {
 							/>
 						</div>
 
-						<div>
-							<label for="gameSelect" class="block text-sm font-medium mb-2">
-							Choix du jeu
-							</label>
-							<select
-							id="gameSelect"
-							name="gameSelect"
-							class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-muted dark:text-muted-dark border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
-							required
-							>
-								<option value="" disabled selected>Choisissez le Jeu pour le tournoi</option>
-								<option value="Pong">Pong</option>
-								<option value="Game2">Game2</option>
-							</select>
-						</div>
-
 						<!-- Nombre de joueurs -->
 						<div>
 							<label for="playerCount" class="block text-sm font-medium mb-2">
@@ -94,7 +78,6 @@ export class CreateTournaments {
 		form.addEventListener("submit", (e) => {
 			e.preventDefault();
 			const name = document.getElementById('tournamentName') as HTMLInputElement;
-			const gameName = document.getElementById('gameSelect') as HTMLSelectElement;
 			const playerSelect = document.getElementById('playerCount') as HTMLSelectElement;
 			const safeName = escapeHtml(name.value.trim());
 			
@@ -119,7 +102,7 @@ export class CreateTournaments {
 			playersForm.addEventListener("submit", (e) => {
 				e.preventDefault();
 				
-				const tournamentInfos = this.extractTournamentInfos(Number(playerSelect.value), safeName, gameName.value);
+				const tournamentInfos = this.extractTournamentInfos(Number(playerSelect.value), safeName);
 				this.registerTournament(tournamentInfos);
 			});
 		});
@@ -141,7 +124,7 @@ export class CreateTournaments {
 		return displayInputs;
 	}
 
-	private extractTournamentInfos(playersNumber: number, tournamentName: string, game: string): Tournament {
+	private extractTournamentInfos(playersNumber: number, tournamentName: string): Tournament {
 		const playerNames: string[] = [];
 		for (let i  = 1; i <= playersNumber; i++) {
 			const player =  document.getElementById(`player${i}`) as HTMLInputElement;
@@ -150,7 +133,6 @@ export class CreateTournaments {
 		const tournamentInfos: Tournament = {
 			name: tournamentName,
 			creator_id: AuthStore.getUser()!.id,
-			game: game,
 			playersNumber: playersNumber,
 			playersNames: playerNames,
  		};

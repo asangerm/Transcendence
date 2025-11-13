@@ -9,7 +9,7 @@ export function renderGameSelection() {
                         <div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
                             <div class="relative aspect-video bg-secondary dark:bg-secondary-dark">
                                 <img 
-                                    src="../../images/pong-image.jpg" 
+                                    src="../../images/pong-image.png" 
                                     alt="Pong Game" 
                                     class="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90"
                                 >

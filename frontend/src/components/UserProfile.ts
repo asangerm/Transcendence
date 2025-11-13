@@ -239,7 +239,7 @@ private render(): void {
 					<!-- Bouton Modifier mdp -->
 					<div class="mb-4">
 							<a href="/change-password" 
-							class="w-full px-4 py-2 mb-4 text-sm font-medium text-red-600 border border-red-600 rounded-md hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900/20 inline-block text-center transition-colors">
+							class="w-full px-4 py-2 mb-4 text-sm font-medium delete-secondary inline-block text-center">
 							Modifier le mot de passe
 						</a>
 					</div>
@@ -247,13 +247,13 @@ private render(): void {
 								<button 
 									type="button" 
 									id="cancel-edit"
-									class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+									class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:scale-105 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500 transform transition-all duration-300"
 								>
 									Annuler
 								</button>
 								<button 
 									type="submit"
-									class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+									class="px-4 py-2 text-sm font-medium button-primary"
 								>
 									Sauvegarder
 								</button>
@@ -275,14 +275,14 @@ private render(): void {
 									<button 
 									type="button" 
 									id="anonymize-btn" 
-									class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+									class="px-2 py-1 text-sm delete-secondary"
 									>
 									Anonymiser mon compte
 									</button>
 									<button 
 									type="button" 
 									id="delete-btn" 
-									class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+									class="px-2 py-1 text-sm delete-primary"
 									>
 									Supprimer mon compte
 									</button>
