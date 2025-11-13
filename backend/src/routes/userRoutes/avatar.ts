@@ -56,6 +56,15 @@ export default async function modifyAvatar(app: FastifyInstance) {
 
         const relativePath = `/uploads/avatars/${safeFilename}`;
 
+        const user = app.db
+          .prepare("SELECT avatar_url FROM users WHERE id = ?")
+          .get(req.user.id) as { avatar_url?: string } | undefined;
+
+        if (user?.avatar_url && !user.avatar_url.includes("default.png")) {
+        const oldPath = path.join(process.cwd(), user.avatar_url.replace(/^\/+/g, ""));
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        }
+
         app.db.prepare("UPDATE users SET avatar_url = ? WHERE id = ?").run(relativePath, req.user.id);
 
         return reply.send({ avatarUrl: relativePath });

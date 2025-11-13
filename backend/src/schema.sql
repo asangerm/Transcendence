@@ -21,8 +21,8 @@ CREATE TABLE duel_requests (
     challenged_username VARCHAR(255) NOT NULL,
     status VARCHAR(20) DEFAULT 'pending',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (requester_id) REFERENCES users(id),
-    FOREIGN KEY (challenged_id) REFERENCES users(id)
+    FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (challenged_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Table: friends
@@ -102,14 +102,4 @@ CREATE TABLE matches (
     FOREIGN KEY (player1_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (player2_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Table: sessions
-CREATE TABLE sessions (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id         INTEGER NOT NULL,
-    refresh_token   VARCHAR(500) NOT NULL UNIQUE,
-    expires_at      DATETIME NOT NULL,
-    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

@@ -1,9 +1,30 @@
-import { FastifyInstance } from "fastify";
-import { requireAuth } from "../../middleware/authMiddleware";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { requireAuth, AuthUser } from "../../middleware/authMiddleware";
+import fs from "fs";
+import path from "path";
+
+
+type AuthRequest = FastifyRequest & { user?: AuthUser };
 
 export default async function anonymizeUser(app: FastifyInstance) {
-  app.post("/:id/anonymize", { preHandler: [requireAuth] }, async (req, reply) => {
+  app.post("/:id/anonymize", { preHandler: [requireAuth] }, async (req: AuthRequest, reply: FastifyReply) => {
     const { id } = req.params as { id: string };
+    const userId = Number(id);
+
+          //Vérifie que l'utilisateur est bien authentifié
+      if (!req.user) {
+        return reply.status(401).send({ error: true, message: "Unauthorized" });
+      }
+
+      // Vérifie que l'utilisateur essaie bien d'anonymiser son propre compte
+      if (req.user.id !== userId) {
+        return reply.status(403).send({ error: true, message: "You can only anonymize your own account" });
+      }
+
+      if (isNaN(userId)) {
+        return reply.status(400).send({ error: true, message: "Invalid user ID" });
+      }
+
 
     const existing = app.db.prepare("SELECT id FROM users WHERE id = ?").get(id);
     if (!existing) {
@@ -12,47 +33,32 @@ export default async function anonymizeUser(app: FastifyInstance) {
 
     const anonEmail = `anon_${id}@example.com`;
     const anonName = `anon_user_${id}`;
-    const anonAvatar = "/avatars/default.png";
+    const anonAvatar = "/uploads/default.png";
 
     const transaction = app.db.transaction(() => {
       // --- Anonymiser l'utilisateur ---
+    const user = app.db
+      .prepare("SELECT avatar_url FROM users WHERE id = ?")
+      .get(req.user!.id) as { avatar_url?: string } | undefined;
+
+    if (user?.avatar_url && !user.avatar_url.includes("default.png")) {
+        const oldPath = path.join(process.cwd(), user.avatar_url.replace(/^\/+/g, ""));
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
       app.db.prepare(
         `UPDATE users 
          SET email = ?, 
              display_name = ?, 
              avatar_url = ?, 
-             password_hash = NULL,  
+             is_online = 0,
+             password_hash = NULL  
          WHERE id = ?`
       ).run(anonEmail, anonName, anonAvatar, id);
 
-      // --- Anonymiser friend requests ---
-      app.db.prepare(
-        `UPDATE friend_requests 
-         SET sender_id = NULL, receiver_id = NULL, status = 'deleted' 
-         WHERE sender_id = ? OR receiver_id = ?`
-      ).run(id, id);
-
-      // --- Supprimer relations d’amis ---
-      app.db.prepare("DELETE FROM friends WHERE user_id = ? OR friend_id = ?").run(id, id);
-
-      // --- Anonymiser high scores ---
-      app.db.prepare("UPDATE high_scores SET user_id = NULL WHERE user_id = ?").run(id);
-
-      // --- Anonymiser matchs ---
-      app.db.prepare(
-        `UPDATE matches 
-         SET player1_id = CASE WHEN player1_id = ? THEN NULL ELSE player1_id END,
-             player2_id = CASE WHEN player2_id = ? THEN NULL ELSE player2_id END,
-             winner_id  = CASE WHEN winner_id  = ? THEN NULL ELSE winner_id END
-         WHERE player1_id = ? OR player2_id = ? OR winner_id = ?`
-      ).run(id, id, id, id, id, id);
-
-      // --- Anonymiser tournaments ---
-      app.db.prepare("UPDATE tournaments SET winner_id = NULL WHERE winner_id = ?").run(id);
     });
 
     transaction();
 
-    return reply.send({ success: true, message: "User anonymized successfully" });
+    return reply.send({ success: true, message: "Utilisateur anonymisé avec succes" });
   });
 }
