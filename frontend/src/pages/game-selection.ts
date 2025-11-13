@@ -20,8 +20,8 @@ export function renderGameSelection() {
                                 </div>
                             </div>
                             <div class="p-6">
-                                <h2 class="text-2xl font-bold mb-2">Pong 3D (local / pvp en ligne)</h2>
-                                <p class="text-muted dark:text-muted-dark">"Deux raquettes, une balle, et un chaos spatial où frapper correctement devient un sport de haut niveau."</p>
+                                <h2 class="text-2xl font-bold mb-2">Pong 3D</h2>
+                                <p class="text-muted dark:text-muted-dark">"Deux raquettes, une balle, et un chaos spatial où frapper correctement devient un sport de haut niveau. (solo / pvp local/ pvp en ligne)"</p>
                             </div>
                         </div>
                     </a>
@@ -42,8 +42,8 @@ export function renderGameSelection() {
                                 </div>
                             </div>
                             <div class="p-6">
-                                <h2 class="text-2xl font-bold mb-2">Tic-tac-toe (pvp en ligne)</h2>
-                                <p class="text-muted dark:text-muted-dark">"Le fameux jeu où deux adversaires s’affrontent pour prouver qui sait mieux dessiner des croix et des ronds… et finissent toujours par égalité."</p>
+                                <h2 class="text-2xl font-bold mb-2">Tic-tac-toe</h2>
+                                <p class="text-muted dark:text-muted-dark">"Le fameux jeu où deux adversaires s’affrontent pour prouver qui sait mieux dessiner des croix et des ronds… et finissent toujours par égalité. (pvp en ligne)"</p>
                             </div>
                         </div>
                     </a>

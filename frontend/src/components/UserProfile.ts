@@ -178,7 +178,7 @@ private render(): void {
 				<!-- Menu déroulant -->
 				<div id="gameDropdown" class="invisible transition-all duration-150 scale-0 origin-top-right absolute top-14 right-5 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
 					<button id="pongChoice" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">PONG</button>
-					<button id="aowChoice" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-b-lg">AGE OF WAR</button>
+					<button id="aowChoice" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-b-lg">TIC-TAC-TOE</button>
 				</div>
 				
 				<!-- Pong Stats (default) -->
@@ -499,7 +499,7 @@ private attachEventListeners(): void {
 		dropdown.classList.add("scale-0");
 		dropdown.classList.toggle("invisible");
 		arrow.classList.toggle("rotate-180");
-		this.updateGameStats('AGE OF WAR');
+		this.updateGameStats('TIC-TAC-TOE');
 	});
 
 	if (this.isOwnProfile) {
