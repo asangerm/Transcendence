@@ -6,7 +6,7 @@ export default async function searchUser(app: FastifyInstance) {
 	const { q } = req.query as { q: string };
 
     if (!q) {
-        return reply.code(400).send({ error: 'Missing search query' });
+        return reply.code(400).send({ error: 'Requête de recherche manquante' });
     }
     try {
 		const users = app.db
@@ -21,7 +21,7 @@ export default async function searchUser(app: FastifyInstance) {
 
 		return reply.send({ success: true, users });
     } catch (err) {
-        return reply.code(500).send({ error: 'Database error' });
+        return reply.code(500).send({ error: 'Erreur base de données' });
     }
   });
 }

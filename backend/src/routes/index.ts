@@ -23,6 +23,10 @@ import deleteUser from "./userRoutes/delete";
 import exportData from "./userRoutes/exportData";
 import modifyAvatar from "./userRoutes/avatar";
 import searchUser from "./userRoutes/searchUser";
+import sendDuel from "./duelRoutes/sendDuel";
+import acceptDuel from "./duelRoutes/acceptDuel";
+import cancelDuel from "./duelRoutes/cancelDuel";
+import getDuels from "./duelRoutes/getDuels";
 
 // RGPD
 import gameRoutes from "./gameRoutes";
@@ -63,6 +67,17 @@ export default async function routes(app: FastifyInstance) {
   app.register(exportData, { prefix: "/users" });
   app.register(modifyAvatar, { prefix: "/users" });
   app.register(searchUser, { prefix: "/users" });
+  app.register(searchUser, { prefix: "/api/users" });
+
+  app.register(sendDuel);
+  app.register(acceptDuel);
+  app.register(cancelDuel);
+  app.register(getDuels);
+
+  app.register(sendDuel, { prefix: "/api" });
+  app.register(acceptDuel, { prefix: "/api" });
+  app.register(cancelDuel, { prefix: "/api" });
+  app.register(getDuels, { prefix: "/api" });
 
   //RGPD
   // Games (HTTP)

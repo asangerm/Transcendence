@@ -22,6 +22,9 @@ export class GameController {
     private input: InputHandler;
     private lastTime: number;
     private onStateUpdated: ((snapshot: ControllerSnapshot) => void) | null;
+    private topControls: { left: string; right: string };
+    private bottomControls: { left: string; right: string };
+    private matchType: 'online' | 'local' = 'online';
 
     constructor(options: ControllerOptions = {}) {
         this.scene = new Scene();
@@ -31,6 +34,8 @@ export class GameController {
         this.input = new InputHandler();
         this.lastTime = performance.now();
         this.onStateUpdated = null;
+        this.topControls = options.topControls ?? { left: 'z', right: 'x' };
+        this.bottomControls = options.bottomControls ?? { left: 'c', right: 'v' };
 
         // Initialize entities from scene description
         const ballObject = this.scene.getObjects().find(o => o.name === 'ball');
@@ -39,18 +44,35 @@ export class GameController {
         }
         const topPaddleObject = this.scene.getObjects().find(o => o.name === 'paddle_top');
         const bottomPaddleObject = this.scene.getObjects().find(o => o.name === 'paddle_bottom');
-        const topControls = options.topControls ?? { left: 'o', right: 'l' };
-        const bottomControls = options.bottomControls ?? { left: 'r', right: 'f' };
         if (topPaddleObject) {
-            this.topPaddle = new Paddle(topPaddleObject, this.scene, topControls.left, topControls.right);
+            this.topPaddle = new Paddle(topPaddleObject, this.scene, this.topControls.left, this.topControls.right);
         }
         if (bottomPaddleObject) {
-            this.bottomPaddle = new Paddle(bottomPaddleObject, this.scene, bottomControls.left, bottomControls.right);
+            this.bottomPaddle = new Paddle(bottomPaddleObject, this.scene, this.bottomControls.left, this.bottomControls.right);
         }
+    }
+
+    setPlayer(player: 'top' | 'bottom' | 'local'): void {
+        this.scene.setPlayer(player);
     }
 
     setOnStateUpdated(callback: (snapshot: ControllerSnapshot) => void): void {
         this.onStateUpdated = callback;
+    }
+
+    setControls(top: { left: string; right: string }, bottom: { left: string; right: string }): void {
+        this.topControls = { left: top.left.toLowerCase(), right: top.right.toLowerCase() };
+        this.bottomControls = { left: bottom.left.toLowerCase(), right: bottom.right.toLowerCase() };
+        if (this.topPaddle) this.topPaddle.setControls(this.topControls.left, this.topControls.right);
+        if (this.bottomPaddle) this.bottomPaddle.setControls(this.bottomControls.left, this.bottomControls.right);
+    }
+
+    setMatchType(kind: 'online' | 'local'): void {
+        this.matchType = kind;
+    }
+
+    getMatchType(): 'online' | 'local' {
+        return this.matchType;
     }
 
     getScene(): Scene {
@@ -67,10 +89,11 @@ export class GameController {
         this.lastTime = currentTime;
         if (deltaTime > 0.1) deltaTime = 0.1;
 
-        // Camera controls are input-driven but only affect view; keep here for now
         const moveSpeed = 10.0;
         const rotateSpeed = 3.0;
-        this.scene.camera.update(this.input.getKeys(), moveSpeed * deltaTime, rotateSpeed * deltaTime);
+        if (this.matchType === 'local') {
+            this.scene.camera.update(this.input.getKeys(), moveSpeed * deltaTime, rotateSpeed * deltaTime);
+        }
 
         if (this.ball) {
             this.ball.update(deltaTime);
@@ -84,17 +107,6 @@ export class GameController {
         };
         if (this.onStateUpdated) this.onStateUpdated(snapshot);
         return snapshot;
-    }
-
-    // Hook for remote/network inputs to affect game logic deterministically
-    applyRemoteInput(input: UserInputState): void {
-        // Example: map to paddle moves by setting virtual key states
-        const player = input.player.toLowerCase();
-        const action = input.action;
-        // Minimal placeholder to show API surface; integrate real mapping later
-        if (player && action) {
-            // No-op for now; local InputHandler handles real keyboard
-        }
     }
 
     // Allow renderer/bootstrap to inform aspect ratio changes without renderer mutating logic state directly

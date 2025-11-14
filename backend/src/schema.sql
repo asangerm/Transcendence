@@ -15,12 +15,14 @@ CREATE TABLE users (
 
 CREATE TABLE duel_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    player1_id INTEGER NOT NULL,
-    player2_id INTEGER NOT NULL,
+    requester_id INTEGER NOT NULL,
+    requester_username VARCHAR(255) NOT NULL,
+    challenged_id INTEGER NOT NULL,
+    challenged_username VARCHAR(255) NOT NULL,
     status VARCHAR(20) DEFAULT 'pending',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (player1_id) REFERENCES users(id),
-    FOREIGN KEY (player2_id) REFERENCES users(id)
+    FOREIGN KEY (requester_id) REFERENCES users(id),
+    FOREIGN KEY (challenged_id) REFERENCES users(id)
 );
 
 -- Table: friends

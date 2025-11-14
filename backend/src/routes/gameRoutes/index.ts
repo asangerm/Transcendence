@@ -20,4 +20,26 @@ export default async function gameRoutes(app: FastifyInstance) {
     if (!state) return reply.code(404).send({ message: 'Not found' });
     return state;
   });
+
+  app.post('/games/:id/forfeit', async (req, reply) => {
+    try {
+      const params = await z.object({ id: z.string() }).parseAsync(req.params);
+      const body = await z.object({ side: z.enum(['top', 'bottom']).optional() }).parseAsync((req as any).body ?? {});
+      const state = gameManager.getState(params.id);
+      if (!state) {
+        reply.code(404);
+        return { error: 'Not found' };
+      }
+      const side = body.side ?? 'top';
+      const ok = gameManager.forfeit(params.id, side);
+      if (!ok) {
+        reply.code(400);
+        return { error: 'Unsupported game' };
+      }
+      return { success: true };
+    } catch {
+      reply.code(400);
+      return { error: 'Invalid request' };
+    }
+  });
 }
