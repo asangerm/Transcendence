@@ -2,6 +2,7 @@ import { GameController, ControllerSnapshot } from './GameController';
 import { GameRenderer } from './GameRenderer';
 import type { UserInputState } from '../scripts/pong/gameState';
 import { PongRealtimeClient } from '../services/realtime/pongClient';
+import type { ServerGameState } from '../types/realtime';
 
 export class Pong {
     private controller: GameController;
@@ -20,6 +21,9 @@ export class Pong {
         lastRecv: number;
     };
     private _lastPadSyncAt: number | null = null;
+    private _tpsCount: number = 0;
+    private _tpsLastAt: number = performance.now();
+    private _tps: number = 0;
 
     constructor() {
         this.controller = new GameController();
@@ -32,7 +36,7 @@ export class Pong {
         this.paddleSpeed = 50;
         this.serverTargets = { ballPos: null, ballVel: null, padTopX: null, padBottomX: null, lastRecv: 0 };
         this.controller.setOnStateUpdated((snapshot: ControllerSnapshot) => {
-            this.renderer.requestFrame(snapshot.scene, snapshot.ballSpeed, this.online);
+            this.renderer.requestFrame(snapshot.scene, snapshot.scores, this.online);
         });
     }
 
@@ -44,7 +48,20 @@ export class Pong {
             this.online = true;
             const gameId = opts.gameId ?? (await this.createGame());
             this.realtime = new PongRealtimeClient();
-            this.realtime.setOnState((state) => this.applyServerState(state));
+            this.realtime.setOnState((state) => {
+                const now = performance.now();
+                this._tpsCount += 1;
+                const elapsed = now - this._tpsLastAt;
+                if (elapsed >= 1000) {
+                    this._tps = this._tpsCount;
+                    this._tpsCount = 0;
+                    this._tpsLastAt = now;
+                } else if (elapsed > 0) {
+                    this._tps = Math.round((this._tpsCount * 1000) / elapsed);
+                }
+                this.renderer.setTPS?.(this._tps);
+                this.applyServerState(state);
+            });
             await this.realtime.connect(gameId);
             // attach keyboard -> ws
             this.controller.setPlayer(opts.side || 'top');
@@ -66,7 +83,20 @@ export class Pong {
             this.online = true;
             const gameId = await this.createGame();
             this.realtime = new PongRealtimeClient();
-            this.realtime.setOnState((state) => this.applyServerState(state));
+            this.realtime.setOnState((state) => {
+                const now = performance.now();
+                this._tpsCount += 1;
+                const elapsed = now - this._tpsLastAt;
+                if (elapsed >= 1000) {
+                    this._tps = this._tpsCount;
+                    this._tpsCount = 0;
+                    this._tpsLastAt = now;
+                } else if (elapsed > 0) {
+                    this._tps = Math.round((this._tpsCount * 1000) / elapsed);
+                }
+                this.renderer.setTPS?.(this._tps);
+                this.applyServerState(state);
+            });
             await this.realtime.connect(gameId);
             this.controller.setPlayer('local');
             this.controller.setMatchType('local');
@@ -104,7 +134,7 @@ export class Pong {
 
         if (!this.online) {
             const snapshot: ControllerSnapshot = this.controller.update();
-            this.renderer.requestFrame(snapshot.scene, snapshot.ballSpeed, false);
+            this.renderer.requestFrame(snapshot.scene, snapshot.scores, false);
         } else {
             // Send input state to server (server-authoritative paddles)
             this.sendInputState();
@@ -155,8 +185,7 @@ export class Pong {
             }
 
             // Render every frame
-            const speed = this.serverTargets.ballVel ? Math.hypot(this.serverTargets.ballVel.x, this.serverTargets.ballVel.z) : 0;
-            this.renderer.requestFrame(scene, speed, true);
+            this.renderer.requestFrame(scene, this.controller.getScores(), true);
         }
 
         const { width, height } = this.renderer.getCanvasSize();
@@ -171,13 +200,15 @@ export class Pong {
     }
 
     // Map server state onto our scene graph for rendering
-    private applyServerState(state: any): void {
+    private applyServerState(state: ServerGameState): void {
         // Update targets for smoothing and extrapolation
         this.serverTargets.ballPos = { ...state.ball.position };
         this.serverTargets.ballVel = { ...state.ball.velocity };
         this.serverTargets.padTopX = state.paddles.top.position.x;
         this.serverTargets.padBottomX = state.paddles.bottom.position.x;
         this.serverTargets.lastRecv = performance.now();
+        // Update scores from server so they can be displayed later
+        this.controller.setScores(state.scores);
         
         // Update paddle positions directly for immediate response
         const scene = this.controller.getScene();

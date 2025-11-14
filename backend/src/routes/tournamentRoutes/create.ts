@@ -4,7 +4,6 @@ import { requireAuth } from "../../middleware/authMiddleware";
 export interface Tournament {
 	id?: number;
 	name: string;
-	game: string;
 	status?: string;
 	playersNumber: number;
 	playersNames: string[];
@@ -32,24 +31,11 @@ export default async function createTournament(app: FastifyInstance) {
 		try {
 			const tournamentInfos = req.body as Tournament;
 
-			// Récuperer l'id du jeux choisi
-			const gameId = app.db
-			.prepare("SELECT id FROM games WHERE name = ?")
-			.get(tournamentInfos.game) as { id: number } | undefined;
-			if (!gameId) { // Si le jeu existe pas
-				return reply.status(409).send({
-					error: true,
-					message: "Can't find wich game to use.",
-       			});
-			}
-			const gameIdValue = gameId.id;
 
 			// Insertion dans la table tournaments
 			const result = app.db
-			.prepare("INSERT INTO tournaments (name, game_id, creator_id) VALUES (?, ?, ?)")
-			.run(tournamentInfos.name, gameIdValue, tournamentInfos.creator_id);
-			//.prepare("INSERT INTO tournaments (name, game_id) VALUES (?, ?)")
-			//.run(tournamentInfos.name, tournamentInfos.game);
+			.prepare("INSERT INTO tournaments (name, creator_id) VALUES (?, ?)")
+			.run(tournamentInfos.name, tournamentInfos.creator_id);
 
 			// Rajouter une verif si le creator a deja un tournois en cours
 

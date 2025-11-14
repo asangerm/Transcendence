@@ -111,7 +111,7 @@ import { TournamentService, Tournament } from "../services/tournament.service";
 												m.winner_id
 													? `Gagnant : ${m.winner_id}`
 													: isNextMatch
-													? "⚡ Prochain match"
+													? "Prochain match"
 													: "Match à venir"
 											}
 										</div>
@@ -179,10 +179,10 @@ import { TournamentService, Tournament } from "../services/tournament.service";
 
 					try {
 						await TournamentService.deleteTournament(tournament.id);
-						alert("Tournoi supprimé avec succès ✅");
+						alert("Tournoi supprimé avec succès ");
 						location.reload();
 					} catch (err) {
-						alert("❌ Erreur lors de la suppression du tournoi.");
+						alert(" Erreur lors de la suppression du tournoi.");
 						console.error(err);
 					}
 				});

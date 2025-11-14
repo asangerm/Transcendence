@@ -15,13 +15,17 @@ export class GameRenderer {
         this.container.classList.add('relative', 'w-full', 'h-full', 'overflow-hidden', 'aspect-[16/9]');
         this.textDisplay = document.createElement('div');
         this.textDisplay.className = 'pong-text-display';
-        this.textDisplay.classList.add('absolute', 'top-0', 'left-0', 'w-full', 'bg-black/50', 'text-red-600', 'stroke-8', 'stroke-red-500', 'p-2', 'z-10', 'font-mono');
+        this.textDisplay.classList.add('absolute', 'inset-0', 'text-red-600', 'stroke-8', 'stroke-red-500', 'p-2', 'py-0', 'z-10', 'font-mono', 'font-black', 'select-none', 'pointer-events-none');
         this.textDisplay.textContent = 'Initializing...';
         
         this.container.appendChild(this.canvas);
         this.container.appendChild(this.textDisplay);
         this.renderer = new Renderer(this.canvas, this.textDisplay);
         this.animationFrameId = null;
+    }
+
+    setTPS(tps: number): void {
+        (this.renderer as any).setTPS?.(tps);
     }
 
     async mount(element: HTMLElement): Promise<void> {
@@ -48,21 +52,15 @@ export class GameRenderer {
         }
     };
 
-    requestFrame(scene: Scene, ballSpeed: number, isOnline: boolean = false): void {
+    requestFrame(scene: Scene, scores: { top: number; bottom: number }, isOnline: boolean = false): void {
         if (this.animationFrameId !== null) {
             cancelAnimationFrame(this.animationFrameId);
         }
         this.animationFrameId = requestAnimationFrame(() => {
-            this.renderer.render(scene, ballSpeed, isOnline);
+            this.renderer.render(scene, scores, isOnline);
             // this.updateStatusIndicator(isOnline);
         });
     }
-
-    // private updateStatusIndicator(isOnline: boolean): void {
-    //     const mode = isOnline ? 'SERVER' : 'CLIENT';
-    //     const modeColor = isOnline ? '#00ff00' : '#ff6b35';
-    //     const modeBg = isOnline ? 'rgba(0, 255, 0, 0.9)' : 'rgba(255, 107, 53, 0.9)';
-    // }
 
     getCanvasSize(): { width: number; height: number } {
         const rect = this.canvas.parentElement?.getBoundingClientRect();

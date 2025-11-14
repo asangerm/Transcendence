@@ -14,9 +14,11 @@ export class Renderer {
 	private sunDirection: any | null;
 	private initialized: boolean = false;
 	private textDisplay: HTMLDivElement;
+	
 	private frameCount: number = 0;
 	private lastTime: number = performance.now();
 	private fps: number = 0;
+	private tps: number = 0;
 
 	constructor(canvas: HTMLCanvasElement, textDisplay: HTMLDivElement) {
 		this.canvas = canvas;
@@ -183,7 +185,7 @@ export class Renderer {
 		this.camera3d.fov = fov;
 	}
 
-	render(scene: Scene, ballSpeed: number, isOnline: boolean = false): void {
+	render(scene: Scene, scores: { top: number; bottom: number }, isOnline: boolean = false): void {
 		if (!this.engine || !this.scene3d) return;
 		this.setupCanvas();
 		this.updateCameraFromScene(scene);
@@ -218,10 +220,15 @@ export class Renderer {
 			this.frameCount = 0;
 			this.lastTime = currentTime;
 		}
-		const pos = scene.camera.position;
-		const mode = isOnline ? 'SERVER' : 'CLIENT';
-		const modeColor = isOnline ? '#00ff00' : '#ff6b35';
-		const modeBg = isOnline ? 'rgba(0, 255, 0, 0.2)' : 'rgba(255, 107, 53, 0.2)';
-		this.textDisplay.innerHTML = `Camera: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)}) | FPS: ${this.fps} | Speed: ${ballSpeed.toFixed(2)} | <span style="color: ${modeColor}; font-weight: bold; background: ${modeBg}; padding: 2px 6px; border-radius: 4px; border: 1px solid ${modeColor};">MODE: ${mode}</span>`;
+		this.textDisplay.innerHTML = `
+			<span class="text-red-600 absolute top-0 right-2 italic font-light">${this.fps}fps</span>
+			<span class="text-white absolute top-0 left-2 italic font-light">${this.tps}tps</span>
+			<span class="opacity-70 font-sans italic text-green-600 absolute -bottom-4 left-2 text-[96px]">${scores.top}</span>
+			<span class="opacity-70 font-sans italic text-blue-600 absolute -bottom-4 right-2 text-[96px]">${scores.bottom}</span>
+		`;
+	}
+
+	setTPS(tps: number): void {
+		this.tps = tps;
 	}
 }

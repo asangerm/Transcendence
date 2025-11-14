@@ -11,16 +11,17 @@ export default async function exportData(app: FastifyInstance & { db: any }) {
       const user = app.db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
       if (!user) return reply.status(404).send({ error: "Utilisateur introuvable" });
 
+      delete user.password_hash;
+
       // Récupération des données associées
       const friends = app.db.prepare("SELECT * FROM friends WHERE user_id = ? OR friend_id = ?").all(userId, userId);
       const matches = app.db.prepare("SELECT * FROM matches WHERE player1_id = ? OR player2_id = ?").all(userId, userId);
-      const friendRequests = app.db.prepare("SELECT * FROM friend_requests WHERE sender_id = ? OR receiver_id = ?").all(userId, userId);
-
+      
       // Assemblage de l’export
       const exportData = {
         generated_at: new Date().toISOString(),
         user,
-        related_data: { friends, friend_requests: friendRequests, matches },
+        related_data: { friends, matches },
       };
 
       const fileName = `user_${userId}_export_${Date.now()}.json`;

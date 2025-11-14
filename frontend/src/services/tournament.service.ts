@@ -4,31 +4,41 @@ export interface Tournament {
 	id?: number;
 	creator_id: number;
 	name: string;
-	game: string;
 	status?: string;
 	playersNumber: number;
 	playersNames: string[];
 }
 
+export interface Match {
+	id?: number;
+	match_number: number
+	player1_id: number,
+	player2_id: number,
+	winner_id?: number,
+	next_match_id: number
+	position_in_next: number,
+}
+
 export interface OngoingTournamentResponse {
 	tournament: Tournament;
-	matches: any[]; // tu peux typer plus précisément si tu as l'interface Match
+	matches: Match[];
 }
 
 export class TournamentService {
 
 	static async createNewTournament(tournamentInfos: Tournament): Promise<Tournament> {
 		const response = await apiService.post('/tournament/create', tournamentInfos);
-		return response.data; // correspond à { tournament: {...} } renvoyé par le backend
+		return response.data; 
 	}
 
 	static async getOngoingTournament(userId: number): Promise<OngoingTournamentResponse | null> {
 		try {
 			const response = await apiService.get(`/tournament/${userId}`);
-			return response.data.data; // car ta route renvoie { success, data: { tournament, matches } }
+			console.log (response.data.data);
+			return response.data.data;
 		} catch (error: any) {
 			if (error?.response?.status === 404) {
-				return null; // Aucun tournoi en cours
+				return null;
 			}
 			throw error;
 		}

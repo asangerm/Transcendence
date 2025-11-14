@@ -178,7 +178,7 @@ private render(): void {
 				<!-- Menu déroulant -->
 				<div id="gameDropdown" class="invisible transition-all duration-150 scale-0 origin-top-right absolute top-14 right-5 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
 					<button id="pongChoice" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">PONG</button>
-					<button id="aowChoice" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-b-lg">AGE OF WAR</button>
+					<button id="aowChoice" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-b-lg">TIC-TAC-TOE</button>
 				</div>
 				
 				<!-- Pong Stats (default) -->
@@ -239,7 +239,7 @@ private render(): void {
 					<!-- Bouton Modifier mdp -->
 					<div class="mb-4">
 							<a href="/change-password" 
-							class="w-full px-4 py-2 mb-4 text-sm font-medium text-red-600 border border-red-600 rounded-md hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900/20 inline-block text-center transition-colors">
+							class="w-full px-4 py-2 mb-4 text-sm font-medium delete-secondary inline-block text-center">
 							Modifier le mot de passe
 						</a>
 					</div>
@@ -247,13 +247,13 @@ private render(): void {
 								<button 
 									type="button" 
 									id="cancel-edit"
-									class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+									class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:scale-105 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500 transform transition-all duration-300"
 								>
 									Annuler
 								</button>
 								<button 
 									type="submit"
-									class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+									class="px-4 py-2 text-sm font-medium button-primary"
 								>
 									Sauvegarder
 								</button>
@@ -275,14 +275,14 @@ private render(): void {
 									<button 
 									type="button" 
 									id="anonymize-btn" 
-									class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+									class="px-2 py-1 text-sm delete-secondary"
 									>
 									Anonymiser mon compte
 									</button>
 									<button 
 									type="button" 
 									id="delete-btn" 
-									class="px-2 py-1 text-sm font-medium bg-red-500 text-white rounded-md hover:bg-red-600"
+									class="px-2 py-1 text-sm delete-primary"
 									>
 									Supprimer mon compte
 									</button>
@@ -499,7 +499,7 @@ private attachEventListeners(): void {
 		dropdown.classList.add("scale-0");
 		dropdown.classList.toggle("invisible");
 		arrow.classList.toggle("rotate-180");
-		this.updateGameStats('AGE OF WAR');
+		this.updateGameStats('TIC-TAC-TOE');
 	});
 
 	if (this.isOwnProfile) {
@@ -559,7 +559,7 @@ private attachEventListeners(): void {
 			this.fillModifyForm();
 		});
 		cancelBtn?.addEventListener('click', () => editModal?.classList.add('hidden'));
-		// editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
+		editForm?.addEventListener('submit', this.handleProfileUpdate.bind(this));
 	    anonymizeBtn?.addEventListener('click', this.handleAnonymizeAccount.bind(this));
 		deleteBtn?.addEventListener('click', this.handleDeleteAccount.bind(this));
 		exportBtn?.addEventListener('click', () => this.handleExportData());

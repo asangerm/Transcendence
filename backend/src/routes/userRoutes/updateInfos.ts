@@ -30,6 +30,32 @@ export default async function updateInfos(app: FastifyInstance) {
     const existing = app.db.prepare("SELECT id FROM users WHERE id = ?").get(userId);
     if (!existing) return reply.status(404).send({ error: true, message: "User not found" });
 
+
+
+    // Vérifie si le nom d’utilisateur est déjà pris 
+    const existingName = app.db
+      .prepare("SELECT id FROM users WHERE display_name = ? AND id != ?")
+      .get(display_name, userId);
+
+    if (existingName) {
+      return reply.status(400).send({
+        error: true,
+        message: "Ce nom d'utilisateur est déjà utilisé.",
+      });
+    }
+
+    // Vérifie si email pas deja pris
+    const existingEmail = app.db
+      .prepare("SELECT id FROM users WHERE email = ? AND id != ?")
+      .get(email, userId);
+
+    if (existingEmail) {
+      return reply.status(400).send({
+        error: true,
+        message: "Cet email est déjà utilisé par un autre utilisateur."
+      });
+    }
+
     // Mise à jour
     app.db.prepare("UPDATE users SET display_name = ?, email = ? WHERE id = ?").run(display_name, email, userId);
 
