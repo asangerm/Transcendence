@@ -14,13 +14,14 @@ CREATE TABLE users (
 );
 
 CREATE TABLE duel_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    requester_id INTEGER NOT NULL,
-    requester_username VARCHAR(255) NOT NULL,
-    challenged_id INTEGER NOT NULL,
+    id 					INTEGER PRIMARY KEY AUTOINCREMENT,
+    requester_id 		INTEGER NOT NULL,
+    requester_username 	VARCHAR(255) NOT NULL,
+    challenged_id 		INTEGER NOT NULL,
     challenged_username VARCHAR(255) NOT NULL,
-    status VARCHAR(20) DEFAULT 'pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status 				VARCHAR(20) DEFAULT 'pending',
+    created_at 			DATETIME DEFAULT CURRENT_TIMESTAMP,
+
     FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (challenged_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -30,6 +31,7 @@ CREATE TABLE friends (
     user_id    INTEGER NOT NULL,
     friend_id  INTEGER NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
     PRIMARY KEY (user_id, friend_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
@@ -57,27 +59,27 @@ CREATE TABLE tournaments (
 );
 
 CREATE TABLE participants (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    tournament_id INTEGER NOT NULL,
-    name          TEXT NOT NULL,
-    seed          INTEGER DEFAULT 1, -- position initiale dans l’arbre (1, 2, 3, etc.)
-    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+	id				INTEGER PRIMARY KEY AUTOINCREMENT,
+	tournament_id	INTEGER NOT NULL,
+	name			TEXT NOT NULL,
+	--seed			INTEGER DEFAULT 1, -- position initiale dans l’arbre (1, 2, 3, etc.)
+	created_at		DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE
+	FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE
 );
 
 CREATE TABLE tournament_matches (
-	id              INTEGER PRIMARY KEY AUTOINCREMENT,
-	tournament_id   INTEGER NOT NULL,
-	round           INTEGER NOT NULL,
-	match_number    INTEGER NOT NULL,  -- numéro du match dans le round
-	player1_id      INTEGER,
-	player2_id      INTEGER,
-	winner_id       INTEGER,
-	next_match_id   INTEGER,  -- lien vers le match suivant
-	position_in_next INTEGER, -- 1 = joueur1 du prochain match, 2 = joueur2
-	finished        INTEGER DEFAULT 0,
-	created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+	id              	INTEGER PRIMARY KEY AUTOINCREMENT,
+	tournament_id   	INTEGER NOT NULL,
+	round           	INTEGER NOT NULL,
+	match_number    	INTEGER NOT NULL,  -- numéro du match dans le round
+	player1_id      	INTEGER,
+	player2_id      	INTEGER,
+	winner_id       	INTEGER,
+	next_match_id   	INTEGER,  -- lien vers le match suivant
+	position_in_next 	INTEGER, -- 1 = joueur1 du prochain match, 2 = joueur2
+	finished        	INTEGER DEFAULT 0,
+	created_at      	DATETIME DEFAULT CURRENT_TIMESTAMP,
 
 	FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
 	FOREIGN KEY (player1_id) REFERENCES participants(id) ON DELETE CASCADE,
@@ -88,16 +90,17 @@ CREATE TABLE tournament_matches (
 
 -- Table: matches
 CREATE TABLE matches (
-    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-    game_id             INTEGER NOT NULL,
-    player1_id          INTEGER NOT NULL,
-    player2_id          INTEGER NOT NULL,
-    winner_id           INTEGER,
-    score_p1            INTEGER NOT NULL,
-    score_p2            INTEGER NOT NULL,
-    played_at           DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
-    FOREIGN KEY (player1_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (player2_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE CASCADE
+	id			INTEGER PRIMARY KEY AUTOINCREMENT,
+	game_id		INTEGER NOT NULL,
+	player1_id	INTEGER NOT NULL,
+	player2_id	INTEGER NOT NULL,
+	winner_id	INTEGER,
+	score_p1	INTEGER NOT NULL,
+	score_p2	INTEGER NOT NULL,
+	played_at	DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+	FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
+	FOREIGN KEY (player1_id) REFERENCES users(id) ON DELETE CASCADE,
+	FOREIGN KEY (player2_id) REFERENCES users(id) ON DELETE CASCADE,
+	FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE CASCADE
 );

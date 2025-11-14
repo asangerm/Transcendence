@@ -10,13 +10,19 @@ export interface Tournament {
 }
 
 export interface Match {
-	id?: number;
-	match_number: number
-	player1_id: number,
-	player2_id: number,
-	winner_id?: number,
-	next_match_id: number
-	position_in_next: number,
+	id: number;
+	match_number: number;
+	player1_id: number;
+	player2_id: number;
+	winner_id?: number;
+	next_match_id: number;
+	position_in_next: number;
+}
+
+export interface UpdateMatch {
+	id: number;
+	tournamentId: number;
+	winner_id?: number;
 }
 
 export interface OngoingTournamentResponse {
