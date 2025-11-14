@@ -5,12 +5,13 @@ export class Game2Scene extends Phaser.Scene {
     private ws!: WebSocket;
     private playerId!: string;
     private gameId!: string;
+    private theme!: { bg: number; gridFill: number; gridStroke: number; neon: number; text: string; subText: string; xColor: string; oColor: string; timerNorm: string; timerWarn: string };
     private reconnectAttempts = 0;
     private maxReconnectAttempts = 5;
     private reconnectDelay = 1000;
     private isReconnecting = false;
     private allowReconnect = true;
-    private ui: { statusText: any; gridTexts: any[]; gridBgs: any[]; selfText: any; opponentText: any; turnNameText?: any; resultText?: any; timerText?: any } = {
+    private ui: { statusText: any; gridTexts: any[]; gridBgs: any[]; selfText: any; opponentText: any; turnNameText?: any; resultText?: any; timerText?: any; timerRing?: any; ghostTexts?: any[] } = {
         statusText: null as any,
         gridTexts: [] as any[],
         gridBgs: [] as any[],
@@ -18,7 +19,9 @@ export class Game2Scene extends Phaser.Scene {
         opponentText: null as any,
         turnNameText: null as any,
         resultText: null as any,
-        timerText: null as any
+        timerText: null as any,
+        timerRing: null as any,
+        ghostTexts: [] as any[]
     };
     private lastState: any = null;
     private gridZones: any[] = [];
@@ -33,14 +36,24 @@ export class Game2Scene extends Phaser.Scene {
     preload() {}
 
     create() {
-        
+        // Theme setup (URL param ?theme=dark|light|cyber|retro)
+        const urlForTheme = new URL(window.location.href);
+        const themeParam = (urlForTheme.searchParams.get('theme') || 'dark').toLowerCase();
+        const themes: Record<string, typeof this.theme> = {
+            dark:   { bg: 0x1a1a1a, gridFill: 0x2a2a2a, gridStroke: 0x444444, neon: 0x00d1ff, text: '#ffffff', subText: '#cccccc', xColor: '#00e5ff', oColor: '#ff2bd1', timerNorm: '#ffcc00', timerWarn: '#ff5555' },
+            light:  { bg: 0xf5f5f5, gridFill: 0xffffff, gridStroke: 0xcccccc, neon: 0x00bcd4, text: '#1a1a1a', subText: '#333333', xColor: '#00a6c8', oColor: '#d81b60', timerNorm: '#e6a300', timerWarn: '#d32f2f' },
+            cyber:  { bg: 0x0b0f1a, gridFill: 0x0f172a, gridStroke: 0x1f2a44, neon: 0x00ffff, text: '#e6f7ff', subText: '#9ecae6', xColor: '#00f0ff', oColor: '#ff00c8', timerNorm: '#ffd54f', timerWarn: '#ff5252' },
+            retro:  { bg: 0x121212, gridFill: 0x1e1e1e, gridStroke: 0x3a3a3a, neon: 0x39ff14, text: '#f0f0df', subText: '#cfcfb8', xColor: '#39ff14', oColor: '#ffb000', timerNorm: '#ffe066', timerWarn: '#ff4d4d' }
+        };
+        this.theme = themes[themeParam] || themes.dark;
+
         // UI elements
-        this.add.rectangle(640, 360, 1280, 720, 0x1a1a1a);
+        this.add.rectangle(640, 360, 1280, 720, this.theme.bg);
         // Titre in-canvas supprimé pour un affichage plus épuré
         // Remplacer les labels debug par une ligne de statut unique
         this.ui.statusText = this.add.text(50, 160, '', { 
             font: '24px Arial', 
-            color: '#cccccc' 
+            color: this.theme.subText 
         });
         // Nom coloré affiché à la suite du label quand c'est au tour de l'adversaire
         this.ui.turnNameText = this.add.text(50, 160, '', {
@@ -57,6 +70,7 @@ export class Game2Scene extends Phaser.Scene {
 
         this.ui.gridTexts = [];
         this.ui.gridBgs = [];
+        this.ui.ghostTexts = [];
         this.gridZones = [];
         this.gridGraphics = [];
         this.gridCellsPositions = [];
@@ -69,10 +83,15 @@ export class Game2Scene extends Phaser.Scene {
 
             // draw rounded tile via Graphics
             const g = this.add.graphics({ x, y });
-            g.fillStyle(0x2a2a2a, 1);
+            g.fillStyle(this.theme.gridFill, 1);
             g.fillRoundedRect(-cellSize / 2, -cellSize / 2, cellSize, cellSize, 12);
-            g.lineStyle(2, 0x444444, 1);
+            g.lineStyle(2, this.theme.gridStroke, 1);
             g.strokeRoundedRect(-cellSize / 2, -cellSize / 2, cellSize, cellSize, 12);
+            // subtle neon outer glow (layered faint strokes)
+            g.lineStyle(8, this.theme.neon, 0.06);
+            g.strokeRoundedRect(-cellSize / 2, -cellSize / 2, cellSize, cellSize, 16);
+            g.lineStyle(14, this.theme.neon, 0.03);
+            g.strokeRoundedRect(-cellSize / 2, -cellSize / 2, cellSize, cellSize, 18);
 
             // interactive zone on top
             const zone = this.add.zone(x, y, cellSize, cellSize).setOrigin(0.5).setInteractive({ useHandCursor: true });
@@ -81,23 +100,61 @@ export class Game2Scene extends Phaser.Scene {
             });
             zone.on('pointerover', () => {
                 this.tweens.add({ targets: g, scale: 1.03, duration: 120, ease: 'Sine.out' });
+                // Ghost preview (only if empty and it's my turn)
+                const state = this.lastState;
+                const myTurn = state && !state.gameOver && state.currentPlayer === this.playerId;
+                const empty = !state || (state.board?.[i] === '' || state.board?.[i] == null);
+                if (myTurn && empty) {
+                    const mark = this.playerId === 'player1' ? 'X' : 'O';
+                    const color = mark === 'X' ? this.theme.xColor : this.theme.oColor;
+                    const ghost = this.ui.ghostTexts && this.ui.ghostTexts[i];
+                    if (ghost) {
+                        ghost.setText(mark).setColor(color).setAlpha(0.22);
+                        ghost.setScale(0.96);
+                    }
+                }
             });
             zone.on('pointerout', () => {
                 this.tweens.add({ targets: g, scale: 1.0, duration: 120, ease: 'Sine.out' });
+                const ghost = this.ui.ghostTexts && this.ui.ghostTexts[i];
+                if (ghost) ghost.setText('').setAlpha(0);
             });
             zone.on('pointerdown', () => {
                 this.tweens.add({ targets: g, scale: 0.97, duration: 80, yoyo: true, ease: 'Quad.out' });
+                // Ink splash effect
+                const splash = this.add.graphics({ x, y });
+                const mark = this.playerId === 'player1' ? 'X' : 'O';
+                const splashColor = (mark === 'X' ? 0x00e5ff : 0xff2bd1);
+                splash.fillStyle(splashColor, 0.25);
+                splash.fillCircle(0, 0, 2);
+                splash.setDepth(2);
+                this.tweens.add({
+                    targets: splash,
+                    scale: { from: 0.2, to: 1.2 },
+                    alpha: { from: 0.35, to: 0 },
+                    duration: 220,
+                    ease: 'Quad.out',
+                    onComplete: () => splash.destroy()
+                });
             });
 
             // create text above the bg
             const cell = this.add.text(x, y, '', {
                 font: '96px Arial',
-                color: '#ffffff',
+                color: this.theme.text,
                 align: 'center'
             }).setOrigin(0.5);
             cell.setDepth(1);
+            // ghost text (preview)
+            const ghostText = this.add.text(x, y, '', {
+                font: '96px Arial',
+                color: this.theme.text,
+                align: 'center'
+            }).setOrigin(0.5).setAlpha(0);
+            ghostText.setDepth(0.9);
 
             this.ui.gridTexts.push(cell);
+            this.ui.ghostTexts.push(ghostText);
             this.ui.gridBgs.push(zone); // keep same array for interactivity control
             this.gridZones.push(zone);
             this.gridGraphics.push(g);
@@ -109,15 +166,18 @@ export class Game2Scene extends Phaser.Scene {
         const timerY = startY - 82;
         this.ui.timerText = this.add.text(640, timerY, '', {
             font: '36px Arial',
-            color: '#ffcc00',
+            color: this.theme.timerNorm,
             align: 'center'
         }).setOrigin(0.5);
         this.ui.timerText.setDepth(20);
+        // Ring graphics (around "Votre tour" region)
+        this.ui.timerRing = this.add.graphics();
+        this.ui.timerRing.setDepth(20);
 
         // Texte de résultat (au-dessus de la grille, sous le timer)
         this.ui.resultText = this.add.text(640, startY - 44, '', {
             font: '42px Arial',
-            color: '#cccccc',
+            color: this.theme.subText,
             align: 'center'
         }).setOrigin(0.5);
         this.ui.resultText.setDepth(20);
@@ -297,6 +357,8 @@ export class Game2Scene extends Phaser.Scene {
             if (this.ui.turnNameText) this.ui.turnNameText.setText('').setAlpha(0);
             // cacher le timer
             if (this.ui.timerText) this.ui.timerText.setText('');
+            // effacer l'anneau du timer
+            if (this.ui.timerRing) this.ui.timerRing.clear();
             // dim overlay
             if (!this.overlayDim) {
                 this.overlayDim = this.add.rectangle(640, 360, 1280, 720, 0x000000, 0.45);
@@ -324,12 +386,12 @@ export class Game2Scene extends Phaser.Scene {
             if (this.winGraphics) { this.winGraphics.destroy(); this.winGraphics = null; }
             if (this.replayContainer) this.replayContainer.setVisible(false);
             if (state.currentPlayer === this.playerId) {
-                this.ui.statusText.setText('Votre tour').setStyle({ color: '#ffffff' });
+                this.ui.statusText.setText('Votre tour').setStyle({ color: this.theme.text });
                 if (this.ui.turnNameText) this.ui.turnNameText.setText('').setAlpha(0);
             } else {
                 // "Au tour de [nom]" avec nom de couleur différente
                 const oppName = opp?.username || (oppSeat === 'player1' ? 'Player 1' : 'Player 2');
-                this.ui.statusText.setText('Au tour de ').setStyle({ color: '#cccccc' });
+                this.ui.statusText.setText('Au tour de ').setStyle({ color: this.theme.subText });
                 // positionner le nom à la suite du label
                 const sx = this.ui.statusText.x + this.ui.statusText.width + 6;
                 const sy = this.ui.statusText.y;
@@ -345,8 +407,43 @@ export class Game2Scene extends Phaser.Scene {
             if (this.ui.timerText) {
                 const text = remainingSec > 0 ? `${remainingSec}s` : '0s';
                 // Couleur d'urgence sous 5 secondes
-                const color = remainingSec <= 5 ? '#ff5555' : '#ffcc00';
+                const color = remainingSec <= 5 ? this.theme.timerWarn : this.theme.timerNorm;
                 this.ui.timerText.setText(text).setStyle({ color });
+            }
+            // Mettre à jour l'anneau circulaire autour du label "Votre tour"
+            try {
+                const perTurn = state.perTurnMs || 15000;
+                const frac = Phaser.Math.Clamp(remainingMs / perTurn, 0, 1);
+                const cx = this.ui.statusText.x - 26;
+                const cy = this.ui.statusText.y + 12;
+                const r = 18;
+                const ring = this.ui.timerRing;
+                ring.clear();
+                // Background ring
+                ring.lineStyle(6, 0x555555, 0.35);
+                ring.beginPath();
+                ring.arc(cx, cy, r, Phaser.Math.DegToRad(-90), Phaser.Math.DegToRad(270), false);
+                ring.strokePath();
+                ring.closePath();
+                // Foreground arc
+                const warn = remainingSec <= 5;
+                const colorArc = warn ? parseInt(this.theme.timerWarn.replace('#','0x')) : parseInt(this.theme.timerNorm.replace('#','0x'));
+                const alpha = warn ? (0.7 + 0.3 * Math.sin(now / 150)) : 0.9;
+                ring.lineStyle(6, colorArc, alpha);
+                ring.beginPath();
+                const endAngle = -90 + 360 * frac;
+                ring.arc(cx, cy, r, Phaser.Math.DegToRad(-90), Phaser.Math.DegToRad(endAngle), false);
+                ring.strokePath();
+                ring.closePath();
+            } catch {}
+            // Nettoyer les ghosts s'il ne faut pas afficher
+            if (this.ui.ghostTexts && this.ui.ghostTexts.length === 9) {
+                for (let i = 0; i < 9; i++) {
+                    const empty = state.board[i] === '' || state.board[i] == null;
+                    if (!empty || state.currentPlayer !== this.playerId) {
+                        this.ui.ghostTexts[i].setText('').setAlpha(0);
+                    }
+                }
             }
         }
 
