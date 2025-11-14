@@ -32,6 +32,7 @@ export interface UserStats {
 	game_name: string;
 	victories: number;
 	defeats: number;
+	draws: number;
 }
 
 export interface FriendRequest {
@@ -97,6 +98,7 @@ export class UserService {
 
   static async getUserStats(userId: number): Promise<UserStats[]>  {
     const response = await apiService.get(`/users/${userId}/stats`);
+	console.log(response.data.stats);
     return response.data.stats as UserStats[];
   }
 
