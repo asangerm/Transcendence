@@ -15,11 +15,71 @@ export async function registerRealtime(app: FastifyInstance) {
   const connections = new Map<string, Set<any>>();
   const roomConnections = new Map<string, Set<any>>(); // roomId -> Set of connections
   const playerConnections = new Map<string, any>(); // playerId -> connection
+  const recordedMatches = new Set<string>(); // gameId that already wrote a match row
+  let cachedGame2Id: number | null = null;
+
+  const ensureGame2Id = (): number => {
+    if (cachedGame2Id != null) return cachedGame2Id;
+    try {
+      const row = app.db.prepare("SELECT id FROM games WHERE name = ?").get('Game2') as { id?: number } | undefined;
+      if (row && typeof row.id === 'number') {
+        cachedGame2Id = row.id;
+        return cachedGame2Id;
+      }
+      const res = app.db.prepare("INSERT INTO games (name, description) VALUES (?, ?)").run('Game2', 'Description du deuxième jeu');
+      cachedGame2Id = Number(res.lastInsertRowid);
+      return cachedGame2Id;
+    } catch {
+      // Fallback to 0 if table missing; callsites should guard
+      cachedGame2Id = 0;
+      return 0;
+    }
+  };
+
+  const recordGame2MatchIfNeeded = (gameId: string) => {
+    if (recordedMatches.has(gameId)) return;
+    const engine = gameManager.getEngine(gameId);
+    if (!engine || !(engine instanceof Game2SimpleEngine)) return;
+    const state: any = engine.getState?.() ?? null;
+    if (!state || !state.gameOver) return;
+    // Extract player IDs (expected numeric strings)
+    const p1 = state.players?.player1?.userId;
+    const p2 = state.players?.player2?.userId;
+    if (!p1 || !p2) return;
+    const player1Id = Number(p1);
+    const player2Id = Number(p2);
+    if (!Number.isFinite(player1Id) || !Number.isFinite(player2Id)) return;
+    const game2Id = ensureGame2Id();
+    if (!game2Id) return;
+    // Compute scores and winner
+    let winnerId: number | null = null;
+    let s1 = 0, s2 = 0;
+    if (state.winner === 'player1') {
+      winnerId = player1Id;
+      s1 = 1; s2 = 0;
+    } else if (state.winner === 'player2') {
+      winnerId = player2Id;
+      s1 = 0; s2 = 1;
+    } else {
+      winnerId = null;
+      s1 = 0; s2 = 0;
+    }
+    try {
+      app.db.prepare(
+        "INSERT INTO matches (game_id, player1_id, player2_id, winner_id, score_p1, score_p2) VALUES (?, ?, ?, ?, ?, ?)"
+      ).run(game2Id, player1Id, player2Id, winnerId, s1, s2);
+      recordedMatches.add(gameId);
+    } catch {
+      // ignore DB errors to avoid crashing WS
+    }
+  };
 
   const broadcastState = (gameId: string) => {
     const engine = gameManager.getEngine(gameId);
     if (!engine) return;
     const stateMsg: RealtimeMessage = { type: 'state', state: engine.getState() };
+    // Attempt to record match result once for Game2 when game is over
+    try { recordGame2MatchIfNeeded(gameId); } catch {}
     const subs = connections.get(gameId);
     if (!subs) return;
     const payload = JSON.stringify(stateMsg);

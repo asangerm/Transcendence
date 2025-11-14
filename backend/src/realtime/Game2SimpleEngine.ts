@@ -8,6 +8,9 @@ export interface Game2State {
     kind: 'game2';
     createdAt: number;
     updatedAt: number;
+    // Timer configuration and runtime data
+    perTurnMs: number;          // milliseconds allowed per turn
+    turnDeadline: number | null; // absolute timestamp (ms since epoch) when current player's time expires
     players: {
         player1?: PlayerMeta;
         player2?: PlayerMeta;
@@ -27,12 +30,16 @@ export class Game2SimpleEngine {
             kind: 'game2',
             createdAt: Date.now(),
             updatedAt: Date.now(),
+            perTurnMs: 15000,
+            turnDeadline: null,
             players: {},
             board: Array(9).fill(''),
             currentPlayer: 'player1',
             gameOver: false,
             winner: null
         };
+        // Initialize first turn deadline immediately so timer persists across refresh
+        this.state.turnDeadline = Date.now() + this.state.perTurnMs;
     }
 
     getState() {
@@ -101,13 +108,25 @@ export class Game2SimpleEngine {
 
         // Switch turn
         this.state.currentPlayer = this.state.currentPlayer === 'player1' ? 'player2' : 'player1';
+        // Reset turn deadline for the next player
+        this.state.turnDeadline = Date.now() + this.state.perTurnMs;
         this.state.updatedAt = Date.now();
     }
 
     update() {
-        // Game2SimpleEngine doesn't need continuous updates
-        // This method is required by the Engine interface
-        // Just update the timestamp for consistency
-        this.state.updatedAt = Date.now();
+        const now = Date.now();
+        if (!this.state.gameOver && this.state.turnDeadline != null && now >= this.state.turnDeadline) {
+            // Current player ran out of time → opponent wins
+            const loser = this.state.currentPlayer;
+            const winner = loser === 'player1' ? 'player2' : 'player1';
+            this.state.gameOver = true;
+            this.state.winner = winner;
+            // Freeze deadline to indicate no further countdown
+            this.state.turnDeadline = null;
+            this.state.updatedAt = now;
+            return;
+        }
+        // Keep updatedAt moving to ensure frequent state broadcasts
+        this.state.updatedAt = now;
     }
 }

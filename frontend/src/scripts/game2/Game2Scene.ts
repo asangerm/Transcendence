@@ -10,14 +10,15 @@ export class Game2Scene extends Phaser.Scene {
     private reconnectDelay = 1000;
     private isReconnecting = false;
     private allowReconnect = true;
-    private ui: { statusText: any; gridTexts: any[]; gridBgs: any[]; selfText: any; opponentText: any; turnNameText?: any; resultText?: any } = {
+    private ui: { statusText: any; gridTexts: any[]; gridBgs: any[]; selfText: any; opponentText: any; turnNameText?: any; resultText?: any; timerText?: any } = {
         statusText: null as any,
         gridTexts: [] as any[],
         gridBgs: [] as any[],
         selfText: null as any,
         opponentText: null as any,
         turnNameText: null as any,
-        resultText: null as any
+        resultText: null as any,
+        timerText: null as any
     };
     private lastState: any = null;
     private gridZones: any[] = [];
@@ -104,7 +105,16 @@ export class Game2Scene extends Phaser.Scene {
         }
         this.cellSizeRef = cellSize;
 
-        // Texte de résultat (au-dessus de la grille, sous le titre)
+        // Texte de timer (au-dessus de la grille)
+        const timerY = startY - 82;
+        this.ui.timerText = this.add.text(640, timerY, '', {
+            font: '36px Arial',
+            color: '#ffcc00',
+            align: 'center'
+        }).setOrigin(0.5);
+        this.ui.timerText.setDepth(20);
+
+        // Texte de résultat (au-dessus de la grille, sous le timer)
         this.ui.resultText = this.add.text(640, startY - 44, '', {
             font: '42px Arial',
             color: '#cccccc',
@@ -285,6 +295,8 @@ export class Game2Scene extends Phaser.Scene {
             }
             // masquer le nom coloré
             if (this.ui.turnNameText) this.ui.turnNameText.setText('').setAlpha(0);
+            // cacher le timer
+            if (this.ui.timerText) this.ui.timerText.setText('');
             // dim overlay
             if (!this.overlayDim) {
                 this.overlayDim = this.add.rectangle(640, 360, 1280, 720, 0x000000, 0.45);
@@ -324,6 +336,17 @@ export class Game2Scene extends Phaser.Scene {
                 if (this.ui.turnNameText) {
                     this.ui.turnNameText.setPosition(sx, sy).setText(oppName).setStyle({ color: '#1e90ff' }).setAlpha(1);
                 }
+            }
+            // Mettre à jour l'affichage du timer
+            const deadline = typeof state.turnDeadline === 'number' ? state.turnDeadline : 0;
+            const now = Date.now();
+            const remainingMs = Math.max(0, deadline - now);
+            const remainingSec = Math.ceil(remainingMs / 1000);
+            if (this.ui.timerText) {
+                const text = remainingSec > 0 ? `${remainingSec}s` : '0s';
+                // Couleur d'urgence sous 5 secondes
+                const color = remainingSec <= 5 ? '#ff5555' : '#ffcc00';
+                this.ui.timerText.setText(text).setStyle({ color });
             }
         }
 
