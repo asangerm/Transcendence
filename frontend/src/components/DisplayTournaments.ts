@@ -1,5 +1,5 @@
 import { AuthStore } from "../stores/auth.store";
-import { TournamentService, Tournament } from "../services/tournament.service";
+import { TournamentService, Tournament, Match, UpdateMatch } from "../services/tournament.service";
 
 	export class DisplayTournaments {
 		private container: HTMLElement;
@@ -9,7 +9,6 @@ import { TournamentService, Tournament } from "../services/tournament.service";
 			this.container = container;
 		}
 
-		// 🔹 Initialisation : charge le tournoi du joueur connecté
 		async init(): Promise<void> {
 			this.userId = AuthStore.getUser()?.id ?? null;
 			if (!this.userId) {
@@ -188,7 +187,13 @@ import { TournamentService, Tournament } from "../services/tournament.service";
 				});
 			}
 		}
+		private startMatch(nextMatch: Match) {
+			console.log("joueur 1 : ", nextMatch.player1_id);
+			console.log("joueur 2 : ", nextMatch.player2_id);
 
+			TournamentService.updateTournament({id: nextMatch.id, winner_id: nextMatch.player1_id})
+		}
+		
 }
 
 

@@ -21,7 +21,6 @@ export interface Match {
 
 export interface UpdateMatch {
 	id: number;
-	tournamentId: number;
 	winner_id?: number;
 }
 
@@ -55,6 +54,15 @@ export class TournamentService {
 			await apiService.delete(`/tournament/${tournamentId}`);
 		} catch (error: any) {
 			console.error("Erreur suppression tournoi :", error);
+			throw error;
+		}
+	}
+
+	static async updateTournament(match: UpdateMatch): Promise<void> {
+		try {
+			await apiService.put(`/tournament/update`, match);
+		} catch (error: any) {
+			console.error("Erreur mise a jour tournoi :", error);
 			throw error;
 		}
 	}
