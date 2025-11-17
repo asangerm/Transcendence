@@ -8,10 +8,12 @@ export class Renderer {
 	private scene3d: any | null;
 	private camera3d: any | null;
 	private light: any | null;
+	private dirLight: any | null;
 	private meshByName: Map<string, any>;
 	private skyDome: any | null;
 	private sunMesh: any | null;
 	private sunDirection: any | null;
+	private shadowGen: any | null;
 	private initialized: boolean = false;
 	private textDisplay: HTMLDivElement;
 	
@@ -27,10 +29,12 @@ export class Renderer {
 		this.scene3d = null;
 		this.camera3d = null;
 		this.light = null;
+		this.dirLight = null;
 		this.meshByName = new Map();
 		this.skyDome = null;
 		this.sunMesh = null;
 		this.sunDirection = null;
+		this.shadowGen = null;
 		this.textDisplay = textDisplay;
 		this.setupCanvas();
 	}
@@ -51,46 +55,48 @@ export class Renderer {
 		if (this.initialized) return;
 		try {
 			this.babylon = await import('@babylonjs/core');
-			const { Engine, Scene: BabylonScene, FreeCamera, HemisphericLight, Vector3, Color4, MeshBuilder, StandardMaterial, Color3, DynamicTexture, AbstractMesh, Mesh } = this.babylon;
+			const { Engine, Scene: BabylonScene, FreeCamera, HemisphericLight, DirectionalLight, ShadowGenerator, Vector3, Color4, MeshBuilder, StandardMaterial, Color3, DynamicTexture, AbstractMesh, Mesh } = this.babylon;
 			this.engine = new Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
 			this.scene3d = new BabylonScene(this.engine);
-			// Base clear color behind sky dome
-			this.scene3d.clearColor = new Color4(0.45, 0.7, 0.95, 1);
+			this.scene3d.clearColor = new Color4(0.3, 0.35, 0.4, 1);
+			(this.scene3d as any).ambientColor = new (this.babylon as any).Color3(0.06, 0.06, 0.06);
 			this.camera3d = new FreeCamera('camera', new Vector3(0, 0, -10), this.scene3d);
 			this.camera3d.setTarget(Vector3.Zero());
-			this.light = new HemisphericLight('light', new Vector3(0, 1, 0), this.scene3d);
-			this.light.intensity = 0.9;
+			this.light = new HemisphericLight('hemi', new Vector3(0, 1, 0), this.scene3d);
+			this.light.intensity = 0.25;
+			(this.light as any).groundColor = new Color3(0.2, 0.2, 0.25);
 
 			// Gradient sky dome and billboard sun
 			try {
-				const height = 256;
-				const gradTex = new DynamicTexture('skyGradient', { width: 2, height }, this.scene3d, false);
-				const ctx = gradTex.getContext();
-				const gradient = ctx.createLinearGradient(0, 0, 0, height);
-				gradient.addColorStop(0, '#87CEFA');
-				gradient.addColorStop(1, '#1E3A8A');
-				ctx.fillStyle = gradient;
-				ctx.fillRect(0, 0, 2, height);
-				gradTex.update(false);
 
-				this.skyDome = MeshBuilder.CreateSphere('skyDome', { diameter: 2000, segments: 32, sideOrientation: Mesh.BACKSIDE }, this.scene3d);
-				const skyMat = new StandardMaterial('skyMat', this.scene3d);
-				skyMat.disableLighting = true;
-				skyMat.backFaceCulling = false;
-				skyMat.emissiveTexture = gradTex;
-				this.skyDome.material = skyMat;
-
-				this.sunDirection = new Vector3(0.3, 0.6, 0.2).normalize();
-				this.sunMesh = MeshBuilder.CreateDisc('sun', { radius: 40, tessellation: 48 }, this.scene3d);
+				this.sunDirection = new Vector3(0.1, 1, 0).normalize();
+				this.sunMesh = MeshBuilder.CreateDisc('sun', { radius: 0.8, tessellation: 12 }, this.scene3d);
 				const sunMat = new StandardMaterial('sunMat', this.scene3d);
 				sunMat.disableLighting = true;
-				sunMat.emissiveColor = new Color3(1.0, 0.95, 0.75);
+				sunMat.emissiveColor = new Color3(1.0, 0.9, 0.7);
 				sunMat.specularColor = new Color3(0, 0, 0);
 				this.sunMesh.material = sunMat;
 				this.sunMesh.billboardMode = AbstractMesh.BILLBOARDMODE_ALL;
 				this.sunMesh.isPickable = false;
 			} catch (e) {
 				console.warn('Gradient sky or sun creation failed:', e);
+			}
+			
+			try {
+				const dir = this.sunDirection ? this.sunDirection.scale(-1) : new Vector3(-0.2, -1, -0.1);
+				this.dirLight = new DirectionalLight('dirLight', dir, this.scene3d);
+				this.dirLight.intensity = 0.6;
+				this.dirLight.position = new Vector3(0, 80, 0);
+				this.shadowGen = new ShadowGenerator(2048, this.dirLight);
+				this.shadowGen.usePercentageCloserFiltering = false;
+				(this.shadowGen as any).usePoissonSampling = true;
+				try {
+					(this.shadowGen as any).bias = 0.00015;
+					(this.shadowGen as any).normalBias = 0.3;
+					(this.shadowGen as any).darkness = 0.45;
+				} catch {}
+			} catch (e) {
+				console.warn('Shadow setup failed:', e);
 			}
 			this.initialized = true;
 		} catch (error) {
@@ -114,6 +120,7 @@ export class Renderer {
 		}
 		const mat = new StandardMaterial(`${obj.name}-mat`, this.scene3d);
 		mat.diffuseColor = new Color3(obj.color.r, obj.color.g, obj.color.b);
+		try { (mat as any).ambientColor = new Color3(0.18, 0.18, 0.18); } catch {}
 		// Apply simple procedural textures per object request
 		if (obj.texture) {
 			try {
@@ -147,28 +154,42 @@ export class Renderer {
 					ctx.fillRect(0, 0, size, size);
 					dt.update(false);
 					mat.diffuseTexture = dt;
-					mat.specularColor = new Color3(0.8, 0.8, 0.8);
-					mat.specularPower = 128;
+					mat.specularColor = new Color3(0.4, 0.4, 0.4);
+					mat.specularPower = 96;
 				} else if (obj.texture === 'glossy') {
-					mat.specularColor = new Color3(1, 1, 1);
-					mat.specularPower = 256;
+					mat.specularColor = new Color3(0.6, 0.6, 0.6);
+					mat.specularPower = 160;
 				} else if (obj.texture.startsWith('http') || obj.texture.startsWith('/')) {
 					const tex = new Texture(obj.texture, this.scene3d, true);
-					// Tile texture based on object footprint
 					try {
-						const sx = Math.max(1, Math.floor(Math.abs(obj.size.x)));
-						const sz = Math.max(1, Math.floor(Math.abs(obj.size.z)));
+						const sx = Math.floor(Math.abs(obj.size.x)) / 50;
+						const sz = Math.floor(Math.abs(obj.size.z)) / 50;
 						(tex as any).uScale = sx;
 						(tex as any).vScale = sz;
 					} catch {}
 					mat.diffuseTexture = tex;
-					mat.specularColor = new Color3(0.25, 0.25, 0.25);
+					mat.specularColor = new Color3(0.15, 0.15, 0.15);
 				}
 			} catch (e) {
 				console.warn(`Texture creation failed for ${obj.name}`, e);
 			}
 		}
+		if (obj.name === 'floor' || obj.name === 'arena') {
+			mat.specularColor = new Color3(0, 0, 0);
+			mat.emissiveColor = new Color3(0, 0, 0);
+		}
 		mesh.material = mat;
+		try {
+			if (this.shadowGen) {
+				if (obj.name === 'ball' || obj.name.startsWith('paddle')) {
+					this.shadowGen.addShadowCaster(mesh);
+					mesh.receiveShadows = true;
+				}
+				if (obj.name.includes('ground') || obj.name.includes('floor') || obj.name.includes('arena')) {
+					mesh.receiveShadows = true;
+				}
+			}
+		} catch {}
 		this.meshByName.set(obj.name, mesh);
 		return mesh;
 	}
@@ -185,7 +206,7 @@ export class Renderer {
 		this.camera3d.fov = fov;
 	}
 
-	render(scene: Scene, scores: { top: number; bottom: number }, isOnline: boolean = false): void {
+    render(scene: Scene, scores: { top: number; bottom: number }, isOnline: boolean = false, players?: { top?: string; bottom?: string }, result?: { mode: 'none' | 'victory' | 'defeat'; winner?: string }): void {
 		if (!this.engine || !this.scene3d) return;
 		this.setupCanvas();
 		this.updateCameraFromScene(scene);
@@ -211,7 +232,7 @@ export class Renderer {
 				mat.diffuseColor = new Color3(obj.color.r, obj.color.g, obj.color.b);
 			}
 		}
-		this.scene3d.render();
+        this.scene3d.render();
 		this.frameCount++;
 		const currentTime = performance.now();
 		const elapsed = currentTime - this.lastTime;
@@ -220,11 +241,30 @@ export class Renderer {
 			this.frameCount = 0;
 			this.lastTime = currentTime;
 		}
+        const topName = players?.top || '';
+        const bottomName = players?.bottom || '';
+        const mode = result?.mode || 'none';
+        const winner = result?.winner || '';
+        let endMarkup = '';
+        if (mode === 'victory') {
+            endMarkup = `<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/60">
+                <div class="text-5xl font-extrabold text-green-400 mb-2">Victoire</div>
+                <div class="text-2xl text-white">Gagnant: ${winner}</div>
+            </div>`;
+        } else if (mode === 'defeat') {
+            endMarkup = `<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/60">
+                <div class="text-5xl font-extrabold text-red-500 mb-2">Défaite</div>
+                <div class="text-2xl text-white">Gagnant: ${winner}</div>
+            </div>`;
+        }
 		this.textDisplay.innerHTML = `
-			<span class="text-red-600 absolute top-0 right-2 italic font-light">${this.fps}fps</span>
-			<span class="text-white absolute top-0 left-2 italic font-light">${this.tps}tps</span>
+            <span class="text-red-600 absolute top-0 right-2 italic font-light">${this.fps}fps</span>
+            <span class="text-white absolute top-0 left-2 italic font-light">${this.tps}tps</span>
+            <span class="absolute top-6 left-2 text-lg font-sans font-semibold italic text-green-400">${topName}</span>
+            <span class="absolute top-6 right-2 text-lg font-sans font-semibold italic text-blue-400">${bottomName}</span>
 			<span class="opacity-70 font-sans italic text-green-600 absolute -bottom-4 left-2 text-[96px]">${scores.top}</span>
 			<span class="opacity-70 font-sans italic text-blue-600 absolute -bottom-4 right-2 text-[96px]">${scores.bottom}</span>
+            ${endMarkup}
 		`;
 	}
 

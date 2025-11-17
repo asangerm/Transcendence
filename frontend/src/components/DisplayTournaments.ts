@@ -194,10 +194,12 @@ import { TournamentService, Tournament, Match, UpdateMatch } from "../services/t
 			}
 		}
 		private startMatch(nextMatch: Match) {
-			console.log("joueur 1 : ", nextMatch.player1_id);
-			console.log("joueur 2 : ", nextMatch.player2_id);
-
-			TournamentService.updateTournament({id: nextMatch.id, winner_id: nextMatch.player1_id})
+			const url = new URL(window.location.href);
+			url.pathname = '/pong';
+			url.searchParams.set('mode', 'tournament');
+			url.searchParams.set('matchId', String(nextMatch.id));
+			url.searchParams.delete('gameId');
+			window.location.href = url.toString();
 		}
 		
 }

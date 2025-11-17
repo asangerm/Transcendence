@@ -43,6 +43,7 @@ import createTournament from "./tournamentRoutes/create";
 import getOngoingTournament from "./tournamentRoutes/get";
 import deleteTournament from "./tournamentRoutes/delete";
 import updateMatch from "./tournamentRoutes/update";
+import tournamentMatch from "./tournamentRoutes/match";
 
 
 
@@ -100,5 +101,6 @@ export default async function routes(app: FastifyInstance) {
   app.register(getOngoingTournament, { prefix: "/tournament" });
   app.register(deleteTournament, { prefix: "/tournament" });
   app.register(updateMatch, { prefix: "/tournament" });
+  app.register(tournamentMatch, { prefix: "/tournament" });
 
 }

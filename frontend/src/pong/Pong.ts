@@ -1,6 +1,6 @@
 import { GameController, ControllerSnapshot } from './GameController';
 import { GameRenderer } from './GameRenderer';
-import type { UserInputState } from '../scripts/pong/gameState';
+import type { UserInputState } from './scripts/gameState';
 import { PongRealtimeClient } from '../services/realtime/pongClient';
 import type { ServerGameState } from '../types/realtime';
 
@@ -24,6 +24,10 @@ export class Pong {
     private _tpsCount: number = 0;
     private _tpsLastAt: number = performance.now();
     private _tps: number = 0;
+    private endScreen: { mode: 'none' | 'victory' | 'defeat'; winner?: string } = { mode: 'none' };
+  private playerLabels: { top: string; bottom: string } = { top: '', bottom: '' };
+    private tournamentMatchId: number | null = null;
+    private tournamentRedirectDone = false;
 
     constructor() {
         this.controller = new GameController();
@@ -81,18 +85,45 @@ export class Pong {
             this.loop();
         } else {
             this.online = true;
+            const matchId = opts?.matchId;
+            this.tournamentMatchId = matchId ?? null;
+            this.tournamentRedirectDone = false;
             let gameId = opts?.gameId || '';
-            if (gameId) {
-                try {
-                    const res = await fetch(`http://localhost:8000/api/games/${encodeURIComponent(gameId)}`);
-                    if (!res.ok) {
-                        gameId = await this.createGame();
+            if (matchId != null) {
+                if (gameId) {
+                    try {
+                        const res = await fetch(`http://localhost:8000/api/games/${encodeURIComponent(gameId)}`);
+                        if (!res.ok) {
+                            gameId = '';
+                        }
+                    } catch {
+                        gameId = '';
                     }
-                } catch {
-                    gameId = await this.createGame();
+                }
+                if (!gameId) {
+                    const res = await fetch(`http://localhost:8000/tournament/match/${matchId}/start`, {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                    if (!res.ok) {
+                        throw new Error('Failed to start tournament match');
+                    }
+                    const data = await res.json();
+                    gameId = data.gameId;
                 }
             } else {
-                gameId = await this.createGame();
+                if (gameId) {
+                    try {
+                        const res = await fetch(`http://localhost:8000/api/games/${encodeURIComponent(gameId)}`);
+                        if (!res.ok) {
+                            gameId = await this.createGame();
+                        }
+                    } catch {
+                        gameId = await this.createGame();
+                    }
+                } else {
+                    gameId = await this.createGame();
+                }
             }
             this.realtime = new PongRealtimeClient();
             this.realtime.setOnState((state) => {
@@ -111,13 +142,18 @@ export class Pong {
             });
             await this.realtime.connect(gameId);
             this.controller.setPlayer('local');
-            this.controller.setMatchType('local');
+            this.controller.setMatchType(matchId != null ? 'local' : 'local');
             const keyHandler = (e: KeyboardEvent) => this.handleLocalKey(e);
             window.addEventListener('keydown', keyHandler, { passive: true });
             window.addEventListener('keyup', keyHandler);
             try {
                 const url = new URL(window.location.href);
-                url.searchParams.set('mode', 'local');
+                if (matchId != null) {
+                    url.searchParams.set('mode', 'tournament');
+                    url.searchParams.set('matchId', String(matchId));
+                } else {
+                    url.searchParams.set('mode', 'local');
+                }
                 url.searchParams.set('gameId', gameId);
                 window.history.replaceState({}, '', url.toString());
             } catch {}
@@ -146,7 +182,7 @@ export class Pong {
 
         if (!this.online) {
             const snapshot: ControllerSnapshot = this.controller.update();
-            this.renderer.requestFrame(snapshot.scene, snapshot.scores, false);
+            this.renderer.requestFrame(snapshot.scene, snapshot.scores, false, this.playerLabels, this.endScreen);
         } else {
             // Send input state to server (server-authoritative paddles)
             this.sendInputState();
@@ -196,8 +232,7 @@ export class Pong {
                 }
             }
 
-            // Render every frame
-            this.renderer.requestFrame(scene, this.controller.getScores(), true);
+            this.renderer.requestFrame(scene, this.controller.getScores(), true, this.playerLabels, this.endScreen);
         }
 
         const { width, height } = this.renderer.getCanvasSize();
@@ -213,16 +248,47 @@ export class Pong {
 
     // Map server state onto our scene graph for rendering
     private applyServerState(state: ServerGameState): void {
+        if (!state.gameOver) {
+            this.endScreen = { mode: 'none' };
+        }
         // Update targets for smoothing and extrapolation
         this.serverTargets.ballPos = { ...state.ball.position };
         this.serverTargets.ballVel = { ...state.ball.velocity };
         this.serverTargets.padTopX = state.paddles.top.position.x;
         this.serverTargets.padBottomX = state.paddles.bottom.position.x;
         this.serverTargets.lastRecv = performance.now();
-        // Update scores from server so they can be displayed later
         this.controller.setScores(state.scores);
-        
-        // Update paddle positions directly for immediate response
+        const topLabel = state.players.top?.username || state.players.top?.id || '';
+        const bottomLabel = state.players.bottom?.username || state.players.bottom?.id || '';
+        if (topLabel) this.playerLabels.top = String(topLabel);
+        if (bottomLabel) this.playerLabels.bottom = String(bottomLabel);
+        if (state.gameOver && state.winner) {
+            const winnerSide = state.winner;
+            const label = winnerSide === 'top' ? this.playerLabels.top : this.playerLabels.bottom;
+            const matchType = this.controller.getMatchType();
+            const fallback = winnerSide === 'top' ? 'Joueur 1' : 'Joueur 2';
+            const winnerLabel = label || fallback;
+            if (matchType === 'online') {
+                const mySide = this.getPlayerSide();
+                if (mySide) {
+                    this.endScreen = {
+                        mode: mySide === winnerSide ? 'victory' : 'defeat',
+                        winner: winnerLabel
+                    };
+                }
+            } else {
+                this.endScreen = {
+                    mode: 'victory',
+                    winner: winnerLabel
+                };
+            }
+            if (this.tournamentMatchId != null && !this.tournamentRedirectDone) {
+                this.tournamentRedirectDone = true;
+                setTimeout(() => {
+                    window.location.href = '/tournaments';
+                }, 2000);
+            }
+        }
         const scene = this.controller.getScene();
         const padTop = scene.findObjectByName('paddle_top');
         const padBottom = scene.findObjectByName('paddle_bottom');
