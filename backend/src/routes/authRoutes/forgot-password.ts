@@ -31,7 +31,7 @@ export default async function forgotPasswordRoutes(app: FastifyInstance) {
 
       await sendResetPasswordEmail(user.email, resetLink);
 
-      return reply.send({ success: true, message: "Si un compte existe pour cet email, un lien a été envoyé." });
+      return reply.send({ success: true, message: "Si un compte existe pour cet email, un lien a été envoyé a MAITRE SHERPA pour test." });
     } catch (err) {
       console.error("Erreur forgot-password:", err);
       return reply.status(500).send({ error: true, message: "Erreur interne" });

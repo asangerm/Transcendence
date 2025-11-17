@@ -352,17 +352,24 @@ private renderStats(game: string): string{
 			console.warn('UserStats not available or not an array:', this.userStats);
 			return this.renderDefaultStats(game);
 		}
+		console.log("test game name : ", game);
+		const gameType = game === 'TIC-TAC-TOE' ? 'Game2' : 'Pong'
+		if (game === 'TIC-TAC-TOE'){
+			game = 'Game2';
+		}
 		const gameStats = this.userStats.find(stat => 
-			stat.game_name.toUpperCase() === game.toUpperCase()
+			stat.game_name.toUpperCase() === gameType.toUpperCase()
 		);
+		console.log("stats : ", gameStats);
 		// Si pas de stats pour ce jeu, afficher des valeurs par défaut
 		if (!gameStats) {
 			return this.renderDefaultStats(game);
 		}
 		const victories = gameStats.victories;
 		const defeats = gameStats.defeats;
-		const totalGames = victories + defeats;
+		let totalGames = victories + defeats;
 		const winRate = totalGames > 0 ? Math.round((victories / totalGames) * 100) : 0;
+		totalGames += gameStats.draws;
 
 		return `
 		<!-- ${game} Stats -->
@@ -404,13 +411,19 @@ private renderMatchHistory(): string {
 	}
 
 	return this.userProfile.matchHistory.map(match => {
-		const isVictory = match.winner_id === this.userProfile?.id;
-		const bgClass = isVictory ? 'bg-green-500/5 border-green-500' : 'bg-red-500/10 border-red-500';
-		const badgeClass = isVictory ? 'bg-success' : 'bg-danger';
-		const badgeText = isVictory ? 'VICTOIRE' : 'DÉFAITE';
+		const isDraw = match.winner_id === null;
+		console.log("isDraw: ", isDraw);
+		let bgClass = 'bg-gray-500/5 border-gray-500';
+		
+		let badgeText = 'EGALITE';
+		if (!isDraw) {
+			const isVictory = match.winner_id === this.userProfile?.id;
+			bgClass = isVictory ? 'bg-green-500/5 border-green-500' : 'bg-red-500/10 border-red-500';
+			badgeText = isVictory ? 'VICTOIRE' : 'DÉFAITE';
+		}
 
 		// Échapper toutes les données utilisateur
-		const safeGameName = escapeHtml(match.game_name);
+		const safeGameName = match.game_name === 'Game2' ? 'Tic-Tac-Toe' : escapeHtml(match.game_name);
 		const safeOpponentName = escapeHtml(match.opponent_name);
 		
 		// Formater la date
@@ -426,10 +439,10 @@ private renderMatchHistory(): string {
 			<div class="${bgClass} border rounded-lg p-4 mb-2 min-w-[700px]">
 			<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
 				<div class="flex items-center space-x-4 mb-2 sm:mb-0">
-				<span class="${badgeClass} text-xl text-white px-4 py-2 rounded-full text-sm font-bold">${badgeText}</span>
+				<span class=" text-xl text-white px-4 py-2 rounded-full text-sm font-bold">${badgeText}</span>
 				<div class="flex flex-col">
 					<span class="text-xl font-semibold">${safeGameName}</span>
-					<a href="/profile/" class="text-lg text-gray-600 dark:text-gray-400">vs ${safeOpponentName}</a>
+					<a href="/profile/${safeOpponentName}" class="text-lg text-gray-600 dark:text-gray-400">vs ${safeOpponentName}</a>
 					${match.game_name === 'PONG' ? `
 					<span class="text-sm font-medium">Score : ${match.score_p1} / ${match.score_p2}</span>
 					`:``}
@@ -454,14 +467,14 @@ private updateGameStats(gameName: string): void {
 		// Vider le conteneur et ajouter le contenu sécurisé
 		gameStatsContainer.innerHTML = '';
 		while (tempDiv.firstChild) {
-		gameStatsContainer.appendChild(tempDiv.firstChild);
+			gameStatsContainer.appendChild(tempDiv.firstChild);
 		}
 	}
 	
 	// Mettre à jour le titre du jeu
 	const gameTitle = this.container.querySelector('#currentGameTitle');
 	if (gameTitle) {
-	gameTitle.textContent = gameName;
+		gameTitle.textContent = gameName;
 	}
 }
 

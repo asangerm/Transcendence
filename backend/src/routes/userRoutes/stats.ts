@@ -16,15 +16,18 @@ export default async function userStats(app: FastifyInstance) {
 						AND m.winner_id IS NOT NULL 
 						AND m.winner_id != ? 
 					THEN 1 ELSE 0 
-					END) AS defeats
+					END) AS defeats,
+				SUM(CASE 
+					WHEN (m.player1_id = ? OR m.player2_id = ?) 
+						AND m.winner_id IS NULL 
+					THEN 1 ELSE 0 
+					END) AS draws
 			FROM matches m
 			JOIN games g ON g.id = m.game_id
 			GROUP BY m.game_id`
 		)
-		.all(id, id, id, id);
+		.all(id, id, id, id, id, id);
 
     return reply.send({ success: true, stats });
   });
 }
-
-  

@@ -17,7 +17,7 @@ export function renderGame2() {
     const content = `
         <div class="w-full h-full flex items-center justify-center pt-2">
             <div class="bg-primary dark:bg-primary-dark rounded-lg shadow-md flex flex-col items-center justify-center px-4 w-min">
-                <h1 class="text-3xl font-bold p-4">Game2 Simple</h1>
+                <h1 class="text-3xl font-bold p-4">Tic-Tac-Toe</h1>
                 <div id="gameCanvas" class="max-h-[80vh] max-w-[90vw] w-min aspect-[1280/720] rounded-lg bg-transparent relative overflow-hidden">
                 </div>
             </div>
