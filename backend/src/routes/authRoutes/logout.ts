@@ -11,6 +11,6 @@ export default async function logoutRoute(app: FastifyInstance) {
     // Met le statut hors ligne
     app.db.prepare("UPDATE users SET is_online = 0 WHERE id = ?").run(user.id);
 
-    return reply.send({ success: true, message: "Logged out" });
+    return reply.send({ success: true, message: "Deconnexion" });
   });
 }

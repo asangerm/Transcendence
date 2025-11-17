@@ -91,7 +91,7 @@ export class LoginForm {
               </div>
 
               <div class="mt-6" id="google-signin-container">
-                <!-- Google Sign-In button will be rendered here -->
+                <!-- Google Sign-In-->
               </div>
             </div>
 
@@ -125,7 +125,7 @@ export class LoginForm {
     const errorDiv = form.querySelector('#error-message') as HTMLDivElement;
 
     button.disabled = true;
-    button.textContent = 'Signing in...';
+    button.textContent = 'Connexion...';
     errorDiv.classList.add('hidden');
 
     try {
@@ -142,7 +142,7 @@ export class LoginForm {
       this.onError?.(error.message);
     } finally {
       button.disabled = false;
-      button.textContent = 'Sign in';
+      button.textContent = 'Réessayer';
     }
   }
 

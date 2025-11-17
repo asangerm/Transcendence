@@ -10,10 +10,10 @@ export default async function loginRoute(app: FastifyInstance) {
       | { id: number; email: string; display_name: string; password_hash: string }
       | undefined;
 
-    if (!user) return reply.status(401).send({ error: true, message: "Invalid email or password" });
+    if (!user) return reply.status(401).send({ error: true, message: "Email ou mot de passe invalide" });
 
     const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) return reply.status(401).send({ error: true, message: "Invalid email or password" });
+    if (!match) return reply.status(401).send({ error: true, message: "Email ou mot de passe invalide" });
 
     app.db.prepare("UPDATE users SET is_online = 1 WHERE id = ?").run(user.id);
 
@@ -31,6 +31,6 @@ export default async function loginRoute(app: FastifyInstance) {
       maxAge: 60 * 60,
     });
 
-    return reply.send({ success: true, message: "Logged in successfully" });
+    return reply.send({ success: true, message: "Connexion succes" });
   });
 }
