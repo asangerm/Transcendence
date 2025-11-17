@@ -55,3 +55,17 @@ export function updateMatchTournament(db: Database, match: MatchUpdate): void {
 		console.error("Erreur updateMatchTournament :", err);
 	}
 }
+
+export function getMatchData(db: Database, matchId: number) {
+	return db.prepare(`
+		SELECT 
+			m.player1_id,
+			m.player2_id,
+			p1.name AS player1_name,
+			p2.name AS player2_name
+		FROM tournament_matches m
+		LEFT JOIN participants p1 ON p1.id = m.player1_id
+		LEFT JOIN participants p2 ON p2.id = m.player2_id
+		WHERE m.id = ?;
+	`).get(matchId) as Match;
+}
