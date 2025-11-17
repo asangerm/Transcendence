@@ -122,6 +122,10 @@ import { TournamentService, Tournament, Match, UpdateMatch } from "../services/t
 				`;
 				})
 				.join("");
+			const finalRound = rounds[rounds.length - 1];
+			const finalMatch = finalRound[0];
+
+			const tournamentWinner = finalMatch.winner_name;
 
 			this.container.innerHTML = `
 				<div class="flex flex-col items-center justify-center p-10">
@@ -152,7 +156,9 @@ import { TournamentService, Tournament, Match, UpdateMatch } from "../services/t
 							</button>
 						`
 								: `
-							<p class="text-green-500 text-lg font-semibold">Le tournoi est terminé !</p>
+							<p class="text-green-500 text-lg font-semibold">🏆 VAINQUEUR DU TOURNOI : <span class="text-blue-600 dark:text-blue-400">${tournamentWinner ?? "Inconnu"}
+    						</span>
+							</p> 
 						`
 						}
 						
