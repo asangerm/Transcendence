@@ -75,10 +75,10 @@ export default async function createTournament(app: FastifyInstance) {
 					const result = app.db
 						.prepare(`
 							INSERT INTO tournament_matches 
-								(tournament_id, round, match_number, next_match_id)
-							VALUES (?, ?, ?, ?)
+								(tournament_id, round, match_number, next_match_id, position_in_next)
+							VALUES (?, ?, ?, ?, ?)
 						`)
-						.run(tournamentId, currentRound, i + 1, nextMatch?.id ?? null);
+						.run(tournamentId, currentRound, i + 1, nextMatch?.id ?? null, positionInNext);
 
 					currentMatches.push({
 						id: Number(result.lastInsertRowid),
