@@ -43,10 +43,12 @@ export default async function getOngoingTournament(app: FastifyInstance) {
 						m.player2_id,
 						p2.name AS player2_name,
 						m.winner_id,
+						winner.name AS winner_name,
 						m.next_match_id
 					FROM tournament_matches m
 					LEFT JOIN participants p1 ON m.player1_id = p1.id
 					LEFT JOIN participants p2 ON m.player2_id = p2.id
+					LEFT JOIN participants winner ON m.winner_id = winner.id
 					WHERE m.tournament_id = ?
 					ORDER BY m.round DESC, m.match_number ASC
 				`)
