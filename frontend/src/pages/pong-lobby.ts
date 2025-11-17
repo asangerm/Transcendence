@@ -158,7 +158,7 @@ class PongLobby {
 			this.sendDuel();
 		});
 		playLocalBtn?.addEventListener('click', () => {
-			window.location.href = '/pong?mode=tournament&matchId=...';
+			window.location.href = '/pong?mode=local';
 		});
 
         document.getElementById('join-room-btn')?.addEventListener('click', () => {
@@ -616,7 +616,17 @@ class PongLobby {
 
         try {
             const response = await fetch(`/api/rooms/${this.state.currentRoom.id}`);
-            if (!response.ok) throw new Error('Failed to load room details');
+            if (!response.ok) {
+                if ((response as any).status === 404) {
+                    this.state.currentRoom = null;
+                    this.state.isOwner = false;
+                    this.state.isReady = false;
+                    this.updateUI();
+                    this.showMessage('Salle annulée', 'info');
+                    return;
+                }
+                throw new Error('Failed to load room details');
+            }
             
             const room = await response.json();
             this.state.currentRoom = room;

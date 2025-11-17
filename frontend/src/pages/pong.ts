@@ -53,7 +53,7 @@ export function renderPong() {
         if (mode === 'online') {
             pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: true, gameId, side });
         } else {
-            pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false, matchId });
+            pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false, gameId, matchId });
         }
         const quitBtn = document.getElementById('quit-btn');
         quitBtn?.addEventListener('click', async () => {

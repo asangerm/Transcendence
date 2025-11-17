@@ -81,7 +81,19 @@ export class Pong {
             this.loop();
         } else {
             this.online = true;
-            const gameId = await this.createGame();
+            let gameId = opts?.gameId || '';
+            if (gameId) {
+                try {
+                    const res = await fetch(`http://localhost:8000/api/games/${encodeURIComponent(gameId)}`);
+                    if (!res.ok) {
+                        gameId = await this.createGame();
+                    }
+                } catch {
+                    gameId = await this.createGame();
+                }
+            } else {
+                gameId = await this.createGame();
+            }
             this.realtime = new PongRealtimeClient();
             this.realtime.setOnState((state) => {
                 const now = performance.now();
