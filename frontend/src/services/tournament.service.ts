@@ -14,7 +14,10 @@ export interface Match {
 	match_number: number;
 	player1_id: number;
 	player2_id: number;
+	player1_name: string;
+	player2_name: string;
 	winner_id?: number;
+	winner_name?: string;
 	next_match_id: number;
 	position_in_next: number;
 }

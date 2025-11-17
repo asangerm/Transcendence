@@ -108,7 +108,7 @@ import { TournamentService, Tournament, Match, UpdateMatch } from "../services/t
 										}">
 											${
 												m.winner_id
-													? `Gagnant : ${m.winner_id}`
+													? `Gagnant : ${m.winner_name}`
 													: isNextMatch
 													? "Prochain match"
 													: "Match à venir"
@@ -152,7 +152,7 @@ import { TournamentService, Tournament, Match, UpdateMatch } from "../services/t
 							</button>
 						`
 								: `
-							<p class="text-green-500 text-lg font-semibold">🏆 Le tournoi est terminé !</p>
+							<p class="text-green-500 text-lg font-semibold">Le tournoi est terminé !</p>
 						`
 						}
 						
