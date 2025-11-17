@@ -1,4 +1,4 @@
-import type { GameRoom, LobbyState } from '../types/lobby';
+import type { LobbyState } from '../types/lobby';
 import { AuthStore } from '../stores/auth.store';
 
 export function renderPongLobby() {
@@ -125,7 +125,6 @@ class PongLobby {
 		isReady: false
     };
 
-    private ws: WebSocket | null = null;
 	private selectedOpponentId: string = '';
 	private selectedOpponentName: string = '';
 	private duels: any[] = [];
@@ -159,7 +158,7 @@ class PongLobby {
 			this.sendDuel();
 		});
 		playLocalBtn?.addEventListener('click', () => {
-			window.location.href = '/pong?mode=local';
+			window.location.href = '/pong?mode=tournament&matchId=...';
 		});
 
         document.getElementById('join-room-btn')?.addEventListener('click', () => {
@@ -300,9 +299,9 @@ class PongLobby {
 			const data = await res.json();
 			const nextDuels = data.duels || [];
 			this.duels = nextDuels;
-			if (nextDuels.length) {
-				this.lastNonEmptyDuels = nextDuels;
-			}
+            this.lastNonEmptyDuels = nextDuels;
+			// if (nextDuels.length) {
+			// }
 			this.hasLoadedDuelsOnce = true;
 			this.hasPendingOwnRequest = this.duels.some((d: any) => d.requester_id?.toString() === this.state.playerId && d.status === 'pending');
 		} catch {
@@ -419,6 +418,8 @@ class PongLobby {
 				this.showMessage(data.message || 'Échec de l’annulation', 'error');
 				return;
 			}
+            this.duels = this.duels.filter((d: any) => d.id !== duelId);
+            // this.lastNonEmptyDuels = this.duels.length ? this.lastNonEmptyDuels.filter((d: any) => d.id !== duelId) : [];
 			this.showMessage('Demande annulée', 'info');
 			await this.loadDuels();
 		} catch {
@@ -457,7 +458,6 @@ class PongLobby {
     }
 
     private connectWebSocket() {
-        // For now, use polling instead of WebSocket
         console.log('Using HTTP polling instead of WebSocket');
         this.startPolling();
     }
@@ -471,69 +471,6 @@ class PongLobby {
 				this.loadAvailableRooms();
             }
         }, 1000);
-    }
-
-    private handleWebSocketMessage(message: any) {
-        switch (message.type) {
-            case 'room_created':
-                this.state.currentRoom = message.room;
-                this.state.isOwner = true;
-                this.updateUI();
-                this.showMessage('Room created successfully!', 'success');
-                break;
-                
-            case 'room_joined':
-                this.state.currentRoom = message.room;
-                this.state.isOwner = false;
-                this.updateUI();
-                this.showMessage('Joined room successfully!', 'success');
-                break;
-                
-            case 'room_left':
-                if (message.playerId === this.state.playerId) {
-                    this.state.currentRoom = null;
-                    this.state.isOwner = false;
-                    this.state.isReady = false;
-                } else {
-                    this.state.currentRoom = message.room;
-                }
-                this.updateUI();
-                break;
-                
-            case 'player_ready':
-                this.state.currentRoom = message.room;
-                this.updateUI();
-                break;
-                
-            case 'player_kicked':
-                if (message.playerId === this.state.playerId) {
-                    this.state.currentRoom = null;
-                    this.state.isOwner = false;
-                    this.state.isReady = false;
-                    this.showMessage('You were kicked from the room', 'error');
-                } else {
-                    this.state.currentRoom = message.room;
-                }
-                this.updateUI();
-                break;
-                
-            case 'game_started':
-                this.showMessage('Game starting...', 'success');
-                setTimeout(() => {
-                    // Determine player side based on room position
-                    const side = this.state.currentRoom?.players.top?.id === this.state.playerId ? 'top' : 'bottom';
-                    window.location.href = `/pong?mode=online&gameId=${message.gameId}&side=${side}`;
-                }, 1000);
-                break;
-                
-            case 'room_list':
-                // Not used - we use HTTP polling instead
-                break;
-                
-            case 'room_error':
-                this.showMessage(message.message, 'error');
-                break;
-        }
     }
 
     private async createRoom() {
@@ -629,32 +566,6 @@ class PongLobby {
         }
     }
 
-    private async toggleReady() {
-        if (!this.state.currentRoom) return;
-
-        const newReadyState = !this.state.isReady;
-        
-        try {
-            const response = await fetch(`/api/rooms/${this.state.currentRoom.id}/ready`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    playerId: this.state.playerId,
-                    ready: newReadyState
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update ready status');
-            }
-
-            this.state.isReady = newReadyState;
-            this.updateUI();
-        } catch (error) {
-            this.showMessage('Failed to update ready status', 'error');
-        }
-    }
-
     private async startGame() {
         if (!this.state.currentRoom || !this.state.isOwner) return;
 
@@ -675,44 +586,15 @@ class PongLobby {
             const result = await response.json();
             this.showMessage('Game starting...', 'success');
             
-            // Update the room status immediately to trigger redirect via polling
             this.state.currentRoom.status = 'in_progress';
             this.state.currentRoom.gameId = result.gameId;
             
-            // Redirect immediately for the owner, polling will handle the second player
             setTimeout(() => {
                 const side = this.state.currentRoom?.players.top?.id === this.state.playerId ? 'top' : 'bottom';
                 window.location.href = `/pong?mode=online&gameId=${result.gameId}&side=${side}`;
             }, 500);
         } catch (error) {
             this.showMessage(error instanceof Error ? error.message : 'Failed to start game', 'error');
-        }
-    }
-
-    private async kickPlayer() {
-        if (!this.state.currentRoom || !this.state.isOwner) return;
-
-        // For now, kick the other player (you might want to add a selection UI)
-        const otherPlayer = this.state.currentRoom.players.top?.id === this.state.playerId 
-            ? this.state.currentRoom.players.bottom 
-            : this.state.currentRoom.players.top;
-
-        if (!otherPlayer) return;
-
-        try {
-            await fetch(`/api/rooms/${this.state.currentRoom.id}/kick`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ownerId: this.state.playerId,
-                    targetPlayerId: otherPlayer.id
-                })
-            });
-
-            this.showMessage('Player kicked', 'info');
-            this.loadCurrentRoom();
-        } catch (error) {
-            this.showMessage('Failed to kick player', 'error');
         }
     }
 

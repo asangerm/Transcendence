@@ -51,7 +51,11 @@ export class GameManager {
 
   tickAll(): void {
     for (const g of this.games.values()) {
-      g.update();
+      if (g.update() === false) {
+        setTimeout(() => {
+          // cleanup room and game
+        }, 10000)
+      }
     }
   }
 

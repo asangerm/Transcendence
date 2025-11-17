@@ -13,6 +13,14 @@ export function renderPong() {
     }
 
     const isLocal = mode === 'local';
+    const isTournament = mode === 'tournament';
+    const matchId = url.searchParams.get('matchId') ? parseInt(url.searchParams.get('matchId')!) : undefined;
+
+    if (isTournament && !matchId) {
+        window.location.href = '/pong-lobby';
+        return;
+    }
+
     const controlsText = isLocal
         ? 'Touches: Joueur 1: Z/A  Joueur 2: M/K'
         : 'Touches: Z/X pour votre raquette';
@@ -45,7 +53,7 @@ export function renderPong() {
         if (mode === 'online') {
             pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: true, gameId, side });
         } else {
-            pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false });
+            pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false, matchId });
         }
         const quitBtn = document.getElementById('quit-btn');
         quitBtn?.addEventListener('click', async () => {

@@ -40,7 +40,7 @@ export class Pong {
         });
     }
 
-    async mount(element: HTMLElement, opts?: { online?: boolean; gameId?: string; side?: 'top' | 'bottom' }): Promise<void> {
+    async mount(element: HTMLElement, opts?: { online?: boolean; gameId?: string; side?: 'top' | 'bottom'; matchId?: number }): Promise<void> {
         await this.renderer.mount(element);
         const { width, height } = this.renderer.getCanvasSize();
         this.controller.setViewportSize(width, height);

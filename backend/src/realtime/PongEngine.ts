@@ -106,7 +106,7 @@ export class PongEngine {
     this.state.paddles[side].position.x = x;
   }
 
-  update(): void {
+  update(): boolean {
     const now = Date.now();
     
     this.previousState = { ...this.state };
@@ -114,7 +114,7 @@ export class PongEngine {
       this.state.gameOver = true;
       this.state.winner = this.state.scores.top > this.state.scores.bottom ? 'top' : 'bottom';
       this.state.updatedAt = now;
-      return;
+      return false;
     }
     
     const dt = this.FIXED_DT;
@@ -125,6 +125,7 @@ export class PongEngine {
     this.updateBall(dt);
 
     this.state.updatedAt = now;
+    return true;
   }
 
   private updatePaddle(side: 'top' | 'bottom', dt: number): void {
