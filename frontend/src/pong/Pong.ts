@@ -4,6 +4,9 @@ import type { UserInputState } from './scripts/gameState';
 import { PongRealtimeClient } from '../services/realtime/pongClient';
 import type { ServerGameState } from '../types/realtime';
 import { getApiUrl } from "../config";
+import { AIPlayer } from './scripts/AIPlayer';
+import type { Ball } from './scripts/Ball';
+import type { Paddle } from './scripts/Paddle';
 
 export class Pong {
     private controller: GameController;
@@ -26,9 +29,11 @@ export class Pong {
     private _tpsLastAt: number = performance.now();
     private _tps: number = 0;
     private endScreen: { mode: 'none' | 'victory' | 'defeat'; winner?: string } = { mode: 'none' };
-  private playerLabels: { top: string; bottom: string } = { top: '', bottom: '' };
+    private playerLabels: { top: string; bottom: string } = { top: '', bottom: '' };
     private tournamentMatchId: number | null = null;
     private tournamentRedirectDone = false;
+    private aiPlayer: AIPlayer | null = null;
+    private aiUpdateInterval: number | null = null;
 
     constructor() {
         this.controller = new GameController();
@@ -45,7 +50,7 @@ export class Pong {
         });
     }
 
-    async mount(element: HTMLElement, opts?: { online?: boolean; gameId?: string; side?: 'top' | 'bottom'; matchId?: number }): Promise<void> {
+    async mount(element: HTMLElement, opts?: { online?: boolean; gameId?: string; side?: 'top' | 'bottom'; matchId?: number; vsAI?: boolean; aiDifficulty?: 'easy' | 'medium' | 'hard' }): Promise<void> {
         await this.renderer.mount(element);
         const { width, height } = this.renderer.getCanvasSize();
         this.controller.setViewportSize(width, height);
@@ -83,6 +88,64 @@ export class Pong {
             window.addEventListener('keydown', keyHandler, { passive: true });
             window.addEventListener('keyup', keyHandler);
             // Start passive render loop in case of missed frames
+            this.loop();
+        } else if (opts?.vsAI) {
+            this.online = true;
+            const difficulty = opts.aiDifficulty || 'medium';
+            let gameId = opts?.gameId || '';
+
+            if (!gameId) {
+                gameId = await this.createGame();
+            } else {
+                try {
+                    const res = await fetch(`${getApiUrl()}/api/games/${encodeURIComponent(gameId)}`);
+                    if (!res.ok) {
+                        gameId = await this.createGame();
+                    }
+                } catch {
+                    gameId = await this.createGame();
+                }
+            }
+
+            this.realtime = new PongRealtimeClient();
+            this.realtime.setOnState((state) => {
+                const now = performance.now();
+                this._tpsCount += 1;
+                const elapsed = now - this._tpsLastAt;
+                if (elapsed >= 1000) {
+                    this._tps = this._tpsCount;
+                    this._tpsCount = 0;
+                    this._tpsLastAt = now;
+                } else if (elapsed > 0) {
+                    this._tps = Math.round((this._tpsCount * 1000) / elapsed);
+                }
+                this.renderer.setTPS?.(this._tps);
+                this.applyServerState(state);
+
+                this.playerLabels.top = 'Joueur';
+                this.playerLabels.bottom = `IA (${difficulty})`;
+            });
+            await this.realtime.connect(gameId);
+
+            this.aiPlayer = new AIPlayer('ai_player', 'bottom', difficulty);
+
+            this.controller.setPlayer('local');
+            this.controller.setMatchType('ai');
+
+            const keyHandler = (e: KeyboardEvent) => this.handleAIKey(e);
+            window.addEventListener('keydown', keyHandler, { passive: true });
+            window.addEventListener('keyup', keyHandler);
+
+            this.aiUpdateInterval = window.setInterval(() => this.updateAI(), 100);
+
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('mode', 'ai');
+                url.searchParams.set('difficulty', difficulty);
+                url.searchParams.set('gameId', gameId);
+                window.history.replaceState({}, '', url.toString());
+            } catch {}
+
             this.loop();
         } else {
             this.online = true;
@@ -166,6 +229,12 @@ export class Pong {
         if (this.rafId !== null) {
             cancelAnimationFrame(this.rafId);
             this.rafId = null;
+        }
+        if (this.aiUpdateInterval !== null) {
+            clearInterval(this.aiUpdateInterval);
+            this.aiUpdateInterval = null;
+            this.aiPlayer?.cleanup();
+            this.aiPlayer = null;
         }
         this.renderer.unmount();
     }
@@ -293,37 +362,6 @@ export class Pong {
                 }, 2000);
             }
         }
-        const topLabel = state.players.top?.username || state.players.top?.id || '';
-        const bottomLabel = state.players.bottom?.username || state.players.bottom?.id || '';
-        if (topLabel) this.playerLabels.top = String(topLabel);
-        if (bottomLabel) this.playerLabels.bottom = String(bottomLabel);
-        if (state.gameOver && state.winner) {
-            const winnerSide = state.winner;
-            const label = winnerSide === 'top' ? this.playerLabels.top : this.playerLabels.bottom;
-            const matchType = this.controller.getMatchType();
-            const fallback = winnerSide === 'top' ? 'Joueur 1' : 'Joueur 2';
-            const winnerLabel = label || fallback;
-            if (matchType === 'online') {
-                const mySide = this.getPlayerSide();
-                if (mySide) {
-                    this.endScreen = {
-                        mode: mySide === winnerSide ? 'victory' : 'defeat',
-                        winner: winnerLabel
-                    };
-                }
-            } else {
-                this.endScreen = {
-                    mode: 'victory',
-                    winner: winnerLabel
-                };
-            }
-            if (this.tournamentMatchId != null && !this.tournamentRedirectDone) {
-                this.tournamentRedirectDone = true;
-                setTimeout(() => {
-                    window.location.href = '/tournaments';
-                }, 2000);
-            }
-        }
         const scene = this.controller.getScene();
         const padTop = scene.findObjectByName('paddle_top');
         const padBottom = scene.findObjectByName('paddle_bottom');
@@ -378,10 +416,28 @@ export class Pong {
             this.sendInputState();
         }
     }
+
+    private handleAIKey(e: KeyboardEvent): void {
+        if (!this.realtime || this.controller.getMatchType() !== 'ai') return;
+        const isDown = e.type === 'keydown' && !e.repeat;
+        const isUp = e.type === 'keyup';
+        const key = e.key.toLowerCase();
+
+        if ((isDown || isUp) && (key === 'z' || key === 'a')) {
+            this.onlineKeys[key] = isDown;
+            this.sendAIInputState();
+        }
+    }
     
     private sendInputState(): void {
         if (!this.realtime) return;
-        if ((this.controller as any).getMatchType && this.controller.getMatchType() === 'local') {
+        const matchType = this.controller.getMatchType();
+
+        if (matchType === 'ai') {
+            return;
+        }
+
+        if (matchType === 'local') {
             const topLeft = this.onlineKeys['z'] ? 1 : 0;
             const topRight = this.onlineKeys['a'] ? 1 : 0;
             const bottomLeft = this.onlineKeys['m'] ? 1 : 0;
@@ -390,7 +446,7 @@ export class Pong {
             this.realtime.sendPaddleInput('bottom', bottomLeft, bottomRight);
             return;
         }
-        // Determine which paddle this player controls based on their side
+
         const playerSide = this.getPlayerSide();
         if (playerSide === 'top') {
             const left = this.onlineKeys['x'] ? 1 : 0;
@@ -401,6 +457,58 @@ export class Pong {
             const right = this.onlineKeys['x'] ? 1 : 0;
             this.realtime.sendPaddleInput('bottom', left, right);
         }
+    }
+
+    private sendAIInputState(): void {
+        if (!this.realtime) return;
+
+        const topLeft = this.onlineKeys['z'] ? 1 : 0;
+        const topRight = this.onlineKeys['a'] ? 1 : 0;
+        this.realtime.sendPaddleInput('top', topLeft, topRight);
+
+    }
+
+    private updateAI(): void {
+        if (!this.aiPlayer || !this.realtime) return;
+
+        const scene = this.controller.getScene();
+        const ball = scene.findObjectByName('ball');
+        const paddleBottom = scene.findObjectByName('paddle_bottom');
+
+        if (!ball || !paddleBottom) return;
+
+        const ballWrapper = {
+            getPosition: (): [number, number, number] => [ball.position.x, ball.position.y, ball.position.z],
+            getVelocity: (): [number, number, number] => {
+                if (this.serverTargets.ballVel) {
+                    return [this.serverTargets.ballVel.x, this.serverTargets.ballVel.y, this.serverTargets.ballVel.z];
+                }
+                return [0, 0, 0];
+            }
+        };
+
+        const paddleWrapper = {
+            getPosition: (): [number, number, number] => [paddleBottom.position.x, paddleBottom.position.y, paddleBottom.position.z]
+        };
+
+        const decision = this.aiPlayer.processDecision(ballWrapper as Ball, paddleWrapper as Paddle);
+
+        const currentX = paddleBottom.position.x;
+        const targetX = decision.targetX;
+        const deltaX = targetX - currentX;
+
+        let bottomLeft = 0;
+        let bottomRight = 0;
+
+        if (Math.abs(deltaX) > 3) {
+            if (deltaX < 0) {
+                bottomLeft = 1;
+            } else {
+                bottomRight = 1;
+            }
+        }
+
+        this.realtime.sendPaddleInput('bottom', bottomLeft, bottomRight);
     }
     
     private getPlayerSide(): 'top' | 'bottom' | null {

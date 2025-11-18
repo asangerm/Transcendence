@@ -5,6 +5,7 @@ export function renderPong() {
     const mode = url.searchParams.get('mode') || 'online';
     const gameId = url.searchParams.get('gameId') || undefined;
     const side = (url.searchParams.get('side') as 'top' | 'bottom' | null) || undefined;
+    const difficulty = url.searchParams.get('difficulty') || 'medium';
 
     // If no gameId is provided, redirect to lobby
     if (mode === 'online' && !gameId) {
@@ -13,6 +14,7 @@ export function renderPong() {
     }
 
     const isLocal = mode === 'local';
+    const isAI = mode === 'ai';
     const isTournament = mode === 'tournament';
     const matchId = url.searchParams.get('matchId') ? parseInt(url.searchParams.get('matchId')!) : undefined;
 
@@ -21,9 +23,11 @@ export function renderPong() {
         return;
     }
 
-    const controlsText = (isLocal || isTournament)
-        ? 'Touches: Joueur 1: Z/A  Joueur 2: M/K'
-        : 'Touches: Z/X pour votre raquette';
+    const controlsText = isAI
+        ? 'Touches: Z/A pour votre raquette (vous jouez contre l\'IA)'
+        : (isLocal || isTournament)
+            ? 'Touches: Joueur 1: Z/A  Joueur 2: M/K'
+            : 'Touches: Z/X pour votre raquette';
     const showQuitButton = !isTournament;
 
     const content = `
@@ -59,8 +63,7 @@ export function renderPong() {
         } else if (isTournament) {
             pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false, gameId, matchId });
         } else {
-            pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false, gameId });
-        }
+            pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false, gameId, vsAI: isAI, aiDifficulty: difficulty as 'easy' | 'medium' | 'hard' }); }
         const quitBtn = document.getElementById('quit-btn');
         quitBtn?.addEventListener('click', async () => {
             try {

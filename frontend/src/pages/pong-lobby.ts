@@ -20,6 +20,26 @@ export function renderPongLobby() {
                             </button>
                         </div>
                     </div>
+
+                    <!-- AI Section -->
+                    <div id="ai-section" class="">
+                        <div class="bg-gray-800 p-2 pl-4 rounded-xl">
+                            <h2 class="text-xl font-semibold mb-2">Contre l'IA</h2>
+                            <div class="flex items-center gap-3">
+                                <select id="ai-difficulty" class="px-3 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-purple-500 focus:outline-none">
+                                    <option value="easy">Facile</option>
+                                    <option value="medium" selected>Moyen</option>
+                                    <option value="hard">Difficile</option>
+                                </select>
+                                <button
+                                    id="play-ai-btn"
+                                    class="ml-auto px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+                                >
+                                    Jouer contre l'IA
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     
 					<div id="duel-section" class="">
 						<div class="bg-gray-800 p-2 rounded-xl">
@@ -159,6 +179,12 @@ class PongLobby {
 		});
 		playLocalBtn?.addEventListener('click', () => {
 			window.location.href = '/pong?mode=local';
+		});
+
+        const playAiBtn = document.getElementById('play-ai-btn') as HTMLButtonElement | null;
+		playAiBtn?.addEventListener('click', () => {
+			const aiDifficulty = (document.getElementById('ai-difficulty') as HTMLSelectElement)?.value || 'medium';
+			window.location.href = `/pong?mode=ai&difficulty=${aiDifficulty}`;
 		});
 
         document.getElementById('join-room-btn')?.addEventListener('click', () => {
