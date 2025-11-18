@@ -2,6 +2,7 @@ import { CubeScene } from './CubeScene';
 import { CubeRenderer } from './CubeRenderer';
 import { TestEngineRealtimeClient } from '../services/realtime/testEngineClient';
 import type { TestEngineState, Vector3 } from '../types/realtime';
+import { getApiUrl } from '../config';
 
 export class TestEngine {
     private scene: CubeScene;
@@ -74,7 +75,7 @@ export class TestEngine {
     }
 
     private async createGame(): Promise<string> {
-        const response = await fetch('http://localhost:8000/api/games', {
+        const response = await fetch(`${getApiUrl()}/api/games`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ kind: 'test' })

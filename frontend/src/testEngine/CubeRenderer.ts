@@ -1,4 +1,4 @@
-import { Renderer } from '../scripts/pong/Renderer';
+import { Renderer } from '../pong/scripts/Renderer';
 import { CubeScene } from './CubeScene';
 
 export class CubeRenderer {

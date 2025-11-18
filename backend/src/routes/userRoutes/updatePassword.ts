@@ -19,9 +19,15 @@ export default async function updatePassword(app: FastifyInstance) {
     // On récupère l'utilisateur
     const row = app.db
       .prepare("SELECT password_hash FROM users WHERE id = ?")
-      .get(id) as { password_hash: string } | undefined;
+      .get(id) as { password_hash: string; google_id?: string  } | undefined;
     if (!row) {
       return reply.status(404).send({ error: true, message: "Utilisateur non trouve" });
+    }
+
+    if (row.google_id || !row.password_hash) {
+      return reply.status(400).send({
+        error: "Cannot change password for Google accounts"
+      });
     }
 
     const match = await bcrypt.compare(oldPassword, row.password_hash);

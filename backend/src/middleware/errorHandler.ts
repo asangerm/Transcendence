@@ -1,6 +1,6 @@
-import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
+import { FastifyError } from "fastify";
 
-export function errorHandler(error: FastifyError, _request: FastifyRequest, reply: FastifyReply) {
+export function errorHandler(error: FastifyError, _request: any, reply: any) {
   const statusCode = error.statusCode || 500;
 
   reply.status(statusCode).send({

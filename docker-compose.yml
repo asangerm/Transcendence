@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   frontend:
@@ -8,6 +8,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./frontend:/app:delegated
+      - ./frontend/ssl:/app/ssl:ro
       - frontend_node_modules:/app/node_modules
     ports:
       - "3000:3000"
@@ -28,12 +29,15 @@ services:
       - ./backend/package.json:/app/package.json
       - ./backend/data:/app/data
       - ./backend/uploads:/app/uploads
+      - ./backend/ssl:/app/ssl
       - backend_node_modules:/app/node_modules
     ports:
       - "8000:8000"
     environment:
       - NODE_ENV=development
       - DB_PATH=/app/data/db.sqlite
+      - HTTPS_ENABLED=true
+      - FRONTEND_URL=https://localhost:3000
 
 volumes:
   frontend_node_modules:

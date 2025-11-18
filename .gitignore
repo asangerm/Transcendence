@@ -37,3 +37,6 @@ yarn-error.log*
 
 # Docker
 .docker/ 
+
+# SSL Certificates (auto-generated)
+**/ssl/*.pem

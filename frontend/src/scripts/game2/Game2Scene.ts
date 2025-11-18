@@ -1,4 +1,5 @@
 declare const Phaser: any;
+import { getWsUrl } from '../../config';
 
 export class Game2Scene extends Phaser.Scene {
     public events!: any;
@@ -222,9 +223,7 @@ export class Game2Scene extends Phaser.Scene {
             }
         } catch {}
 
-        const wsUrl = this.gameId
-            ? `ws://localhost:8000/ws?gameId=${this.gameId}`
-            : `ws://localhost:8000/ws`;
+        const wsUrl = getWsUrl(this.gameId);
         
         try {
             this.ws = new WebSocket(wsUrl);
@@ -502,9 +501,7 @@ export class Game2Scene extends Phaser.Scene {
             if (this.ws) {
                 this.ws.close();
             }
-            const wsUrl = this.gameId
-                ? `ws://localhost:8000/ws?gameId=${this.gameId}`
-                : `ws://localhost:8000/ws`;
+            const wsUrl = getWsUrl(this.gameId);
             this.ws = new WebSocket(wsUrl);
             this.setupWebSocketHandlers();
             this.isReconnecting = false;

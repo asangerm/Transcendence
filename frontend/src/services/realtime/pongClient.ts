@@ -1,4 +1,5 @@
 import type { ServerGameState } from '../../types/realtime';
+import { getWsUrl } from '../../config'; 
 
 export type ClientSide = 'top' | 'bottom';
 
@@ -11,9 +12,9 @@ export class PongRealtimeClient {
     private pending: any[] = [];
     private isOpen = false;
 
-    constructor(urlBase = 'ws://localhost:8000/ws') {
-        this.urlBase = urlBase;
-    }
+    constructor(urlBase?: string) {
+        this.urlBase = urlBase ?? getWsUrl();
+      }
 
     setOnState(cb: (s: ServerGameState) => void): void {
         this.onState = cb;

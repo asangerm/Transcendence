@@ -40,8 +40,8 @@ const defaultScene = {
             "type": "box",
             "position": [0, -0.25, 0],
             "size": [50, 0.5, 100],
-			"color": [0.1, 0.2, 0.1],
-			"texture": "https://playground.babylonjs.com/textures/floor.png"
+			"color": [0.2, 0.8, 0.5],
+			"texture": "checker"
         },
         {
             "name": "ball",
@@ -57,7 +57,7 @@ const defaultScene = {
             "position": [0, 1.5, 45],
             "size": [10, 2.5, 1],
 			"color": [0, 1, 0],
-			"texture": "metal"
+			"texture": "glossy"
         },
         {
             "name": "paddle_bottom",
@@ -65,7 +65,7 @@ const defaultScene = {
             "position": [0, 1.5, -45],
             "size": [10, 2.5, 1],
 			"color": [0, 0, 1],
-			"texture": "metal"
+			"texture": "glossy"
         },
         {
             "name": "wall_top",
@@ -73,7 +73,8 @@ const defaultScene = {
             "position": [0, 2.25, 50],
             "size": [51, 5, 1],
 			"color": [0, 0, 0],
-			"texture": "https://assets.babylonjs.com/environments/bricktile.jpg"
+			"texture": "metal"
+			// "texture": "https://assets.babylonjs.com/environments/bricktile.jpg"
         },
         {
             "name": "wall_bottom",
@@ -81,7 +82,8 @@ const defaultScene = {
             "position": [0, 2.25, -50],
             "size": [51, 5, 1],
 			"color": [0, 0, 0],
-			"texture": "https://assets.babylonjs.com/environments/bricktile.jpg"
+			"texture": "metal"
+			// "texture": "https://assets.babylonjs.com/environments/bricktile.jpg"
         },
         {
             "name": "wall_left",
@@ -89,7 +91,8 @@ const defaultScene = {
             "position": [25, 2.25, 0],
             "size": [1, 5, 101],
 			"color": [0, 0, 0],
-			"texture": "https://assets.babylonjs.com/environments/bricktile.jpg"
+			"texture": "metal"
+			// "texture": "https://assets.babylonjs.com/environments/bricktile.jpg"
         },
         {
             "name": "wall_right",
@@ -97,7 +100,8 @@ const defaultScene = {
             "position": [-25, 2.25, 0],
             "size": [1, 5, 101],
 			"color": [0, 0, 0],
-			"texture": "https://assets.babylonjs.com/environments/bricktile.jpg"
+			"texture": "metal"
+			// "texture": "https://assets.babylonjs.com/environments/bricktile.jpg"
         }
     ]
 }
@@ -127,6 +131,7 @@ type ImportedScene = {
         rotation?: [number, number, number];
         size?: [number, number, number];
         color?: [number, number, number];
+        texture?: string;
     }>;
     lights?: Array<{
         type: string;
@@ -177,6 +182,7 @@ export class Scene {
                     size: { x: o.size?.[0] ?? 1, y: o.size?.[1] ?? 1, z: o.size?.[2] ?? 1 },
                     rotation: { x: o.rotation?.[0] ?? 0, y: o.rotation?.[1] ?? 0, z: o.rotation?.[2] ?? 0 },
                     color: { r: o.color?.[0] ?? 1, g: o.color?.[1] ?? 1, b: o.color?.[2] ?? 1 },
+                    texture: o.texture ?? undefined,
                 }));
             }
 

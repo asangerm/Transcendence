@@ -9,6 +9,7 @@ type Engine = PongEngine | TestEngine | Game2SimpleEngine;
 
 export class GameManager {
   private games: Map<string, Engine> = new Map();
+  private tournamentGames: Map<string, { matchId: number; topDbId: number; bottomDbId: number; reported: boolean }> = new Map();
 
   createGame(kind: GameKind = 'pong', topPlayer?: { id: string; username?: string }, bottomPlayer?: { id: string; username?: string }): { id: string } {
     const id = randomUUID();
@@ -36,6 +37,18 @@ export class GameManager {
     return { id };
   }
 
+  createTournamentPong(matchId: number, topDbId: number, topName: string, bottomDbId: number, bottomName: string): { id: string } {
+    const id = randomUUID();
+    const topPlayer = { id: String(topDbId), username: topName };
+    const bottomPlayer = { id: String(bottomDbId), username: bottomName };
+    const engine = new PongEngine(id, topPlayer, bottomPlayer);
+    engine.setPlayer('top', topPlayer);
+    engine.setPlayer('bottom', bottomPlayer);
+    this.games.set(id, engine);
+    this.tournamentGames.set(id, { matchId, topDbId, bottomDbId, reported: false });
+    return { id };
+  }
+
   getState(id: string): ServerGameState | TestEngineState | Game2State | null {
     const g = this.games.get(id);
     return g ? g.getState() : null;
@@ -43,6 +56,18 @@ export class GameManager {
 
   getEngine(id: string): Engine | null {
     return this.games.get(id) ?? null;
+  }
+
+  getTournamentMeta(id: string): { matchId: number; topDbId: number; bottomDbId: number; reported: boolean } | null {
+    return this.tournamentGames.get(id) ?? null;
+  }
+
+  markTournamentReported(id: string): void {
+    const meta = this.tournamentGames.get(id);
+    if (meta) {
+      meta.reported = true;
+      this.tournamentGames.set(id, meta);
+    }
   }
 
   list(): Array<{ id: string; kind: GameKind; createdAt: number }> {

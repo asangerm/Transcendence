@@ -3,6 +3,7 @@ import { AuthService } from '../services/auth.service';
 import { AuthStore } from '../stores/auth.store';
 import { sanitizeHtml, sanitizeInput, escapeHtml } from '../utils/sanitizer';
 import { navigateTo } from '../router';
+import { getApiUrl } from '../config';
 
 export class UserProfileComponent {
 	private container: HTMLElement;
@@ -19,7 +20,7 @@ export class UserProfileComponent {
 	private getFullAvatarUrl(avatarUrl: string | null): string {
 		if (!avatarUrl) return '/uploads/default.png';
 		if (avatarUrl.startsWith('http')) return avatarUrl;
-		return `http://localhost:8000${avatarUrl}`;
+		return `${getApiUrl()}${avatarUrl}`;
 	}
 
 	async init(username?: string): Promise<void> {
@@ -59,7 +60,7 @@ export class UserProfileComponent {
 				const currentUser = AuthStore.getUser();
 				if (!currentUser) return;
 
-				const url = `http://localhost:8000/users/${currentUser.id}/offline`;
+				const url = `${getApiUrl()}${currentUser.id}/offline`;
 
 				navigator.sendBeacon(url);
 			});

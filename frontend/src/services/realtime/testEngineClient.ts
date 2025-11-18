@@ -1,4 +1,5 @@
 import type { TestEngineState } from '../../types/realtime';
+import { getWsUrl } from '../../config';
 
 export class TestEngineRealtimeClient {
     private ws: WebSocket | null = null;
@@ -9,7 +10,7 @@ export class TestEngineRealtimeClient {
     private pending: any[] = [];
     private isOpen = false;
 
-    constructor(urlBase = 'ws://localhost:8000/ws') {
+    constructor(urlBase = getWsUrl()) {
         this.urlBase = urlBase;
     }
 

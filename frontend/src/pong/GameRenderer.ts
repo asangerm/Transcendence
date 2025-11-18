@@ -1,5 +1,5 @@
-import { Renderer } from '../scripts/pong/Renderer';
-import { Scene } from '../scripts/pong/Scene';
+import { Renderer } from './scripts/Renderer';
+import { Scene } from './scripts/Scene';
 
 export class GameRenderer {
     private canvas: HTMLCanvasElement;
@@ -52,12 +52,12 @@ export class GameRenderer {
         }
     };
 
-    requestFrame(scene: Scene, scores: { top: number; bottom: number }, isOnline: boolean = false): void {
+    requestFrame(scene: Scene, scores: { top: number; bottom: number }, isOnline: boolean = false, players?: { top?: string; bottom?: string }, result?: { mode: 'none' | 'victory' | 'defeat'; winner?: string }): void {
         if (this.animationFrameId !== null) {
             cancelAnimationFrame(this.animationFrameId);
         }
         this.animationFrameId = requestAnimationFrame(() => {
-            this.renderer.render(scene, scores, isOnline);
+            this.renderer.render(scene, scores, isOnline, players, result);
             // this.updateStatusIndicator(isOnline);
         });
     }

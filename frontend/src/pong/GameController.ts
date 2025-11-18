@@ -1,8 +1,8 @@
-import { Scene } from '../scripts/pong/Scene';
-import { Ball } from '../scripts/pong/Ball';
-import { Paddle } from '../scripts/pong/Paddle';
-import { InputHandler } from '../scripts/pong/InputHandler';
-import type { UserInputState } from '../scripts/pong/gameState';
+import { Scene } from './scripts/Scene';
+import { Ball } from './scripts/Ball';
+import { Paddle } from './scripts/Paddle';
+import { InputHandler } from './scripts/InputHandler';
+import type { UserInputState } from './scripts/gameState';
 
 export type ControllerSnapshot = {
     scene: Scene;

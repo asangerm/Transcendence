@@ -7,10 +7,18 @@ export default async function loginRoute(app: FastifyInstance) {
     const { email, password } = req.body as { email: string; password: string };
 
     const user = app.db.prepare("SELECT * FROM users WHERE email = ?").get(email) as
-      | { id: number; email: string; display_name: string; password_hash: string }
+      | { id: number; email: string; display_name: string; password_hash: string; google_id?: string }
       | undefined;
 
-    if (!user) return reply.status(401).send({ error: true, message: "Email ou mot de passe invalide" });
+    if (!user) return reply.status(401).send({ error: true, message: "Invalid email or password" });
+
+    // Vérifier si c'est un compte Google avant bcrypt.compare()
+    if (user.google_id || !user.password_hash) {
+      return reply.status(400).send({
+        error: true,
+        message: "Ce compte utilise Google. Veuillez vous connecter avec Google."
+      });
+    }
 
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return reply.status(401).send({ error: true, message: "Email ou mot de passe invalide" });

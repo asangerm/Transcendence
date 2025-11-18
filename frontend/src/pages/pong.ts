@@ -21,9 +21,10 @@ export function renderPong() {
         return;
     }
 
-    const controlsText = isLocal
+    const controlsText = (isLocal || isTournament)
         ? 'Touches: Joueur 1: Z/A  Joueur 2: M/K'
         : 'Touches: Z/X pour votre raquette';
+    const showQuitButton = !isTournament;
 
     const content = `
         <div class="w-full h-full overflow-hidden">
@@ -34,9 +35,12 @@ export function renderPong() {
                         <p class="text-lg font-semibold text-secondary dark:text-secondary-dark">
                             ${controlsText}
                         </p>
-                        <button id="quit-btn" class="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors">
-                            Quitter
-                        </button>
+                        ${showQuitButton ? `
+                        <div class="flex flex-row justify-center gap-2">
+                            <button id="quit-btn" class="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors">
+                                Quitter
+                            </button>
+                        </div>` : ``}
                     </div>
                     <div id="gameCanvas" class="w-full h-96 rounded-lg">
                         <!-- Game canvas will be inserted here -->
@@ -52,8 +56,10 @@ export function renderPong() {
         const pong = new Pong();
         if (mode === 'online') {
             pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: true, gameId, side });
-        } else {
+        } else if (isTournament) {
             pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false, gameId, matchId });
+        } else {
+            pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false, gameId });
         }
         const quitBtn = document.getElementById('quit-btn');
         quitBtn?.addEventListener('click', async () => {

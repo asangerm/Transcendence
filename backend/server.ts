@@ -8,20 +8,39 @@ import dbPlugin from "./src/db";
 import routes from "./src/routes";
 import { errorHandler } from "./src/middleware/errorHandler";
 import path from "path";
+import fs from "fs";
 
-const app = fastify({
+const HTTPS_ENABLED = process.env.HTTPS_ENABLED === "true";
+
+let fastifyOptions: any = {
   logger: true,
-});
+};
+
+if (HTTPS_ENABLED) {
+  const certPath = path.join(__dirname, "../ssl/cert.pem");
+  const keyPath = path.join(__dirname, "../ssl/key.pem");
+
+  if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+    fastifyOptions.https = {
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath),
+    };
+    console.log("[HTTPS] ✅ Certificats SSL chargés");
+  } else {
+    console.warn("[HTTPS] ⚠️  Certificats non trouvés, mode HTTP");
+  }
+}
+
+const app = fastify(fastifyOptions);
 
 async function buildServer() {
   // DB
   await app.register(dbPlugin);
 
   // CORS
-  await app.register(fastifyCors, {
-    origin: "http://localhost:3000",
-    credentials: true, // important pour cookies cross-site
-  });
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+
+  await app.register(fastifyCors, { origin: frontendUrl, credentials: true });
 
   // Cookies
   await app.register(fastifyCookie, {
@@ -56,9 +75,18 @@ async function buildServer() {
 
 buildServer()
   .then((app) => {
-    app.listen({ port: 8000, host: "0.0.0.0" });
+    const port = parseInt(process.env.PORT || "8000", 10);
+    const protocol = HTTPS_ENABLED ? "HTTPS" : "HTTP";
+
+    app.listen({ port, host: "0.0.0.0" }, (err, address) => {
+      if (err) {
+        app.log.error(err);
+        process.exit(1);
+      }
+      console.log(`[${protocol}] 🚀 Server listening on ${address}`);
+    });
   })
   .catch((err) => {
-    app.log.error(err);
+    console.error(err);
     process.exit(1);
   });

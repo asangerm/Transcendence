@@ -1,6 +1,7 @@
 import { UserService, Friend } from "../services/user.service";
 import { AuthStore } from "../stores/auth.store";
 import { escapeHtml } from "../utils/sanitizer";
+import { getApiUrl } from '../config';
 
 export class FriendsListComponent {
 	private container: HTMLElement;
@@ -17,7 +18,7 @@ export class FriendsListComponent {
 	private getFullAvatarUrl(avatarUrl: string | null): string {
 		if (!avatarUrl) return "/uploads/default.png";
 		if (avatarUrl.startsWith("http")) return avatarUrl;
-		return `http://localhost:8000${avatarUrl}`;
+		return `${getApiUrl()}${avatarUrl}`;
 	}
 
 	async init(username: string): Promise<void> {

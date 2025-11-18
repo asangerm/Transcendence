@@ -8,6 +8,12 @@ export class PongEngine {
     bottom: { left: number; right: number } 
   };
   private lastPointLoser: 'top' | 'bottom' = 'bottom';
+  private roundFreezeUntil: number | null = null;
+  private pendingLaunch: { vx: number; vz: number } | null = null;
+  private freezeStartAt: number | null = null;
+  private readonly BOUNCE_CYCLE_MS = 700;
+  private readonly BOUNCE_COUNT = 3;
+  private readonly BOUNCE_AMPLITUDE = 5;
 
   private readonly PADDLE_ACCELERATION = 500;
   private readonly PADDLE_MAX_SPEED = 80;
@@ -175,6 +181,38 @@ export class PongEngine {
     const p = ball.position;
     const v = ball.velocity;
 
+    const now = Date.now();
+    if (this.roundFreezeUntil != null) {
+      if (now < this.roundFreezeUntil) {
+        v.x = 0;
+        v.y = 0;
+        v.z = 0;
+        if (this.freezeStartAt != null) {
+          const elapsed = now - this.freezeStartAt;
+          const cyclesDone = Math.floor(elapsed / this.BOUNCE_CYCLE_MS);
+          if (cyclesDone < this.BOUNCE_COUNT) {
+            const t = (elapsed % this.BOUNCE_CYCLE_MS) / this.BOUNCE_CYCLE_MS;
+            const y0 = 1.5;
+            const y = y0 + Math.sin(Math.PI * t) * this.BOUNCE_AMPLITUDE;
+            p.y = y;
+          } else {
+            p.y = 1.5;
+          }
+        }
+        return;
+      } else {
+        if (this.pendingLaunch) {
+          v.x = this.pendingLaunch.vx;
+          v.y = 0;
+          v.z = this.pendingLaunch.vz;
+        }
+        this.roundFreezeUntil = null;
+        this.pendingLaunch = null;
+        p.y = 1.5;
+        this.freezeStartAt = null;
+      }
+    }
+
     p.x += v.x * dt;
     p.y += v.y * dt;
     p.z += v.z * dt;
@@ -257,9 +295,12 @@ export class PongEngine {
     const speed = this.BALL_MAX_SPEED;
     const vx = Math.sin(a) * speed;
     const vz = Math.cos(a) * speed * dirZ;
-    ball.velocity.x = vx;
+    ball.velocity.x = 0;
     ball.velocity.y = 0;
-    ball.velocity.z = vz;
+    ball.velocity.z = 0;
+    this.pendingLaunch = { vx, vz };
+    this.roundFreezeUntil = Date.now() + 3000;
+    this.freezeStartAt = Date.now();
   }
 }
 

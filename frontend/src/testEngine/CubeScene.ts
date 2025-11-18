@@ -1,5 +1,5 @@
-import { Camera } from '../scripts/pong/Camera';
-import { Light } from '../scripts/pong/Light';
+import { Camera } from '../pong/scripts/Camera';
+import { Light } from '../pong/scripts/Light';
 
 const cubeScene = {
     "camera": {

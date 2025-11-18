@@ -3,6 +3,7 @@ import { AuthService, User } from '../services/auth.service';
 import UserService, { UserProfile } from '../services/user.service';
 import { escapeHtml } from '../utils/sanitizer';
 import { navigateTo } from '../router';
+import { getApiUrl } from '../config';
 
 export class NavBar {
 	private container: HTMLElement;
@@ -51,9 +52,9 @@ export class NavBar {
 	}
 
 	private getFullAvatarUrl(avatarUrl: string | null): string {
-		if (!avatarUrl) return 'http://localhost:8000/uploads/default.png';
+		if (!avatarUrl) return `${getApiUrl()}/uploads/default.png`;
 		if (avatarUrl.startsWith('http')) return avatarUrl;
-		return `http://localhost:8000${avatarUrl}`;
+		return `${getApiUrl()}${avatarUrl}`;
 	}
 
 	private render(): void {

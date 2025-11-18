@@ -16,7 +16,26 @@ export async function registerRealtime(app: FastifyInstance) {
   const roomConnections = new Map<string, Set<any>>(); // roomId -> Set of connections
   const playerConnections = new Map<string, any>(); // playerId -> connection
   const recordedMatches = new Set<string>(); // gameId that already wrote a match row
+  const recordedTournamentMatches = new Set<number>();
+  let cachedPongGameId: number | null = null;
   let cachedGame2Id: number | null = null;
+
+  const ensurePongId = (): number => {
+    if (cachedPongGameId != null) return cachedPongGameId;
+    try {
+      const row = app.db.prepare("SELECT id FROM games WHERE name = ?").get('Pong') as { id?: number } | undefined;
+      if (row && typeof row.id === 'number') {
+        cachedPongGameId = row.id;
+        return cachedPongGameId;
+      }
+      const res = app.db.prepare("INSERT INTO games (name, description) VALUES (?, ?)").run('Pong', 'Pong');
+      cachedPongGameId = Number(res.lastInsertRowid);
+      return cachedPongGameId;
+    } catch {
+      cachedPongGameId = 0;
+      return 0;
+    }
+  };
 
   const ensureGame2Id = (): number => {
     if (cachedGame2Id != null) return cachedGame2Id;
@@ -74,12 +93,76 @@ export async function registerRealtime(app: FastifyInstance) {
     }
   };
 
+  const recordPongMatchIfNeeded = (gameId: string) => {
+    if (recordedMatches.has(gameId)) return;
+    const state: any = gameManager.getState(gameId);
+    if (!state || state.kind !== 'pong' || !state.gameOver) return;
+    try {
+      const meta = (gameManager as any).getTournamentMeta?.(gameId);
+      if (meta) return;
+    } catch {}
+    const topIdRaw = state.players?.top?.id;
+    const bottomIdRaw = state.players?.bottom?.id;
+    if (!topIdRaw || !bottomIdRaw) return;
+    const player1Id = Number(topIdRaw);
+    const player2Id = Number(bottomIdRaw);
+    if (!Number.isFinite(player1Id) || !Number.isFinite(player2Id)) return;
+    const pongId = ensurePongId();
+    if (!pongId) return;
+    const scores = state.scores || {};
+    const s1 = Number(scores.top ?? 0);
+    const s2 = Number(scores.bottom ?? 0);
+    let winnerId: number | null = null;
+    if (state.winner === 'top') {
+      winnerId = player1Id;
+    } else if (state.winner === 'bottom') {
+      winnerId = player2Id;
+    }
+    try {
+      app.db.prepare(
+        "INSERT INTO matches (game_id, player1_id, player2_id, winner_id, score_p1, score_p2) VALUES (?, ?, ?, ?, ?, ?)"
+      ).run(pongId, player1Id, player2Id, winnerId, s1, s2);
+    } catch {}
+    recordedMatches.add(gameId);
+    try {
+      const rooms = roomManager.listRooms();
+      const room = rooms.find(r => r.gameId === gameId);
+      if (room) {
+        roomManager.deleteRoom(room.id);
+      }
+    } catch {}
+    try {
+      gameManager.remove(gameId);
+    } catch {}
+  };
+
+  const recordTournamentMatchIfNeeded = (gameId: string) => {
+    try {
+      const meta = (gameManager as any).getTournamentMeta?.(gameId) as { matchId: number; topDbId: number; bottomDbId: number; reported: boolean } | null;
+      if (!meta || meta.reported) return;
+      if (recordedTournamentMatches.has(meta.matchId)) return;
+      const state: any = gameManager.getState(gameId);
+      if (!state || state.kind !== 'pong' || !state.gameOver) return;
+      const winnerSide = state.winner;
+      if (winnerSide !== 'top' && winnerSide !== 'bottom') return;
+      const winnerId = winnerSide === 'top' ? meta.topDbId : meta.bottomDbId;
+      try {
+        const svc = require('../services/tournament.service');
+        const updateMatchTournament = svc.updateMatchTournament as (db: any, match: { id: number; winner_id: number }) => void;
+        updateMatchTournament(app.db, { id: meta.matchId, winner_id: winnerId });
+      } catch {}
+      recordedTournamentMatches.add(meta.matchId);
+      (gameManager as any).markTournamentReported?.(gameId);
+    } catch {}
+  };
+
   const broadcastState = (gameId: string) => {
     const engine = gameManager.getEngine(gameId);
     if (!engine) return;
     const stateMsg: RealtimeMessage = { type: 'state', state: engine.getState() };
-    // Attempt to record match result once for Game2 when game is over
+    try { recordPongMatchIfNeeded(gameId); } catch {}
     try { recordGame2MatchIfNeeded(gameId); } catch {}
+    try { recordTournamentMatchIfNeeded(gameId); } catch {}
     const subs = connections.get(gameId);
     if (!subs) return;
     const payload = JSON.stringify(stateMsg);
