@@ -12,12 +12,12 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "https://backend:8000", // localhost au lieu de backend
+        target: "https://backend:8000",
         changeOrigin: true,
         secure: false,
       },
       "/ws": {
-        target: "wss://backend:8000", // localhost au lieu de backend
+        target: "wss://backend:8000",
         ws: true,
         changeOrigin: true,
         secure: false,
