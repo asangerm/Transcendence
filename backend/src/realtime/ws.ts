@@ -88,6 +88,16 @@ export async function registerRealtime(app: FastifyInstance) {
         "INSERT INTO matches (game_id, player1_id, player2_id, winner_id, score_p1, score_p2) VALUES (?, ?, ?, ?, ?, ?)"
       ).run(game2Id, player1Id, player2Id, winnerId, s1, s2);
       recordedMatches.add(gameId);
+      try {
+        const rooms = roomManager.listRooms();
+        const room = rooms.find(r => r.gameId === gameId);
+        if (room) {
+          roomManager.deleteRoom(room.id);
+        }
+      } catch {}
+      try {
+        gameManager.remove(gameId);
+      } catch {}
     } catch {
       // ignore DB errors to avoid crashing WS
     }

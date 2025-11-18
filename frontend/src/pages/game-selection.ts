@@ -3,7 +3,7 @@ export function renderGameSelection() {
         <div class="h-full w-full">
             <main class="container mx-auto px-4 py-8">
                 <h1 class="text-4xl font-bold text-center mb-12">Sélection des Jeux</h1>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="grid grid-cols-1 grid-cols-2 gap-8 max-w-6xl mx-auto">
                     <!-- Pong Game Card -->
                     <a href="/pong-lobby" class="group">
                         <div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
@@ -44,24 +44,6 @@ export function renderGameSelection() {
                             <div class="p-6">
                                 <h2 class="text-2xl font-bold mb-2">Tic-tac-toe</h2>
                                 <p class="text-muted dark:text-muted-dark">"Le fameux jeu où deux adversaires s’affrontent pour prouver qui sait mieux dessiner des croix et des ronds… et finissent toujours par égalité. (pvp en ligne)"</p>
-                            </div>
-                        </div>
-                    </a>
-
-                    <!-- Test Engine Card -->
-                    <a href="/test-engine" class="group">
-                        <div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                            <div class="relative aspect-video bg-secondary dark:bg-secondary-dark flex items-center justify-center">
-                                <div class="text-6xl">🧊</div>
-                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-                                    <span class="text-white text-2xl font-bold opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                                        Test Engine
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-6">
-                                <h2 class="text-2xl font-bold mb-2">Test Engine</h2>
-                                <p class="text-muted dark:text-muted-dark">Physics test with cube movement and interpolation</p>
                             </div>
                         </div>
                     </a>

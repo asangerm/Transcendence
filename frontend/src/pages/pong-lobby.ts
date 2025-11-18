@@ -607,12 +607,12 @@ class PongLobby {
             this.state.availableRooms = data.rooms;
             this.updateRoomsList();
         } catch (error) {
-            console.error('Failed to load rooms:', error);
+            // ignore load errors
         }
     }
 
     private async loadCurrentRoom() {
-        if (!this.state.currentRoom) return;
+        if (!this.state.currentRoom || !this.state.currentRoom.id) return;
 
         try {
             const response = await fetch(`/api/rooms/${this.state.currentRoom.id}`);

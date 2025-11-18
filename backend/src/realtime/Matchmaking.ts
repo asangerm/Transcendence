@@ -3,6 +3,10 @@ import { gameManager } from './GameManager';
 
 type Seat = 'player1' | 'player2';
 
+export const matchmakingThreshold = 100
+export const winBonus = 15
+export const loseBonus = -17
+
 type QueueEntry = {
   playerId: string;
   username: string;
@@ -52,7 +56,7 @@ class MatchmakingManager {
     this.queueGame2 = this.queueGame2.filter(q => q.playerId !== playerId);
 
     // Si quelqu'un est en attente, choisir un adversaire compatible Elo (écart <= 30)
-    const opponent = this.queueGame2.find(q => q.playerId !== playerId && Math.abs(q.elo - elo) <= 30);
+    const opponent = this.queueGame2.find(q => q.playerId !== playerId && Math.abs(q.elo - elo) <= matchmakingThreshold);
     if (opponent) {
       // Retirer l'opposant de la file
       this.queueGame2 = this.queueGame2.filter(q => q.playerId !== opponent.playerId);
@@ -99,7 +103,7 @@ class MatchmakingManager {
 
     // 2b) Deuxième chance de match immédiat (cas de courses simultanées)
     // Chercher un autre joueur dans la file (le plus ancien) différent de soi
-    const partner = this.queueGame2.find(q => q.playerId !== playerId && Math.abs(q.elo - elo) <= 30);
+    const partner = this.queueGame2.find(q => q.playerId !== playerId && Math.abs(q.elo - elo) <= matchmakingThreshold);
     if (partner) {
       // Retirer les deux de la file
       this.queueGame2 = this.queueGame2.filter(q => q.playerId !== partner.playerId && q.playerId !== playerId);

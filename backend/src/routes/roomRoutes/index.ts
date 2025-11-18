@@ -215,7 +215,7 @@ export default async function roomRoutes(app: FastifyInstance) {
       const room = roomManager.getPlayerRoom(params.playerId);
       
       if (!room) {
-        reply.code(404);
+        reply.code(200);
         return { error: 'Player not in any room' };
       }
       

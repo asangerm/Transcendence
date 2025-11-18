@@ -16,7 +16,6 @@ const routes: Route[] = [
     { path: '/pong-lobby', component: () => import('./pages/pong-lobby').then(m => m.renderPongLobby()), requiresAuth: true },
     { path: '/game2-lobby', component: () => import('./pages/game2-lobby').then(m => m.renderGame2Lobby()), requiresAuth: true },
     { path: '/game2', component: () => import('./pages/game2').then(m => m.renderGame2()), requiresAuth: true },
-    { path: '/test-engine', component: () => import('./pages/test-engine').then(m => m.renderTestEngine()), requiresAuth: true },
     { path: '/profile', component: () => import('./pages/profile').then(m => m.renderProfile()), requiresAuth: true },
     { path: '/friends', component: () => import('./pages/friends').then(m => m.renderFriends("")), requiresAuth: true },
     { path: '/tournaments', component: () => import('./pages/tournaments').then(m => m.renderTournaments()), requiresAuth: true },

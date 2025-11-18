@@ -2,10 +2,9 @@ import { randomUUID } from 'crypto';
 import type { GameKind, ServerGameState, TestEngineState } from './gameTypes';
 import type { Game2State } from './Game2SimpleEngine';
 import { PongEngine } from './PongEngine';
-import { TestEngine } from './TestEngine';
 import { Game2SimpleEngine } from './Game2SimpleEngine';
 
-type Engine = PongEngine | TestEngine | Game2SimpleEngine;
+type Engine = PongEngine | Game2SimpleEngine;
 
 export class GameManager {
   private games: Map<string, Engine> = new Map();
@@ -22,9 +21,6 @@ export class GameManager {
           const bp = bottomPlayer ?? { id: randomUUID() };
           engine = new PongEngine(id, tp, bp);
         }
-        break;
-      case 'test':
-        engine = new TestEngine(id);
         break;
       case 'game2':
         engine = new Game2SimpleEngine(id);

@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { matchmakingManager } from '../../realtime/Matchmaking';
+import { loseBonus, matchmakingManager, winBonus } from '../../realtime/Matchmaking';
 
 export default async function matchmakingRoutes(app: FastifyInstance) {
   // Rejoindre la file de matchmaking pour game2
@@ -34,7 +34,7 @@ export default async function matchmakingRoutes(app: FastifyInstance) {
         `).get(game2Id, Number(body.playerId), Number(body.playerId), Number(body.playerId)) as { c?: number } | undefined;
         defeats = Number(d?.c || 0);
       }
-      const elo = 400 + wins * 15 - defeats * 17;
+      const elo = 400 + wins * winBonus + defeats * loseBonus;
 
       const res = matchmakingManager.joinGame2(body.playerId, body.username, elo);
       return res;
