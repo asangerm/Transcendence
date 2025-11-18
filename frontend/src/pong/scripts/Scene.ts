@@ -34,13 +34,13 @@ const defaultScene = {
             "position": [0, -1, 0],
             "size": [10000, 0.5, 10000],
 			"color": [0.2, 0.2, 0.2],
-			"texture": "https://playground.babylonjs.com/textures/floor.png"
+			// "texture": "https://playground.babylonjs.com/textures/floor.png"
         },{
             "name": "arena",
             "type": "box",
             "position": [0, -0.25, 0],
             "size": [50, 0.5, 100],
-			"color": [0.2, 0.8, 0.5],
+			"color": [1.0, 1.0, 1.0],
 			"texture": "checker"
         },
         {

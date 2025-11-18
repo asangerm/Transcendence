@@ -21,7 +21,7 @@ function getProtocol(): { http: string; ws: string } {
     }
   
     const { http } = getProtocol();
-    return `${http}://localhost:8000`;
+    return `${http}://${window.location.hostname}:8000`;
   }
   
   //paramètre gameId - (Optionnel) ID du jeu à ajouter comme query parameter
@@ -32,7 +32,7 @@ function getProtocol(): { http: string; ws: string } {
   
     if (!baseUrl) {
       const { ws } = getProtocol();
-      baseUrl = `${ws}://localhost:8000/ws`;
+      baseUrl = `${ws}://${window.location.hostname}:8000/ws`;
     }
   
     if (gameId) {

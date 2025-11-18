@@ -63,7 +63,7 @@ export class Renderer {
 			this.camera3d = new FreeCamera('camera', new Vector3(0, 0, -10), this.scene3d);
 			this.camera3d.setTarget(Vector3.Zero());
 			this.light = new HemisphericLight('hemi', new Vector3(0, 1, 0), this.scene3d);
-			this.light.intensity = 0.25;
+			this.light.intensity = 0.9;
 			(this.light as any).groundColor = new Color3(0.2, 0.2, 0.25);
 
 			// Gradient sky dome and billboard sun
@@ -80,23 +80,6 @@ export class Renderer {
 				this.sunMesh.isPickable = false;
 			} catch (e) {
 				console.warn('Gradient sky or sun creation failed:', e);
-			}
-			
-			try {
-				const dir = this.sunDirection ? this.sunDirection.scale(-1) : new Vector3(-0.2, -1, -0.1);
-				this.dirLight = new DirectionalLight('dirLight', dir, this.scene3d);
-				this.dirLight.intensity = 0.6;
-				this.dirLight.position = new Vector3(0, 80, 0);
-				this.shadowGen = new ShadowGenerator(2048, this.dirLight);
-				this.shadowGen.usePercentageCloserFiltering = false;
-				(this.shadowGen as any).usePoissonSampling = true;
-				try {
-					(this.shadowGen as any).bias = 0.00015;
-					(this.shadowGen as any).normalBias = 0.3;
-					(this.shadowGen as any).darkness = 0.45;
-				} catch {}
-			} catch (e) {
-				console.warn('Shadow setup failed:', e);
 			}
 			this.initialized = true;
 		} catch (error) {

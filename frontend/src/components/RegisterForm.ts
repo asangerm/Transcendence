@@ -177,14 +177,14 @@ export class RegisterForm {
     const errorDiv = form.querySelector('#error-message') as HTMLDivElement;
 
     button.disabled = true;
-    button.textContent = 'Creating Account...';
+    button.textContent = 'Création du compte ...';
     errorDiv.classList.add('hidden');
 
     try {
       const result = await AuthService.register(credentials);
       
       if (result.success) {
-        this.showSuccess('Account created successfully!');
+        this.showSuccess('Compte crée avec succes !');
         setTimeout(() => {
           this.onSuccess?.();
         }, 1500);
@@ -196,7 +196,7 @@ export class RegisterForm {
       this.onError?.(error.message);
     } finally {
       button.disabled = false;
-      button.textContent = 'Create Account';
+      button.textContent = 'Créer le compte';
     }
   }
 

@@ -37,10 +37,7 @@ async function buildServer() {
   // DB
   await app.register(dbPlugin);
 
-  // CORS
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-
-  await app.register(fastifyCors, { origin: frontendUrl, credentials: true });
+  await app.register(fastifyCors, { origin: true, credentials: true });
 
   // Cookies
   await app.register(fastifyCookie, {

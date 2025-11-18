@@ -71,7 +71,7 @@ export function renderPong() {
                 }
                 if (gid) {
                     const forfeitSide = (side as 'top' | 'bottom') || 'top';
-                    await fetch(`http://localhost:8000/api/games/${gid}/forfeit`, {
+                    await fetch(`http://${window.location.hostname}:8000/api/games/${gid}/forfeit`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ side: forfeitSide })

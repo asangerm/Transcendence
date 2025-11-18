@@ -10,7 +10,7 @@ export default async function loginRoute(app: FastifyInstance) {
       | { id: number; email: string; display_name: string; password_hash: string; google_id?: string }
       | undefined;
 
-    if (!user) return reply.status(401).send({ error: true, message: "Invalid email or password" });
+    if (!user) return reply.status(401).send({ error: true, message: "Email ou mot de passe invalide" });
 
     // Vérifier si c'est un compte Google avant bcrypt.compare()
     if (user.google_id || !user.password_hash) {
