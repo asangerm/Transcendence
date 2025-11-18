@@ -252,6 +252,9 @@ export class Pong {
         if (!state.gameOver) {
             this.endScreen = { mode: 'none' };
         }
+        if (!state.gameOver) {
+            this.endScreen = { mode: 'none' };
+        }
         // Update targets for smoothing and extrapolation
         this.serverTargets.ballPos = { ...state.ball.position };
         this.serverTargets.ballVel = { ...state.ball.velocity };
@@ -259,6 +262,37 @@ export class Pong {
         this.serverTargets.padBottomX = state.paddles.bottom.position.x;
         this.serverTargets.lastRecv = performance.now();
         this.controller.setScores(state.scores);
+        const topLabel = state.players.top?.username || state.players.top?.id || '';
+        const bottomLabel = state.players.bottom?.username || state.players.bottom?.id || '';
+        if (topLabel) this.playerLabels.top = String(topLabel);
+        if (bottomLabel) this.playerLabels.bottom = String(bottomLabel);
+        if (state.gameOver && state.winner) {
+            const winnerSide = state.winner;
+            const label = winnerSide === 'top' ? this.playerLabels.top : this.playerLabels.bottom;
+            const matchType = this.controller.getMatchType();
+            const fallback = winnerSide === 'top' ? 'Joueur 1' : 'Joueur 2';
+            const winnerLabel = label || fallback;
+            if (matchType === 'online') {
+                const mySide = this.getPlayerSide();
+                if (mySide) {
+                    this.endScreen = {
+                        mode: mySide === winnerSide ? 'victory' : 'defeat',
+                        winner: winnerLabel
+                    };
+                }
+            } else {
+                this.endScreen = {
+                    mode: 'victory',
+                    winner: winnerLabel
+                };
+            }
+            if (this.tournamentMatchId != null && !this.tournamentRedirectDone) {
+                this.tournamentRedirectDone = true;
+                setTimeout(() => {
+                    window.location.href = '/tournaments';
+                }, 2000);
+            }
+        }
         const topLabel = state.players.top?.username || state.players.top?.id || '';
         const bottomLabel = state.players.bottom?.username || state.players.bottom?.id || '';
         if (topLabel) this.playerLabels.top = String(topLabel);
