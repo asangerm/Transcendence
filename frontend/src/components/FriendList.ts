@@ -62,7 +62,7 @@ export class FriendsListComponent {
 		this.container.innerHTML = `
 			<div class="max-w-6xl mx-auto px-6 py-8">
 				<p class="text-3xl font-bold mb-6 text-center text-text dark:text-text-dark">
-					${this.isOwnList ? "Vous n’avez aucun ami pour le moment." : "Aucun ami à afficher."}
+					${this.isOwnList ? "Vous ne suivez personne pour le moment." : "Aucun suivi à afficher."}
 				</p>
 				<div class="flex justify-end w-full mb-6">
 					<div class="flex justify-end w-full mb-6">
@@ -91,7 +91,7 @@ export class FriendsListComponent {
 		this.container.innerHTML = `
 		<div class="max-w-6xl mx-auto px-6 py-8">
 			<h2 class="text-3xl font-bold mb-6 text-center text-text dark:text-text-dark">
-			${this.isOwnList ? "Mes amis" : `Amis de ${this.username}`}
+			${this.isOwnList ? "Mes joueurs suivis" : `Amis de ${this.username}`}
 			</h2>
 
 			<div class="flex justify-end w-full mb-6">
@@ -140,7 +140,7 @@ export class FriendsListComponent {
 							<a href="/profile/${safeName}" class="font-bold text-text dark:text-text-dark mt-6">${safeName}</a>
 							<div class="flex justify-center items-center gap-2 mb-3">
 							<span class="text-sm text-text-muted dark:text-text-muted-dark">
-								Amis depuis : ${friend.since}
+								Suivi depuis : ${friend.since}
 							</span>
 							</div>
 						</div>
@@ -169,7 +169,7 @@ export class FriendsListComponent {
 								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20">
 									<path d="M11 5a3 3 0 1 1-6 0a3 3 0 0 1 6 0ZM2.046 15.253c-.058.468.172.92.57 1.175A9.953 9.953 0 0 0 8 18c1.982 0 3.83-.578 5.384-1.573c.398-.254.628-.707.57-1.175a6.001 6.001 0 0 0-11.908 0ZM12.75 7.75a.75.75 0 0 0 0 1.5h5.5a.75.75 0 0 0 0-1.5h-5.5Z"/>
 								</svg>
-								Retirer des amis
+								Retirer des suivis
 							</button>`
 							:
 							`<button data-action="add"
@@ -178,7 +178,7 @@ export class FriendsListComponent {
 								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20">
 									<path d="M11 5a3 3 0 1 1-6 0a3 3 0 0 1 6 0ZM2.615 16.428a1.224 1.224 0 0 1-.569-1.175a6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 8 18a9.953 9.953 0 0 1-5.385-1.572ZM16.25 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z"/>
 								</svg>
-								Ajouter en ami
+								Suivre
 							</button>`
 						}
 						

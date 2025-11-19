@@ -120,7 +120,7 @@ export class NavBar {
 									<!-- Menu déroulant -->
 									<div id="profile-dropdown" class="absolute transition-all duration-150 invisible origin-top-right scale-0 z-50 top-10 right-0 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
 										<a href="/profile/${safeDisplayName}" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Profil</a>
-										<a href="/friends" id="friends" class="block w-full text-left px-4 py-2 hover:bg-gray-700 ">Amis</a>
+										<a href="/friends" id="friends" class="block w-full text-left px-4 py-2 hover:bg-gray-700 ">Suivis</a>
 										<a id="logout" 
 											class="flex items-center gap-2 w-full px-4 py-2 text-left text-red-500 hover:bg-gray-700 rounded-b-lg border-t border-gray-600">
 											<svg xmlns="http://www.w3.org/2000/svg" 
