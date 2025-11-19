@@ -43,7 +43,7 @@ export function renderGameSelection() {
                             </div>
                             <div class="p-6">
                                 <h2 class="text-2xl font-bold mb-2">Tic-tac-toe</h2>
-                                <p class="text-muted dark:text-muted-dark">"Le fameux jeu où deux adversaires s’affrontent pour prouver qui sait mieux dessiner des croix et des ronds… et finissent toujours par égalité. (pvp en ligne)"</p>
+                                <p class="text-muted dark:text-muted-dark">"Le fameux jeu où deux adversaires s’affrontent et ........... finissent toujours par égalité. (pvp en ligne)"</p>
                             </div>
                         </div>
                     </a>
