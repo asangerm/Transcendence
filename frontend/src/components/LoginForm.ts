@@ -174,7 +174,9 @@ export class LoginForm {
         callback: this.handleGoogleResponse.bind(this),
         auto_select: false,
         cancel_on_tap_outside: true,
-        use_fedcm_for_prompt: true
+        use_fedcm_for_prompt: false,
+        itp_support: true,
+        ux_mode: 'popup'
       });
 
       window.google.accounts.id.renderButton(googleContainer as HTMLElement, {
@@ -184,7 +186,7 @@ export class LoginForm {
         shape: 'rectangular',
         text: 'signin_with',
         logo_alignment: 'left',
-        width: '100%'
+        width: 350
       });
 
     } catch (error: any) {
