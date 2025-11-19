@@ -58,7 +58,6 @@ export class GameRenderer {
         }
         this.animationFrameId = requestAnimationFrame(() => {
             this.renderer.render(scene, scores, isOnline, players, result);
-            // this.updateStatusIndicator(isOnline);
         });
     }
 
