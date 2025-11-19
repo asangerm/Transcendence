@@ -552,11 +552,7 @@ class PongLobby {
             this.state.availableRooms = data.rooms;
             this.updateRoomsList();
         } catch (error) {
-<<<<<<< Updated upstream
-            // ignore load errors
-=======
             console.error('Échec du chargement des salles:', error);
->>>>>>> Stashed changes
         }
     }
 
