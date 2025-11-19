@@ -121,7 +121,6 @@ export class GameController {
         return snapshot;
     }
 
-    // Allow renderer/bootstrap to inform aspect ratio changes without renderer mutating logic state directly
     setViewportSize(width: number, height: number): void {
         if (height > 0) {
             this.scene.camera.aspect = width / height;

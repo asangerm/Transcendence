@@ -16,7 +16,6 @@ export class Pong {
     private online: boolean;
     private onlineKeys: { [key: string]: boolean };
     private lastFrameTime: number;
-    private paddleSpeed: number;
     private serverTargets: {
         ballPos: { x: number; y: number; z: number } | null;
         ballVel: { x: number; y: number; z: number } | null;
@@ -24,7 +23,6 @@ export class Pong {
         padBottomX: number | null;
         lastRecv: number;
     };
-    private _lastPadSyncAt: number | null = null;
     private _tpsCount: number = 0;
     private _tpsLastAt: number = performance.now();
     private _tps: number = 0;
@@ -43,7 +41,6 @@ export class Pong {
         this.online = false;
         this.onlineKeys = {};
         this.lastFrameTime = performance.now();
-        this.paddleSpeed = 50;
         this.serverTargets = { ballPos: null, ballVel: null, padTopX: null, padBottomX: null, lastRecv: 0 };
         this.controller.setOnStateUpdated((snapshot: ControllerSnapshot) => {
             this.renderer.requestFrame(snapshot.scene, snapshot.scores, this.online);
@@ -331,10 +328,10 @@ export class Pong {
         this.serverTargets.padBottomX = state.paddles.bottom.position.x;
         this.serverTargets.lastRecv = performance.now();
         this.controller.setScores(state.scores);
-        const topLabel = state.players.top?.username || state.players.top?.id || '';
-        const bottomLabel = state.players.bottom?.username || state.players.bottom?.id || '';
-        if (topLabel) this.playerLabels.top = String(topLabel);
-        if (bottomLabel) this.playerLabels.bottom = String(bottomLabel);
+        const topLabel_ = state.players.top?.username || state.players.top?.id || '';
+        const bottomLabel_ = state.players.bottom?.username || state.players.bottom?.id || '';
+        if (topLabel_) this.playerLabels.top = String(topLabel_);
+        if (bottomLabel_) this.playerLabels.bottom = String(bottomLabel_);
         if (state.gameOver && state.winner) {
             const winnerSide = state.winner;
             const label = winnerSide === 'top' ? this.playerLabels.top : this.playerLabels.bottom;

@@ -158,7 +158,7 @@ class PongLobby {
         this.state.username = this.getCurrentUsername();
         
         this.setupEventListeners();
-        this.connectWebSocket();
+        this.startPolling();
         const restored = await this.checkExistingRoom();
         if (!restored) {
             await this.loadAvailableRooms();
@@ -201,14 +201,6 @@ class PongLobby {
 
         document.getElementById('refresh-rooms-btn')?.addEventListener('click', () => {
             this.loadAvailableRooms();
-        });
-
-        document.getElementById('room-name')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.createRoom();
-        });
-
-        document.getElementById('room-id')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.joinRoom();
         });
     }
 
@@ -326,12 +318,11 @@ class PongLobby {
 			const nextDuels = data.duels || [];
 			this.duels = nextDuels;
             this.lastNonEmptyDuels = nextDuels;
-			// if (nextDuels.length) {
-			// }
+			
 			this.hasLoadedDuelsOnce = true;
 			this.hasPendingOwnRequest = this.duels.some((d: any) => d.requester_id?.toString() === this.state.playerId && d.status === 'pending');
 		} catch {
-			// Keep previous duels on error to avoid UI flicker
+            
 		} finally {
 			this.updateDuelSelectionUI();
 			this.updateDuelsList();
@@ -445,13 +436,13 @@ class PongLobby {
 				return;
 			}
             this.duels = this.duels.filter((d: any) => d.id !== duelId);
-            // this.lastNonEmptyDuels = this.duels.length ? this.lastNonEmptyDuels.filter((d: any) => d.id !== duelId) : [];
 			this.showMessage('Demande annulée', 'info');
 			await this.loadDuels();
 		} catch {
 			this.showMessage('Échec de l’annulation', 'error');
 		}
 	}
+
     private async checkExistingRoom(): Promise<boolean> {
         try {
             const response = await fetch('/api/rooms?gameType=pong');
@@ -478,14 +469,9 @@ class PongLobby {
                 return true;
             }
         } catch (error) {
-            console.error('Failed to restore existing room:', error);
+
         }
         return false;
-    }
-
-    private connectWebSocket() {
-        console.log('Using HTTP polling instead of WebSocket');
-        this.startPolling();
     }
 
     private startPolling() {
@@ -499,48 +485,11 @@ class PongLobby {
         }, 1000);
     }
 
-    private async createRoom() {
-        const roomNameInput = document.getElementById('room-name') as HTMLInputElement;
-        const roomName = roomNameInput.value.trim();
-        
-        if (!roomName) {
-            this.showMessage('Please enter a room name', 'error');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/rooms', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: roomName,
-                    ownerId: this.state.playerId,
-                    ownerUsername: this.state.username,
-                    gameType: 'pong'
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to create room');
-            }
-
-            const room = await response.json();
-            this.state.currentRoom = room;
-            this.state.isOwner = true;
-            this.updateUI();
-            this.showMessage('Room created successfully!', 'success');
-            roomNameInput.value = '';
-        } catch (error) {
-            this.showMessage('Failed to create room', 'error');
-        }
-    }
-
     private async joinRoom() {
         const roomIdInput = document.getElementById('room-id') as HTMLInputElement;
         const roomId = roomIdInput.value.trim();
         
         if (!roomId) {
-            this.showMessage('Please enter a room ID', 'error');
             return;
         }
 
@@ -556,17 +505,17 @@ class PongLobby {
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.error || 'Failed to join room');
+                throw new Error(error.error || 'Échec de la connexion à la salle');
             }
 
             const room = await response.json();
             this.state.currentRoom = room;
             this.state.isOwner = false;
             this.updateUI();
-            this.showMessage('Joined room successfully!', 'success');
+            this.showMessage('Rejoint la salle avec succès!', 'success');
             roomIdInput.value = '';
         } catch (error) {
-            this.showMessage(error instanceof Error ? error.message : 'Failed to join room', 'error');
+            this.showMessage(error instanceof Error ? error.message : 'Échec de la connexion à la salle', 'error');
         }
     }
 
@@ -606,11 +555,11 @@ class PongLobby {
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.error || 'Failed to start game');
+                throw new Error(error.error || 'Échec du démarrage du jeu');
             }
 
             const result = await response.json();
-            this.showMessage('Game starting...', 'success');
+            this.showMessage('Demarrage du jeu...', 'success');
             
             this.state.currentRoom.status = 'in_progress';
             this.state.currentRoom.gameId = result.gameId;
@@ -620,20 +569,20 @@ class PongLobby {
                 window.location.href = `/pong?mode=online&gameId=${result.gameId}&side=${side}`;
             }, 500);
         } catch (error) {
-            this.showMessage(error instanceof Error ? error.message : 'Failed to start game', 'error');
+            this.showMessage(error instanceof Error ? error.message : 'Échec du démarrage du jeu', 'error');
         }
     }
 
     private async loadAvailableRooms() {
         try {
             const response = await fetch('/api/rooms?gameType=pong');
-            if (!response.ok) throw new Error('Failed to load rooms');
+            if (!response.ok) throw new Error('Échec du chargement des salles');
             
             const data = await response.json();
             this.state.availableRooms = data.rooms;
             this.updateRoomsList();
         } catch (error) {
-            // ignore load errors
+            console.error('Échec du chargement des salles:', error);
         }
     }
 
@@ -651,7 +600,7 @@ class PongLobby {
                     this.showMessage('Salle annulée', 'info');
                     return;
                 }
-                throw new Error('Failed to load room details');
+                throw new Error('Échec du chargement des détails de la salle');
             }
             
             const room = await response.json();
@@ -664,7 +613,7 @@ class PongLobby {
 					if (gRes.ok) {
 						const gameState = await gRes.json();
 						if (!gameState.gameOver) {
-							this.showMessage('Game starting...', 'success');
+							this.showMessage('Démarrage du jeu...', 'success');
 							setTimeout(() => {
 								const side = room.players.top?.id === this.state.playerId ? 'top' : 'bottom';
 								window.location.href = `/pong?mode=online&gameId=${room.gameId}&side=${side}`;
@@ -677,7 +626,7 @@ class PongLobby {
             
             this.updateUI();
         } catch (error) {
-            console.error('Failed to load room details:', error);
+            console.error('Échec du chargement des détails de la salle:', error);
         }
     }
 	
@@ -750,14 +699,14 @@ class PongLobby {
             const isCurrentPlayer = player.id === this.state.playerId;
             playerDiv.innerHTML = `
                 <div class="flex items-center justify-between">
-                    <span class="${isCurrentPlayer ? 'text-blue-400 font-semibold' : 'text-white'}">${player.username}${isCurrentPlayer ? ' (You)' : ''}</span>
+                    <span class="${isCurrentPlayer ? 'text-blue-400 font-semibold' : 'text-white'}">${player.username}${isCurrentPlayer ? ' (Vous)' : ''}</span>
                     <span class="px-2 py-1 rounded text-xs ${player.ready ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'}">
-                        ${player.ready ? 'Ready' : 'Not Ready'}
+                        ${player.ready ? 'Prêt' : 'Pas prêt'}
                     </span>
                 </div>
             `;
         } else {
-            playerDiv.innerHTML = '<span class="text-sm text-gray-400">Waiting for player...</span>';
+            playerDiv.innerHTML = '<span class="text-sm text-gray-400">En attente d’un joueur...</span>';
         }
     }
 
@@ -765,11 +714,10 @@ class PongLobby {
         const roomsListDiv = document.getElementById('rooms-list');
         if (!roomsListDiv) return;
 
-        // Filter rooms to only show pong rooms as a safety measure
         const pongRooms = this.state.availableRooms.filter(room => (room as any).gameType === 'pong' || !(room as any).gameType);
 
         if (pongRooms.length === 0) {
-            roomsListDiv.innerHTML = '<div class="text-center text-gray-400 py-4">No available rooms</div>';
+            roomsListDiv.innerHTML = '<div class="text-center text-gray-400 py-4">Aucune salle disponible</div>';
             return;
         }
 
@@ -781,10 +729,10 @@ class PongLobby {
                     <div class="flex justify-between items-center">
                         <div>
                             <h3 class="font-semibold text-white">${room.name}</h3>
-                            <p class="text-sm text-gray-400">Owner: ${room.ownerUsername}</p>
+                            <p class="text-sm text-gray-400">Créé par: ${room.ownerUsername}</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm text-gray-400">${playerCount}/2 players</p>
+                            <p class="text-sm text-gray-400">${playerCount}/2 joueurs</p>
                             <p class="text-xs text-gray-500">${new Date(room.createdAt).toLocaleTimeString()}</p>
                         </div>
                     </div>

@@ -34,7 +34,7 @@ export function renderPong() {
         <div class="w-full h-full overflow-hidden">
             <main class="container mx-auto px-4 py-8">
                 <div class="bg-primary dark:bg-primary-dark p-8 rounded-lg shadow-md">
-                    <h1 class="text-3xl font-bold mb-4">Jeu Pong</h1>
+                    <h1 class="text-3xl font-bold mb-4">Pong</h1>
                     <div class="mb-4 text-center">
                         <p class="text-lg font-semibold text-secondary dark:text-secondary-dark">
                             ${controlsText}
@@ -47,7 +47,6 @@ export function renderPong() {
                         </div>` : ``}
                     </div>
                     <div id="gameCanvas" class="w-full h-96 rounded-lg">
-                        <!-- Game canvas will be inserted here -->
                     </div>
                 </div>
             </main>

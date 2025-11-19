@@ -28,11 +28,12 @@ import acceptDuel from "./duelRoutes/acceptDuel";
 import cancelDuel from "./duelRoutes/cancelDuel";
 import getDuels from "./duelRoutes/getDuels";
 
-// RGPD
+// realtime games
 import gameRoutes from "./gameRoutes";
 import roomRoutes from "./roomRoutes";
 import matchmakingRoutes from "./matchmakingRoutes";
 import { registerRealtime } from "../realtime/ws";
+
 // Friends
 import getFriends from "./friendsRoutes/getFriends";
 import addFriend from "./friendsRoutes/addFriend";
@@ -81,14 +82,9 @@ export default async function routes(app: FastifyInstance) {
   app.register(cancelDuel, { prefix: "/api" });
   app.register(getDuels, { prefix: "/api" });
 
-  //RGPD
-  // Games (HTTP)
   app.register(gameRoutes, { prefix: "/api" });
-  // Rooms (HTTP)
   app.register(roomRoutes, { prefix: "/api" });
-  // Matchmaking (HTTP)
   app.register(matchmakingRoutes, { prefix: "/api" });
-  // Realtime (WS) - includes both game and room WebSocket functionality
   await registerRealtime(app);
   
   // Friends
