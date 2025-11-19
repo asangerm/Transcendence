@@ -1,4 +1,3 @@
-import { Ball } from './Ball';
 import { Scene, GameObject } from './Scene';
 
 export class Renderer {
@@ -8,7 +7,6 @@ export class Renderer {
 	private scene3d: any | null;
 	private camera3d: any | null;
 	private light: any | null;
-	private dirLight: any | null;
 	private meshByName: Map<string, any>;
 	private skyDome: any | null;
 	private sunMesh: any | null;
@@ -29,7 +27,6 @@ export class Renderer {
 		this.scene3d = null;
 		this.camera3d = null;
 		this.light = null;
-		this.dirLight = null;
 		this.meshByName = new Map();
 		this.skyDome = null;
 		this.sunMesh = null;
@@ -55,7 +52,7 @@ export class Renderer {
 		if (this.initialized) return;
 		try {
 			this.babylon = await import('@babylonjs/core');
-			const { Engine, Scene: BabylonScene, FreeCamera, HemisphericLight, DirectionalLight, ShadowGenerator, Vector3, Color4, MeshBuilder, StandardMaterial, Color3, DynamicTexture, AbstractMesh, Mesh } = this.babylon;
+			const { Engine, Scene: BabylonScene, FreeCamera, HemisphericLight, Vector3, Color4, MeshBuilder, StandardMaterial, Color3, AbstractMesh } = this.babylon;
 			this.engine = new Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
 			this.scene3d = new BabylonScene(this.engine);
 			this.scene3d.clearColor = new Color4(0.3, 0.35, 0.4, 1);
@@ -216,14 +213,6 @@ export class Renderer {
 			}
 		}
         this.scene3d.render();
-		this.frameCount++;
-		const currentTime = performance.now();
-		const elapsed = currentTime - this.lastTime;
-		if (elapsed >= 1000) {
-			this.fps = Math.round((this.frameCount * 1000) / elapsed);
-			this.frameCount = 0;
-			this.lastTime = currentTime;
-		}
         const topName = players?.top || '';
         const bottomName = players?.bottom || '';
         const mode = result?.mode || 'none';
@@ -241,8 +230,7 @@ export class Renderer {
             </div>`;
         }
 		this.textDisplay.innerHTML = `
-            <span class="text-red-600 absolute top-0 right-2 italic font-light">${this.fps}fps</span>
-            <span class="text-white absolute top-0 left-2 italic font-light">${this.tps}tps</span>
+            <span class="text-white text-xs absolute top-0 left-2 italic font-light">${this.tps}tps</span>
             <span class="absolute top-6 left-2 text-lg font-sans font-semibold italic text-green-400">${topName}</span>
             <span class="absolute top-6 right-2 text-lg font-sans font-semibold italic text-blue-400">${bottomName}</span>
 			<span class="opacity-70 font-sans italic text-green-600 absolute -bottom-4 left-2 text-[96px]">${scores.top}</span>

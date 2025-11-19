@@ -221,11 +221,11 @@ export async function registerRealtime(app: FastifyInstance) {
     }
   };
 
-  // Update loop and broadcast ~120fps for very smooth ball updates
+  // Update loop and broadcast ~120fps
   setInterval(() => {
     gameManager.tickAll();
     for (const gameId of Array.from(connections.keys())) broadcastState(gameId);
-  }, 8);
+  },  (1000 / 120));
 
   // Health check endpoint for WebSocket
   app.get('/ws/health', async (req: any, reply: any) => {
