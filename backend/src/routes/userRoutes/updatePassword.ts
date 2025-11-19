@@ -19,26 +19,19 @@ export default async function updatePassword(app: FastifyInstance) {
     // Récupération du hash du mot de passe actuel
     const row = app.db
       .prepare("SELECT password_hash FROM users WHERE id = ?")
-<<<<<<< Updated upstream
-      .get(id) as { password_hash: string; google_id?: string  } | undefined;
-=======
-      .get(userId) as { password_hash: string } | undefined;
+      .get(userId) as { password_hash: string; google_id?: string  } | undefined;
 
->>>>>>> Stashed changes
     if (!row) {
       return reply.status(404).send({ error: true, message: "Utilisateur non trouvé" });
     }
 
-<<<<<<< Updated upstream
     if (row.google_id || !row.password_hash) {
       return reply.status(400).send({
         error: "Cannot change password for Google accounts"
       });
     }
 
-=======
     // Vérification de l’ancien mot de passe
->>>>>>> Stashed changes
     const match = await bcrypt.compare(oldPassword, row.password_hash);
     if (!match) {
       return reply.status(400).send({ error: true, message: "Mot de passe actuel incorrect" });
