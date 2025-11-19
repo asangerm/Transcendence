@@ -46,6 +46,7 @@ export class TournamentService {
 			return response.data.data;
 		} catch (error: any) {
 			if (error?.response?.status === 404) {
+				console.warn(error.response.data.message);
 				return null;
 			}
 			throw error;
