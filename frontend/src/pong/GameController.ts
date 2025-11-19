@@ -25,7 +25,7 @@ export class GameController {
     private onStateUpdated: ((snapshot: ControllerSnapshot) => void) | null;
     private topControls: { left: string; right: string };
     private bottomControls: { left: string; right: string };
-    private matchType: 'online' | 'local' = 'online';
+    private matchType: 'online' | 'ai' | 'local' = 'online';
     private scores: { top: number; bottom: number };
 
     constructor(options: ControllerOptions = {}) {
@@ -69,11 +69,11 @@ export class GameController {
         if (this.bottomPaddle) this.bottomPaddle.setControls(this.bottomControls.left, this.bottomControls.right);
     }
 
-    setMatchType(kind: 'online' | 'local'): void {
+    setMatchType(kind: 'online' | 'local' | 'ai' ): void {
         this.matchType = kind;
     }
 
-    getMatchType(): 'online' | 'local' {
+    getMatchType(): 'online' | 'local' | 'ai' {
         return this.matchType;
     }
 
