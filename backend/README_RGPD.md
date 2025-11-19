@@ -9,9 +9,9 @@
 ## Utilisateurs
 - `GET /users` : Liste tous les utilisateurs
 - `GET /users/:id` : Détail utilisateur
-- `PUT /users/:id` : Mise à jour utilisateur
-- `POST /users/:id/anonymize` : Anonymisation des données
-- `DELETE /users/:id` : Suppression complète du compte
+- `PUT /users/` : Mise à jour utilisateur
+- `POST /users/anonymize` : Anonymisation des données
+- `DELETE /users/` : Suppression complète du compte
 
 ## RGPD
 - `GET /rgpd/privacy` : Affiche les droits RGPD et les actions possibles sur vos données

@@ -607,8 +607,7 @@ private async handleProfileUpdate(event: Event): Promise<void> {
 
     try {
         const updatedUser = await UserService.updateInfos(
-            { display_name: displayName, email },
-            this.userProfile.id
+            { display_name: displayName, email }
         );
 
         alert('Profil mis à jour avec succès !');
@@ -730,7 +729,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 	if (!confirmed) return;
 
 	try {
-		const response = await UserService.anonymizeAccount(this.userProfile.id);
+		const response = await UserService.anonymizeAccount();
 		alert(response.message || "Votre compte a été anonymisé avec succès.");
 
 		// Nettoyage local pour forcer une reconnexion
@@ -765,7 +764,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 	if (!confirmed) return;
 
 	try {
-		const response = await UserService.deleteAccount(this.userProfile.id);
+		const response = await UserService.deleteAccount();
 		alert(response.message || "Votre compte a été supprimé avec succès.");
 
 		// Nettoyage local AVANT la redirection
@@ -781,15 +780,13 @@ private async handleAnonymizeAccount(): Promise<void> {
   }
 
 	private async handleExportData(): Promise<void> {
-		if (!this.userProfile) return;
-
 		try {
-			const blob = await UserService.exportData(this.userProfile.id);
+			const blob = await UserService.exportData();
 			const url = window.URL.createObjectURL(blob);
 
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `user_${this.userProfile.id}_export.json`;
+			a.download = `user_export.json`;
 			document.body.appendChild(a);
 			a.click();
 			a.remove();

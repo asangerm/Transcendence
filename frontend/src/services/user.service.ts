@@ -68,11 +68,8 @@ export class UserService {
 		}
 	}
 
- 	static async updateInfos(updates: { display_name: string; email: string }, userId?: number): Promise<User> {
-		if (!userId) {
-			throw new Error("User ID is required to update profile.");
-		}
-		const response = await apiService.put(`/users/${userId}`, updates);
+ 	static async updateInfos(updates: { display_name: string; email: string }): Promise<User> {
+		const response = await apiService.put(`/users`, updates);
 		return response.data;
 	}
 
@@ -132,23 +129,24 @@ export class UserService {
     return response.data.users;
   }
 
-  static async changePassword(userId: number, oldPassword: string, newPassword: string): Promise<{ message: string }> {
-    const response = await apiService.put(`/users/${userId}/password`, { oldPassword, newPassword });
+ static async changePassword(oldPassword: string, newPassword: string): Promise<{ message: string }> {
+  const response = await apiService.put(`users/password`, { oldPassword, newPassword });
+  return response.data;
+}
+
+
+  static async anonymizeAccount(): Promise<{ message: string }> {
+    const response = await apiService.post(`/users/anonymize`);
     return response.data;
   }
 
-  static async anonymizeAccount(userId: number): Promise<{ message: string }> {
-    const response = await apiService.post(`/users/${userId}/anonymize`);
-    return response.data;
-  }
-
-  static async deleteAccount(userId: number): Promise<{ message: string }> {
-    const response = await apiService.delete(`/users/${userId}`);
+  static async deleteAccount(): Promise<{ message: string }> {
+    const response = await apiService.delete(`/users/users`);
     return response.data;
   }
     
-  static async exportData(userId: number): Promise<Blob> {
-    const response = await apiService.get(`/users/${userId}/export`, {
+  static async exportData(): Promise<Blob> {
+    const response = await apiService.get(`/users/export`, {
       responseType: 'arraybuffer', // Important pour récupérer un Blob
     });
     return new Blob([response.data], { type: "application/json" });

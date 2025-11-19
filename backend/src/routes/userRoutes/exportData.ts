@@ -2,18 +2,18 @@ import { FastifyInstance } from "fastify";
 import { requireAuth } from "../../middleware/authMiddleware";
 
 export default async function exportData(app: FastifyInstance & { db: any }) {
-  app.get("/:id/export", { preHandler: [requireAuth] }, async (req, reply) => {
-    const { id } = req.params as { id: string };
-    const userId = Number(id);
+  app.get("/export", { preHandler: [requireAuth] }, async (req: any, reply) => {
+    const userId = req.user.id;
 
     try {
-      // Vérification de l'utilisateur
-      const user = app.db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+      // Vérification de l'utilisateur SANS MDP HASH et SANS GOOGLE ID
+      const user = app.db
+      .prepare("SELECT id, email, display_name, avatar_url, is_online, wins, losses, created_at, updated_at FROM users WHERE id = ?")
+      .get(userId);
       if (!user) return reply.status(404).send({ error: "Utilisateur introuvable" });
 
-      delete user.password_hash;
 
-      // Récupération des données associées
+      // Récupération des données associées D
       const friends = app.db.prepare("SELECT * FROM friends WHERE user_id = ? OR friend_id = ?").all(userId, userId);
       const matches = app.db.prepare("SELECT * FROM matches WHERE player1_id = ? OR player2_id = ?").all(userId, userId);
       

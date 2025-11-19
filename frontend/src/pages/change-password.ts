@@ -91,7 +91,7 @@ document.head.appendChild(style);
     }
 
     try {
-      await UserService.changePassword(user.id, oldPassword, newPassword);
+      await UserService.changePassword(oldPassword, newPassword);
       alert('Mot de passe changé avec succès !');
       navigateTo('/profile');
     } catch (err: any) {
