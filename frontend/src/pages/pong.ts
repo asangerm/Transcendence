@@ -1,4 +1,5 @@
 import { Pong } from '../pong';
+import { getApiUrl } from "../config";
 
 export function renderPong() {
     const url = new URL(window.location.href);
@@ -73,7 +74,7 @@ export function renderPong() {
                 }
                 if (gid) {
                     const forfeitSide = (side as 'top' | 'bottom') || 'top';
-                    await fetch(`http://${window.location.hostname}:8000/api/games/${gid}/forfeit`, {
+                    await fetch(`${getApiUrl()}/api/games/${gid}/forfeit`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ side: forfeitSide })

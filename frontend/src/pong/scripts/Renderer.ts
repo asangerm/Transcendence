@@ -15,9 +15,6 @@ export class Renderer {
 	private initialized: boolean = false;
 	private textDisplay: HTMLDivElement;
 	
-	private frameCount: number = 0;
-	private lastTime: number = performance.now();
-	private fps: number = 0;
 	private tps: number = 0;
 
 	constructor(canvas: HTMLCanvasElement, textDisplay: HTMLDivElement) {

@@ -2,7 +2,6 @@ import type { ServerGameState, Vector3 } from './gameTypes';
 
 export class PongEngine {
   private state: ServerGameState;
-  private previousState: ServerGameState | null = null;
   private inputs: { 
     top: { left: number; right: number }; 
     bottom: { left: number; right: number } 
@@ -51,23 +50,12 @@ export class PongEngine {
     return this.state;
   }
 
-  getPreviousState(): ServerGameState | null {
-    return this.previousState;
-  }
-
   setInput(side: 'top' | 'bottom', input: { left: number; right: number }): void {
     this.inputs[side] = input;
   }
 
   setPlayer(side: 'top' | 'bottom', player: { id: string; username?: string }): void {
     this.state.players[side] = player;
-  }
-
-  getStatesForInterpolation(): { current: ServerGameState; previous: ServerGameState | null } {
-    return {
-      current: this.state,
-      previous: this.previousState
-    };
   }
 
   forfeit(side: 'top' | 'bottom'): void {
@@ -114,9 +102,14 @@ export class PongEngine {
 
   update(): boolean {
     const now = Date.now();
-    
-    this.previousState = { ...this.state };
-    if (this.state.gameOver || this.state.scores.top >= 10 || this.state.scores.bottom >= 10) {
+    // Si la partie est déjà terminée (par exemple par forfait), ne pas modifier le vainqueur ni les scores
+    if (this.state.gameOver) {
+      this.state.updatedAt = now;
+      return false;
+    }
+
+    // Condition de victoire par score (si aucun forfait n'a déjà clos la partie)
+    if (this.state.scores.top >= 10 || this.state.scores.bottom >= 10) {
       this.state.gameOver = true;
       this.state.winner = this.state.scores.top > this.state.scores.bottom ? 'top' : 'bottom';
       this.state.updatedAt = now;

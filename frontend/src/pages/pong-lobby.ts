@@ -309,6 +309,7 @@ class PongLobby {
 	private async loadDuels() {
 		if (this.isLoadingDuels) return;
 		this.isLoadingDuels = true;
+        const hadPendingOwnRequest = this.hasPendingOwnRequest;
 		try {
 			const res = await fetch(`/api/duels/${this.state.playerId}`, {
 				credentials: 'include'
@@ -326,6 +327,10 @@ class PongLobby {
 		} finally {
 			this.updateDuelSelectionUI();
 			this.updateDuelsList();
+            // Si une demande a été acceptée (ou supprimée), vérifier immédiatement si une salle a été créée
+            if (hadPendingOwnRequest && !this.hasPendingOwnRequest) {
+                this.loadPlayerRoom();
+            }
 			this.isLoadingDuels = false;
 		}
 	}
@@ -634,7 +639,11 @@ class PongLobby {
 		try {
 			const response = await fetch(`/api/players/${this.state.playerId}/room`);
 			if (!response.ok) return;
-			const room = await response.json();
+			const data = await response.json();
+            if (data && (data as any).error) {
+                return;
+            }
+			const room = data;
 			this.state.currentRoom = room;
 			this.state.isOwner = room.ownerId === this.state.playerId;
 			this.state.isReady = !!(

@@ -70,7 +70,6 @@ export class Pong {
                 this.applyServerState(state);
             });
             await this.realtime.connect(gameId);
-            // attach keyboard -> ws
             this.controller.setPlayer(opts.side || 'top');
             this.controller.setMatchType('online');
             try {
@@ -251,18 +250,14 @@ export class Pong {
             const snapshot: ControllerSnapshot = this.controller.update();
             this.renderer.requestFrame(snapshot.scene, snapshot.scores, false, this.playerLabels, this.endScreen);
         } else {
-            // Send input state to server (server-authoritative paddles)
             this.sendInputState();
 
-            // Ball extrapolation to reduce stutter + reconciliation
             if (ball) {
-                // Extrapolate with last server velocity
                 if (this.serverTargets.ballVel) {
                     ball.position.x += this.serverTargets.ballVel.x * dt;
                     ball.position.y += this.serverTargets.ballVel.y * dt;
                     ball.position.z += this.serverTargets.ballVel.z * dt;
                 }
-                // Reconcile toward server position: snap on large deltas, smooth on small
                 if (this.serverTargets.ballPos) {
                     const dx = this.serverTargets.ballPos.x - ball.position.x;
                     const dy = this.serverTargets.ballPos.y - ball.position.y;
@@ -280,11 +275,10 @@ export class Pong {
                 }
             }
 
-            // Paddle position interpolation from server
             if (padTop && this.serverTargets.padTopX !== null) {
                 const dx = this.serverTargets.padTopX - padTop.position.x;
                 if (Math.abs(dx) > 0.1) {
-                    padTop.position.x += dx * 0.3; // Smooth interpolation
+                    padTop.position.x += dx * 0.3;
                 } else {
                     padTop.position.x = this.serverTargets.padTopX;
                 }
@@ -293,7 +287,7 @@ export class Pong {
             if (padBottom && this.serverTargets.padBottomX !== null) {
                 const dx = this.serverTargets.padBottomX - padBottom.position.x;
                 if (Math.abs(dx) > 0.1) {
-                    padBottom.position.x += dx * 0.3; // Smooth interpolation
+                    padBottom.position.x += dx * 0.3;
                 } else {
                     padBottom.position.x = this.serverTargets.padBottomX;
                 }
@@ -313,7 +307,6 @@ export class Pong {
         return data.id as string;
     }
 
-    // Map server state onto our scene graph for rendering
     private applyServerState(state: ServerGameState): void {
         if (!state.gameOver) {
             this.endScreen = { mode: 'none' };
@@ -321,7 +314,6 @@ export class Pong {
         if (!state.gameOver) {
             this.endScreen = { mode: 'none' };
         }
-        // Update targets for smoothing and extrapolation
         this.serverTargets.ballPos = { ...state.ball.position };
         this.serverTargets.ballVel = { ...state.ball.velocity };
         this.serverTargets.padTopX = state.paddles.top.position.x;
@@ -374,12 +366,9 @@ export class Pong {
     private handleOnlineKey(e: KeyboardEvent, side?: 'top' | 'bottom'): void {
         if (!this.realtime || !side) return;
         
-        // Prevent multiple repeats causing jitter: only act on initial keydown and keyup
         const isDown = e.type === 'keydown' && !e.repeat;
         const isUp = e.type === 'keyup';
         const key = e.key.toLowerCase();
-        
-        // Only handle keys for the player's assigned side
         const leftKey = 'z';
         const rightKey = 'x';
         
@@ -398,7 +387,6 @@ export class Pong {
             }
         }
         
-        // Send input state to server using new format
         this.sendInputState();
     }
     
@@ -443,7 +431,7 @@ export class Pong {
             this.realtime.sendPaddleInput('bottom', bottomLeft, bottomRight);
             return;
         }
-
+        // Determine which paddle this player controls based on their side
         const playerSide = this.getPlayerSide();
         if (playerSide === 'top') {
             const left = this.onlineKeys['x'] ? 1 : 0;
@@ -509,16 +497,12 @@ export class Pong {
     }
     
     private getPlayerSide(): 'top' | 'bottom' | null {
-        // Get the side from the URL parameters or from the game state
         const url = new URL(window.location.href);
         const side = url.searchParams.get('side') as 'top' | 'bottom' | null;
         
         if (side) {
             return side;
         }
-        
-        // Fallback: try to determine from game state
-        // This would need to be implemented based on how the game state tracks players
         return null;
     }
     
@@ -526,7 +510,7 @@ export class Pong {
         if (!this.realtime) return;
         
         const inputData: Record<string, number> = {};
-        inputData[direction] = 2; // Stop command
+        inputData[direction] = 2;
         
         this.realtime.sendInput(inputData);
     }
