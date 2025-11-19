@@ -4,12 +4,11 @@ import { gameManager } from './GameManager';
 
 export class RoomManager {
   private rooms: Map<string, GameRoom> = new Map();
-  private playerRooms: Map<string, string> = new Map(); // playerId -> roomId
+  private playerRooms: Map<string, string> = new Map();
 
   createRoom(ownerId: string, ownerUsername: string, roomName: string, gameType: GameKind = 'pong'): GameRoom {
     const roomId = randomUUID();
     
-    // Set up players based on game type
     let players: any = {};
     if (gameType === 'game2') {
       players = {
@@ -20,7 +19,6 @@ export class RoomManager {
         }
       };
     } else {
-      // Default to pong structure (top/bottom)
       players = {
         top: {
           id: ownerId,
@@ -60,27 +58,22 @@ export class RoomManager {
       return { success: false, error: 'Room is not accepting new players' };
     }
 
-    // Check if player is already in a room
     if (this.playerRooms.has(playerId)) {
       return { success: false, error: 'Player is already in a room' };
     }
 
-    // Check if room is full
     const playerCount = Object.keys(room.players).length;
     if (playerCount >= room.maxPlayers) {
       return { success: false, error: 'Room is full' };
     }
 
-    // If the creator is joining their own room, they're already in it
     if (playerId === room.ownerId) {
       return { success: true, room };
     }
 
-    // Add player based on game type
     if (room.gameType === 'game2') {
       room.players.player2 = { id: playerId, username, ready: false };
     } else {
-      // Default to pong structure
       room.players.bottom = { id: playerId, username, ready: false };
     }
     this.playerRooms.set(playerId, roomId);
@@ -99,18 +92,14 @@ export class RoomManager {
       return { success: false, error: 'Room not found' };
     }
 
-    // If the room creator leaves, delete the entire room
     if (playerId === room.ownerId) {
-      // Remove all players from the room
       for (const player of Object.values(room.players)) {
         this.playerRooms.delete(player.id);
       }
-      // Delete the room
       this.rooms.delete(roomId);
       return { success: true };
     }
 
-    // Remove player from room based on game type
     if (room.gameType === 'game2') {
       if (room.players.player1?.id === playerId) {
         delete room.players.player1;
@@ -118,7 +107,6 @@ export class RoomManager {
         delete room.players.player2;
       }
     } else {
-      // Default to pong structure
       const side = room.players.top?.id === playerId ? 'top' : 'bottom';
       if (side && room.players[side]) {
         delete room.players[side];
@@ -127,7 +115,6 @@ export class RoomManager {
 
     this.playerRooms.delete(playerId);
 
-    // If room is empty, delete it
     if (Object.keys(room.players).length === 0) {
       this.rooms.delete(roomId);
       return { success: true };
@@ -166,7 +153,6 @@ export class RoomManager {
       return { success: false, error: 'Room not found' };
     }
 
-    // Update ready status based on game type
     if (room.gameType === 'game2') {
       if (room.players.player1?.id === playerId) {
         room.players.player1.ready = ready;
@@ -174,7 +160,6 @@ export class RoomManager {
         room.players.player2.ready = ready;
       }
     } else {
-      // Default to pong structure
       const side = room.players.top?.id === playerId ? 'top' : 'bottom';
       if (side && room.players[side]) {
         room.players[side]!.ready = ready;
@@ -198,7 +183,6 @@ export class RoomManager {
       return { success: false, error: 'Game already started or finished' };
     }
 
-    // Check if all players are ready
     const players = Object.values(room.players);
     if (players.length < 2) {
       return { success: false, error: 'Need at least 2 players to start' };
@@ -208,14 +192,12 @@ export class RoomManager {
       return { success: false, error: 'All players must be ready to start' };
     }
 
-    // Create the game
     const gameType = (room.gameType || 'pong') as GameKind;
     const { id: gameId } = gameManager.createGame(gameType, room.players.top as { id: string; username?: string }, room.players.bottom as { id: string; username?: string });
     room.gameId = gameId;
     room.status = 'in_progress';
     console.log('[ROOM] startGame', { roomId, gameId, gameType, ownerId });
 
-    // Set players in the game engine based on game type
     const engine = gameManager.getEngine(gameId);
     if (engine && 'setPlayer' in engine) {
       if (room.gameType === 'game2') {
@@ -227,7 +209,6 @@ export class RoomManager {
         }
         console.log('[ROOM] set players for game2', { roomId, player1: room.players.player1?.id, player2: room.players.player2?.id });
       } else {
-        // Default to pong structure
         if (room.players.top) {
           (engine as any).setPlayer('top', { id: room.players.top.id, username: room.players.top.username });
         }
@@ -260,11 +241,9 @@ export class RoomManager {
   }
 
   cleanup(): void {
-    // Remove empty rooms and finished games
     for (const [roomId, room] of this.rooms.entries()) {
       if (Object.keys(room.players).length === 0 || room.status === 'finished') {
         this.rooms.delete(roomId);
-        // Clean up player room mappings
         for (const [playerId, mappedRoomId] of this.playerRooms.entries()) {
           if (mappedRoomId === roomId) {
             this.playerRooms.delete(playerId);

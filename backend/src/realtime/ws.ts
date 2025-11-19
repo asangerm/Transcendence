@@ -1,6 +1,4 @@
-// Use untyped imports to avoid type resolution issues
 declare const require: any;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const websocket = require('@fastify/websocket');
 type FastifyInstance = any;
 import { gameManager } from './GameManager';
@@ -13,9 +11,9 @@ export async function registerRealtime(app: FastifyInstance) {
   console.log('Registering WebSocket routes...');
 
   const connections = new Map<string, Set<any>>();
-  const roomConnections = new Map<string, Set<any>>(); // roomId -> Set of connections
-  const playerConnections = new Map<string, any>(); // playerId -> connection
-  const recordedMatches = new Set<string>(); // gameId that already wrote a match row
+  const roomConnections = new Map<string, Set<any>>();
+  const playerConnections = new Map<string, any>();
+  const recordedMatches = new Set<string>();
   const recordedTournamentMatches = new Set<number>();
   let cachedPongGameId: number | null = null;
   let cachedGame2Id: number | null = null;
@@ -49,7 +47,6 @@ export async function registerRealtime(app: FastifyInstance) {
       cachedGame2Id = Number(res.lastInsertRowid);
       return cachedGame2Id;
     } catch {
-      // Fallback to 0 if table missing; callsites should guard
       cachedGame2Id = 0;
       return 0;
     }
@@ -61,7 +58,6 @@ export async function registerRealtime(app: FastifyInstance) {
     if (!engine || !(engine instanceof Game2SimpleEngine)) return;
     const state: any = engine.getState?.() ?? null;
     if (!state || !state.gameOver) return;
-    // Extract player IDs (expected numeric strings)
     const p1 = state.players?.player1?.userId;
     const p2 = state.players?.player2?.userId;
     if (!p1 || !p2) return;
@@ -70,7 +66,6 @@ export async function registerRealtime(app: FastifyInstance) {
     if (!Number.isFinite(player1Id) || !Number.isFinite(player2Id)) return;
     const game2Id = ensureGame2Id();
     if (!game2Id) return;
-    // Compute scores and winner
     let winnerId: number | null = null;
     let s1 = 0, s2 = 0;
     if (state.winner === 'player1') {
@@ -99,7 +94,6 @@ export async function registerRealtime(app: FastifyInstance) {
         gameManager.remove(gameId);
       } catch {}
     } catch {
-      // ignore DB errors to avoid crashing WS
     }
   };
 
@@ -177,13 +171,12 @@ export async function registerRealtime(app: FastifyInstance) {
     if (!subs) return;
     const payload = JSON.stringify(stateMsg);
     for (const ws of Array.from(subs)) {
-      try { 
-        ws.send(payload); 
+      try {
+        ws.send(payload);
       } catch {
         subs.delete(ws);
       }
     }
-    // Cleanup empty subscription sets and finished games
     if (subs.size === 0) {
       connections.delete(gameId);
       const state: any = gameManager.getState(gameId);
@@ -197,13 +190,12 @@ export async function registerRealtime(app: FastifyInstance) {
   const broadcastToRoom = (roomId: string, message: RoomMessage) => {
     const connections = roomConnections.get(roomId);
     if (!connections) return;
-    
+
     const payload = JSON.stringify(message);
     for (const ws of connections) {
-      try { 
-        ws.send(payload); 
+      try {
+        ws.send(payload);
       } catch (error) {
-        // Connection might be closed, remove it
         connections.delete(ws);
       }
     }
@@ -215,25 +207,21 @@ export async function registerRealtime(app: FastifyInstance) {
       try {
         connection.send(JSON.stringify(message));
       } catch (error) {
-        // Connection might be closed, remove it
         playerConnections.delete(playerId);
       }
     }
   };
 
-  // Update loop and broadcast ~120fps
   setInterval(() => {
     gameManager.tickAll();
     for (const gameId of Array.from(connections.keys())) broadcastState(gameId);
   },  (1000 / 120));
 
-  // Health check endpoint for WebSocket
   app.get('/ws/health', async (req: any, reply: any) => {
     reply.code(200).send({ status: 'ok', message: 'WebSocket server is running' });
   });
 
   app.get('/ws', { websocket: true }, (connection: any, req: any) => {
-    // Check if this is actually a WebSocket connection
     if (!connection.socket) {
       return;
     }
@@ -241,7 +229,6 @@ export async function registerRealtime(app: FastifyInstance) {
     const url = new URL(req.url ?? '', 'http://localhost');
     const gameId = url.searchParams.get('gameId') ?? '';
     
-    // Allow connection without gameId for initial game creation
     if (gameId) {
       if (!connections.has(gameId)) connections.set(gameId, new Set());
       connections.get(gameId)!.add(connection.socket);
@@ -254,23 +241,17 @@ export async function registerRealtime(app: FastifyInstance) {
         const raw = typeof data === 'string' ? data : (data?.toString?.() ?? '');
         if (!raw) return;
         const anyMsg = JSON.parse(raw);
-        
-        // --- Gère la création de jeu ---
         if (anyMsg?.type === 'create_game' && anyMsg?.kind) {
             const game = gameManager.createGame(anyMsg.kind);
             console.log(`Game created: ${game.id}`);
-            
-            // Add connection to the new game
             if (!connections.has(game.id)) connections.set(game.id, new Set());
             connections.get(game.id)!.add(connection.socket);
             
-            // Send created message with the actual gameId
             connection.socket.send(JSON.stringify({ 
                 type: 'created', 
                 gameId: game.id 
             } satisfies RealtimeMessage));
             
-            // Send initial game state
             const state = gameManager.getState(game.id);
             if (state) {
                 connection.socket.send(JSON.stringify({ 
@@ -281,7 +262,6 @@ export async function registerRealtime(app: FastifyInstance) {
             return;
         }
 
-        // --- Gère notre Game2SimpleEngine ---
         if (anyMsg?.gameId && anyMsg?.type === 'input' && anyMsg?.playerId) {
             const engine = gameManager.getEngine(anyMsg.gameId);
             if (!engine) return;
@@ -292,22 +272,17 @@ export async function registerRealtime(app: FastifyInstance) {
             }
         }
   
-        // Handle paddle position updates (Pong specific)
         if (anyMsg?.type === 'paddle') {
           const msg = anyMsg as ClientPaddleUpdate;
           const engine = gameManager.getEngine(msg.gameId);
           if (!engine) return;
-          // Cast to PongEngine to access setPaddleX method
           (engine as any).setPaddleX(msg.playerSide, msg.x);
           return;
         }
         
-        // Handle pong engine inputs (new JSON format)
         if (anyMsg?.gameId && anyMsg?.type === 'input') {
           const engine = gameManager.getEngine(anyMsg.gameId);
           if (!engine) return;
-          
-          // Handle paddle input for specific side
           if (anyMsg.side && (anyMsg.left !== undefined || anyMsg.right !== undefined)) {
             const input = {
               left: anyMsg.left || 0,
@@ -318,13 +293,11 @@ export async function registerRealtime(app: FastifyInstance) {
           return;
         }
         
-        // Handle test engine inputs (new JSON format)
         if (anyMsg?.gameId && (anyMsg?.up !== undefined || anyMsg?.down !== undefined || 
             anyMsg?.left !== undefined || anyMsg?.right !== undefined || 
             anyMsg?.forward !== undefined || anyMsg?.backward !== undefined)) {
           const engine = gameManager.getEngine(anyMsg.gameId);
           if (!engine) return;
-          // Extract input data (exclude gameId)
           const inputData: Record<string, number> = {};
           if (anyMsg.up !== undefined) inputData.up = anyMsg.up;
           if (anyMsg.down !== undefined) inputData.down = anyMsg.down;
@@ -332,17 +305,14 @@ export async function registerRealtime(app: FastifyInstance) {
           if (anyMsg.right !== undefined) inputData.right = anyMsg.right;
           if (anyMsg.forward !== undefined) inputData.forward = anyMsg.forward;
           if (anyMsg.backward !== undefined) inputData.backward = anyMsg.backward;
-          // Cast to TestEngine to access applyInput method
           (engine as any).applyInput(inputData);
           return;
         }
         
-        // Handle legacy test engine inputs (fallback)
         if (anyMsg?.action && ['moveUp', 'moveDown', 'moveLeft', 'moveRight', 'moveForward', 'moveBackward', 'stop'].includes(anyMsg.action)) {
           const msg = anyMsg as TestEngineInput;
           const engine = gameManager.getEngine(msg.gameId);
           if (!engine) return;
-          // Convert legacy action to new format
           const inputData: Record<string, number> = {};
           switch (msg.action) {
             case 'moveUp': inputData.up = 1; break;
@@ -360,17 +330,14 @@ export async function registerRealtime(app: FastifyInstance) {
           return;
         }
         
-        // Fallback: legacy pong action messages
         const msg = anyMsg as ClientInput;
         const engine = gameManager.getEngine(msg.gameId);
         if (!engine) return;
-        // Cast to PongEngine to access legacy applyInput method
         (engine as any).applyInputLegacy(msg.playerSide, msg.action);
       } catch {}
     });
 
     connection.socket.on('close', () => {
-      // Remove this socket from ALL game subscriptions
       for (const [gid, set] of Array.from(connections.entries())) {
         if (set.delete(connection.socket) && set.size === 0) {
           connections.delete(gid);
@@ -384,19 +351,16 @@ export async function registerRealtime(app: FastifyInstance) {
     });
   });
 
-  // Test regular HTTP route first
   app.get('/test-ws', (req: any, reply: any) => {
     reply.send({ message: 'WebSocket routes are working' });
   });
 
-  // Test simple WebSocket route
   app.get('/test-ws-simple', { websocket: true }, (connection: any, req: any) => {
     connection.socket.send('Hello WebSocket!');
     connection.socket.close();
   });
 
 
-  // Room WebSocket endpoint
   try {
     console.log('Registering /ws/room endpoint...');
     app.get('/ws/room', { websocket: true }, (connection: any, req: any) => {
@@ -413,10 +377,8 @@ export async function registerRealtime(app: FastifyInstance) {
       return;
     }
 
-    // Store player connection
     playerConnections.set(playerId, connection.socket);
 
-    // If joining a specific room, add to room connections
     if (roomId) {
       if (!roomConnections.has(roomId)) {
         roomConnections.set(roomId, new Set());
@@ -424,7 +386,6 @@ export async function registerRealtime(app: FastifyInstance) {
       roomConnections.get(roomId)!.add(connection.socket);
     }
 
-    // Send initial room list
     const rooms = roomManager.listRooms();
     connection.socket.send(JSON.stringify({ 
       type: 'room_list', 
@@ -436,35 +397,26 @@ export async function registerRealtime(app: FastifyInstance) {
         const raw = typeof data === 'string' ? data : (data?.toString?.() ?? '');
         if (!raw) return;
         const message = JSON.parse(raw);
-
-        // Handle room creation
         if (message.type === 'create_room') {
           const { name, ownerId, ownerUsername } = message;
           const room = roomManager.createRoom(ownerId, ownerUsername, name);
-          
-          // Add connection to room
           if (!roomConnections.has(room.id)) {
             roomConnections.set(room.id, new Set());
           }
           roomConnections.get(room.id)!.add(connection.socket);
-          
-          // Broadcast to all players
           broadcastToPlayer(playerId, { type: 'room_created', room });
         }
 
-        // Handle room joining
         if (message.type === 'join_room') {
           const { roomId, playerId, username } = message;
           const result = roomManager.joinRoom(roomId, playerId, username);
           
           if (result.success && result.room) {
-            // Add connection to room
             if (!roomConnections.has(roomId)) {
               roomConnections.set(roomId, new Set());
             }
             roomConnections.get(roomId)!.add(connection.socket);
             
-            // Broadcast to room
             broadcastToRoom(roomId, { 
               type: 'room_joined', 
               room: result.room, 
@@ -478,13 +430,11 @@ export async function registerRealtime(app: FastifyInstance) {
           }
         }
 
-        // Handle leaving room
         if (message.type === 'leave_room') {
           const { playerId } = message;
           const result = roomManager.leaveRoom(playerId);
           
           if (result.success) {
-            // Remove from room connections
             for (const [roomId, connections] of roomConnections.entries()) {
               connections.delete(connection.socket);
               if (connections.size === 0) {
@@ -502,7 +452,6 @@ export async function registerRealtime(app: FastifyInstance) {
           }
         }
 
-        // Handle player ready status
         if (message.type === 'player_ready') {
           const { playerId, ready } = message;
           const result = roomManager.setPlayerReady(playerId, ready);
@@ -517,13 +466,11 @@ export async function registerRealtime(app: FastifyInstance) {
           }
         }
 
-        // Handle kicking player
         if (message.type === 'kick_player') {
           const { roomId, ownerId, targetPlayerId } = message;
           const result = roomManager.kickPlayer(roomId, ownerId, targetPlayerId);
           
           if (result.success && result.room) {
-            // Remove kicked player from room connections
             const kickedConnection = playerConnections.get(targetPlayerId);
             if (kickedConnection) {
               roomConnections.get(roomId)?.delete(kickedConnection);
@@ -535,7 +482,6 @@ export async function registerRealtime(app: FastifyInstance) {
               playerId: targetPlayerId 
             });
             
-            // Notify kicked player
             broadcastToPlayer(targetPlayerId, { 
               type: 'player_kicked', 
               room: result.room, 
@@ -544,7 +490,6 @@ export async function registerRealtime(app: FastifyInstance) {
           }
         }
 
-        // Handle starting game
         if (message.type === 'start_game') {
           const { roomId, ownerId } = message;
           const result = roomManager.startGame(roomId, ownerId);
@@ -563,7 +508,6 @@ export async function registerRealtime(app: FastifyInstance) {
           }
         }
 
-        // Handle room list request
         if (message.type === 'get_rooms') {
           const rooms = roomManager.listRooms();
           broadcastToPlayer(playerId, { 
@@ -578,7 +522,6 @@ export async function registerRealtime(app: FastifyInstance) {
     });
 
     connection.socket.on('close', () => {
-      // Remove from all room connections
       for (const [roomId, connections] of roomConnections.entries()) {
         connections.delete(connection.socket);
         if (connections.size === 0) {
@@ -586,7 +529,6 @@ export async function registerRealtime(app: FastifyInstance) {
         }
       }
       
-      // Remove player connection
       playerConnections.delete(playerId);
     });
   });

@@ -33,50 +33,38 @@ class MatchmakingManager {
   }
 
   joinGame2(playerId: string, username: string, elo: number): MatchStatus {
-    // Nettoyage périodique
     this.cleanup();
     console.log('[MM] joinGame2 called', { playerId, username, elo, queueLen: this.queueGame2.length });
-
-    // Assainir mapping room éventuel (restes d'une partie précédente)
     this.ensureNotInRoom(playerId);
-    // 1) Assainir l'état précédent
     const existing = this.playerStatus.get(playerId);
     if (existing && existing.status === 'matched') {
       const state: any = gameManager.getState((existing as any).gameId);
       if (state && state.gameOver === false) {
         console.log('[MM] player has active match, returning existing', { playerId, gameId: (existing as any).gameId });
-        return existing; // partie toujours en cours
+        return existing;
       }
-      // match obsolète -> purge
       this.playerStatus.delete(playerId);
       console.log('[MM] purged obsolete match status', { playerId });
     }
 
-    // Retirer toute occurrence de ce joueur dans la file (idempotence)
     this.queueGame2 = this.queueGame2.filter(q => q.playerId !== playerId);
 
-    // Si quelqu'un est en attente, choisir un adversaire compatible Elo (écart <= 30)
     const opponent = this.queueGame2.find(q => q.playerId !== playerId && Math.abs(q.elo - elo) <= matchmakingThreshold);
     if (opponent) {
-      // Retirer l'opposant de la file
       this.queueGame2 = this.queueGame2.filter(q => q.playerId !== opponent.playerId);
       console.log('[MM] matching players', { player1: opponent.playerId, player2: playerId, elo1: opponent.elo, elo2: elo });
 
-      // Assainir aussi l'opposant de toute ancienne room
       this.ensureNotInRoom(opponent.playerId);
 
-      // Créer une room game2 et démarrer la partie
       const room = roomManager.createRoom(opponent.playerId, opponent.username, `MM-${Date.now()}`, 'game2');
       roomManager.joinRoom(room.id, playerId, username);
 
-      // Marquer ready et démarrer automatiquement
       roomManager.setPlayerReady(opponent.playerId, true);
       roomManager.setPlayerReady(playerId, true);
       const start = roomManager.startGame(room.id, opponent.playerId);
       console.log('[MM] startGame result', { roomId: room.id, gameId: start.gameId, success: start.success, error: start.error });
 
       if (!start.success || !start.gameId) {
-        // Échec improbable: réinsérer les DEUX joueurs proprement
         const now = Date.now();
         this.queueGame2.push({ playerId: opponent.playerId, username: opponent.username, enqueuedAt: now, elo: opponent.elo });
         this.queueGame2.push({ playerId, username, enqueuedAt: now, elo });
@@ -86,7 +74,6 @@ class MatchmakingManager {
         return { status: 'searching' };
       }
 
-      // Assigner les seats: owner = player1, joiner = player2
       const gameId = start.gameId;
       this.playerStatus.set(opponent.playerId, { status: 'matched', gameId, seat: 'player1' });
       this.playerStatus.set(playerId, { status: 'matched', gameId, seat: 'player2' });
@@ -94,20 +81,14 @@ class MatchmakingManager {
       return { status: 'matched', gameId, seat: 'player2' };
     }
 
-    // 2) Pas d'opposant -> enfile et marque en recherche
     const status: MatchStatus = { status: 'searching' };
     const now = Date.now();
     this.queueGame2.push({ playerId, username, enqueuedAt: now, elo });
     this.playerStatus.set(playerId, status);
     console.log('[MM] enqueued', { playerId, queueLen: this.queueGame2.length });
-
-    // 2b) Deuxième chance de match immédiat (cas de courses simultanées)
-    // Chercher un autre joueur dans la file (le plus ancien) différent de soi
     const partner = this.queueGame2.find(q => q.playerId !== playerId && Math.abs(q.elo - elo) <= matchmakingThreshold);
     if (partner) {
-      // Retirer les deux de la file
       this.queueGame2 = this.queueGame2.filter(q => q.playerId !== partner.playerId && q.playerId !== playerId);
-      // Déterminer l'owner = le plus ancien des deux
       const ownerEntry = partner.enqueuedAt <= now ? partner : { playerId, username, enqueuedAt: now, elo };
       const joinerEntry = ownerEntry.playerId === partner.playerId ? { playerId, username, enqueuedAt: now, elo } : partner;
       console.log('[MM] late match after enqueue', { owner: ownerEntry.playerId, joiner: joinerEntry.playerId, elo1: ownerEntry.elo, elo2: joinerEntry.elo });
@@ -120,7 +101,6 @@ class MatchmakingManager {
       console.log('[MM] startGame result (late)', { roomId: room.id, gameId: start.gameId, success: start.success, error: start.error });
 
       if (!start.success || !start.gameId) {
-        // Réinsérer proprement les deux si échec
         const t = Date.now();
         this.queueGame2.push({ playerId: ownerEntry.playerId, username: ownerEntry.username, enqueuedAt: t, elo: ownerEntry.elo });
         this.queueGame2.push({ playerId: joinerEntry.playerId, username: joinerEntry.username, enqueuedAt: t, elo: joinerEntry.elo });
@@ -147,28 +127,22 @@ class MatchmakingManager {
   }
 
   status(playerId: string): MatchStatus {
-    // Nettoyage périodique
     this.cleanup();
     const st = this.playerStatus.get(playerId);
     if (st && st.status === 'matched') {
       const state: any = gameManager.getState((st as any).gameId);
       if (!state || state.gameOver === true) {
-        // match obsolète -> repasse en recherche par défaut
         this.playerStatus.delete(playerId);
         console.log('[MM] status: obsolete match purged', { playerId });
         return { status: 'searching' };
       }
     }
     const ret = st ?? { status: 'searching' } as MatchStatus;
-    // Optionally log the status lightly to avoid spam
-    // console.log('[MM] status', { playerId, status: ret.status });
     return ret;
   }
 
-  // Nettoyage optionnel
   cleanup(): void {
     const now = Date.now();
-    // Retirer les entrées très anciennes (failsafe)
     this.queueGame2 = this.queueGame2.filter(q => now - q.enqueuedAt < 5 * 60 * 1000);
   }
 }

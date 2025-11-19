@@ -34,8 +34,6 @@ export type ClientPaddleUpdate = {
   playerSide: 'top' | 'bottom';
   x: number;
 };
-
-// Test Engine Types
 export type TestEngineState = {
   id: string;
   kind: 'test';
@@ -67,23 +65,19 @@ export type RealtimeMessage =
   | { type: 'created'; gameId: string }
   | { type: 'joined'; gameId: string; side: 'top' | 'bottom' }
   | { type: 'error'; message: string };
-
-// Room Management Types
 export type GameRoom = {
   id: string;
   name: string;
   ownerId: string;
   ownerUsername: string;
   players: {
-    // Pong players
     top?: { id: string; username: string; ready: boolean };
     bottom?: { id: string; username: string; ready: boolean };
-    // Game2 players
     player1?: { id: string; username: string; ready: boolean };
     player2?: { id: string; username: string; ready: boolean };
   };
-  gameId?: string; // Set when game starts
-  gameType?: GameKind; // Type of game (pong, game2, etc.)
+  gameId?: string;
+  gameType?: GameKind;
   createdAt: number;
   maxPlayers: number;
   status: 'waiting' | 'in_progress' | 'finished';

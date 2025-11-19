@@ -74,7 +74,6 @@ export class GameManager {
     for (const g of this.games.values()) {
       if (g.update() === false) {
         setTimeout(() => {
-          // cleanup room and game
         }, 10000)
       }
     }
