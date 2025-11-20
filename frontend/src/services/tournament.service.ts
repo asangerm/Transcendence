@@ -42,13 +42,10 @@ export class TournamentService {
 	static async getOngoingTournament(userId: number): Promise<OngoingTournamentResponse | null> {
 		try {
 			const response = await apiService.get(`/tournament/${userId}`);
-			console.log (response.data.data);
 			return response.data.data;
 		} catch (error: any) {
-			if (error?.response?.status === 404) {
-				console.warn(error.response.data.message);
-				return null;
-			}
+			console.warn(error.response.data.message);
+			return null;
 			throw error;
 		}
 	}

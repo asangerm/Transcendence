@@ -1,11 +1,16 @@
-import { FastifyInstance } from "fastify";
-import { requireAuth } from "../../middleware/authMiddleware";
+import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { requireAuth, AuthUser } from "../../middleware/authMiddleware";
+
+type AuthRequest = FastifyRequest & { user?: AuthUser };
 
 export default async function removeFriend(app: FastifyInstance) {
-  app.delete("/remove/:userId/:friendId", { preHandler: [requireAuth] }, async (req, reply) => {
+  app.delete("/remove/:friendId", { preHandler: [requireAuth] }, async (req: AuthRequest, reply: FastifyReply) => {
 	try {
-	  const { friendId } = req.params as { friendId: string };
-	  const { userId } = req.params as { userId: string };
+		
+	if (!req.user) return reply.status(401).send({ error: true, message: "Unauthorized" });
+
+	  const { friendId } = req.params as { friendId: number };
+	  const userId = req.user.id;
 
 	  if (userId === friendId) {
 		return reply.status(400).send({

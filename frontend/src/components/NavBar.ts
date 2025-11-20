@@ -120,7 +120,7 @@ export class NavBar {
 									<!-- Menu déroulant -->
 									<div id="profile-dropdown" class="absolute transition-all duration-150 invisible origin-top-right scale-0 z-50 top-10 right-0 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
 										<a href="/profile/${safeDisplayName}" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Profil</a>
-										<a href="/friends" id="friends" class="block w-full text-left px-4 py-2 hover:bg-gray-700 ">Suivis</a>
+										<a href="/friends" id="friends" class="block w-full text-left px-4 py-2 hover:bg-gray-700 ">Amis</a>
 										<a id="logout" 
 											class="flex items-center gap-2 w-full px-4 py-2 text-left text-red-500 hover:bg-gray-700 rounded-b-lg border-t border-gray-600">
 											<svg xmlns="http://www.w3.org/2000/svg" 
@@ -148,7 +148,8 @@ export class NavBar {
 					<div id="mobile-menu" class="hidden md:hidden pb-4">
 						<a href="/games" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Games</a>
 						${this.isAuth ? `
-							<a href="/profile" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Profile</a>
+							<a href="/profile/${safeDisplayName}" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Profile</a>
+							<a href="/friends" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Profile</a>
 							<a href="/logout" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Déconnexion</a>
 						` : `
 							<a href="/login" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Connexion</a>

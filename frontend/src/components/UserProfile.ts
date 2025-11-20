@@ -106,7 +106,7 @@ private render(): void {
 					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20">
 						<path fill="#e8e8e8" d="M10 9a3 3 0 1 0 0-6a3 3 0 0 0 0 6ZM6 8a2 2 0 1 1-4 0a2 2 0 0 1 4 0Zm-4.51 7.326a.78.78 0 0 1-.358-.442a3 3 0 0 1 4.308-3.516a6.484 6.484 0 0 0-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 0 1-2.07-.655Zm14.95.654a4.97 4.97 0 0 0 2.07-.654a.78.78 0 0 0 .357-.442a3 3 0 0 0-4.308-3.517a6.484 6.484 0 0 1 1.907 3.96a2.32 2.32 0 0 1-.026.654ZM18 8a2 2 0 1 1-4 0a2 2 0 0 1 4 0ZM5.304 16.19a.844.844 0 0 1-.277-.71a5 5 0 0 1 9.947 0a.843.843 0 0 1-.277.71A6.975 6.975 0 0 1 10 18a6.974 6.974 0 0 1-4.696-1.81Z"/>
 					</svg>
-					<span>Suivis : ${this.userProfile.friendCount || 0}</span>
+					<span>Amis : ${this.userProfile.friendCount || 0}</span>
 				</a>
 				<div class="text-center mb-2 grid grid-cols-1 lg:grid-cols-3 gap-6">
 					<div class="relative inline-block col-span-1">
@@ -155,14 +155,14 @@ private render(): void {
 							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20">
 								<path d="M11 5a3 3 0 1 1-6 0a3 3 0 0 1 6 0ZM2.046 15.253c-.058.468.172.92.57 1.175A9.953 9.953 0 0 0 8 18c1.982 0 3.83-.578 5.384-1.573c.398-.254.628-.707.57-1.175a6.001 6.001 0 0 0-11.908 0ZM12.75 7.75a.75.75 0 0 0 0 1.5h5.5a.75.75 0 0 0 0-1.5h-5.5Z"/>
 							</svg>
-							Retirer des suivis
+							Ne plus suivre
 						</button>
 					` : `
 						<button id="add-friend" class="px-4 py-3 text-xs border-2 text-button font-medium rounded-lg fill-green-500 hover:bg-button hover:text-text-dark transform transition-all duration-300 hover:scale-105 dark:text-button-dark dark:hover:bg-green-500 dark:hover:fill-black dark:hover:text-text flex items-center justify-center gap-2 border border-green-500 text-xs">
 							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20">
 								<path d="M11 5a3 3 0 1 1-6 0a3 3 0 0 1 6 0ZM2.615 16.428a1.224 1.224 0 0 1-.569-1.175a6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 8 18a9.953 9.953 0 0 1-5.385-1.572ZM16.25 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z"/>
 							</svg>
-							Suivre
+							Suivre ce joueur
 						</button>
 					`}
 				`}
@@ -666,7 +666,7 @@ private async handleAddFriend(): Promise<void> {
 			this.showError('You must be logged in to add friends');
 			return;
 		}
-		await UserService.addFriend(user.id, this.userProfile.id);
+		await UserService.addFriend(this.userProfile.id);
 		this.loadUserData(this.userProfile.display_name);
 	} catch (error: any) {
 		this.showError(error.message || 'Failed to add friend');
@@ -682,7 +682,7 @@ private async handleRemoveFriend(): Promise<void> {
 			this.showError('You must be logged in to remove friends');
 			return;
 		}
-		await UserService.removeFriend(user.id, this.userProfile.id);
+		await UserService.removeFriend(this.userProfile.id);
 		this.loadUserData(this.userProfile.display_name);
 	} catch (error: any) {
 		this.showError(error.message || 'Failed to remove friend');

@@ -26,9 +26,10 @@ export default async function getOngoingTournament(app: FastifyInstance) {
 				.get(creatorId) as Tournament | undefined;
 
 			if (!tournament) {
-				return reply.status(404).send({
+				return reply.send({
 					error: true,
 					message: "No ongoing tournament found for this user.",
+					data: null,
 				});
 			}
 

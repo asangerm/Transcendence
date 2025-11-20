@@ -263,7 +263,7 @@ export class FriendsListComponent {
 			const user = AuthStore.getUser();
 			if (!user)
 				throw('You must be logged in to add friends');
-			await UserService.addFriend(user.id, friendId);
+			await UserService.addFriend(friendId);
 
 			this.friends = await UserService.getUserFriends(this.userId!);
 			this.currentUserFriends = await UserService.getUserFriends(user.id);
@@ -281,7 +281,7 @@ export class FriendsListComponent {
 			const currentUser = AuthStore.getUser();
 			if (!currentUser)
 				throw('You must be logged in to remove friends');
-			await UserService.removeFriend(currentUser.id, friendId);
+			await UserService.removeFriend(friendId);
 
 			this.friends = await UserService.getUserFriends(this.userId!);
 			this.currentUserFriends = await UserService.getUserFriends(currentUser.id);

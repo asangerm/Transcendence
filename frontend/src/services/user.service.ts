@@ -114,14 +114,14 @@ export class UserService {
     return response.data;
   }
 
-  static async addFriend(userId: number, friendId: number): Promise<{ message: string }> {
-	console.log("Adding friend:", userId, friendId);
-    const response = await apiService.post(`/friends/add/${userId}/${friendId}`);
+  static async addFriend(friendId: number): Promise<{ message: string }> {
+	console.log("Adding friend:", friendId);
+    const response = await apiService.post(`/friends/add/${friendId}`);
     return response.data;
   }
 
-  static async removeFriend(userId: number, friendId: number): Promise<{ message: string }> {
-    const response = await apiService.delete(`/friends/remove/${userId}/${friendId}`);
+  static async removeFriend(friendId: number): Promise<{ message: string }> {
+    const response = await apiService.delete(`/friends/remove/${friendId}`);
     return response.data;
   }
 
