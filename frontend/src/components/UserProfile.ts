@@ -377,7 +377,7 @@ private renderStats(game: string): string {
 	let defeats: number = gameStats !== undefined ? gameStats.defeats : 0;
 	let totalGames: number = victories + defeats;
 	let winRate: number = gameStats !== undefined && totalGames > 0 ? Math.round((victories / totalGames) * 100) : 0;
-	let elo: number = gameStats !== undefined ? 100 + (victories * 15 - defeats * 17)  : 100;
+	let elo: number = gameStats !== undefined ? 100 + (victories * 15 - defeats * 17)  : 400;
 
 	return `
 	<!-- ${game} Stats -->
