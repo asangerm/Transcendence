@@ -93,6 +93,9 @@ private render(): void {
 
 	const safeDisplayName = escapeHtml(this.userProfile.display_name);
 	const safeAvatarUrl = this.getFullAvatarUrl(this.userProfile.avatar_url);
+	const creationDate = (this.userProfile.created_at && !isNaN(new Date(this.userProfile.created_at).getTime()))
+  		? new Date(this.userProfile.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' })
+  : 'Date inconnue';
 
 	this.container.innerHTML = `
 	<div class="max-w-6xl max-h-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -135,7 +138,7 @@ private render(): void {
 					</div>
 					<div class="relative flex flex-col col-span-2 text-left text-text-muted dark:text-text-muted-dark">
 						<h2 class="text-3xl text-text dark:text-text-dark font-bold mb-3">${safeDisplayName}</h2>
-						<span>Membre depuis : 09/2025</span>
+						<span>Membre depuis : ${creationDate}</span>
 					</div>
 				</div>
 				<div class="flex justify-left mb-2 items-center">

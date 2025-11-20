@@ -6,6 +6,7 @@ export interface UserProfile extends User {
   friendCount?: number;
   matchHistory?: Match[];
   friends?: Friend[];
+  created_at?: string; 
 }
 
 export interface Friend {
