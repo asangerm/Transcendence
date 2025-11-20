@@ -17,7 +17,7 @@ export default async function registerRoute(app: FastifyInstance) {
       .prepare("SELECT id FROM users WHERE email = ? OR display_name = ?")
       .get(email, name);
     if (existing) {
-      return reply.status(409).send({ error: true, message: "Email or username already taken" });
+      return reply.status(409).send({ error: true, message: "Email ou nom d'utilisateur déjà pris" });
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -25,6 +25,6 @@ export default async function registerRoute(app: FastifyInstance) {
       .prepare("INSERT INTO users (email, display_name, password_hash) VALUES (?, ?, ?)")
       .run(email, name, hashed);
 
-    return reply.status(201).send({ success: true, message: "User registered successfully" });
+    return reply.status(201).send({ success: true, message: "Inscription réalisée avec succès" });
   });
 }

@@ -641,7 +641,7 @@ class PongLobby {
 							this.showMessage('Démarrage du jeu...', 'success');
 							setTimeout(() => {
 								const side = room.players.top?.id === this.state.playerId ? 'top' : 'bottom';
-								window.location.href = `/pong?mode=online&gameId=${room.gameId}&side=${side}`;
+								navigateTo(`/pong?mode=online&gameId=${room.gameId}&side=${side}`);
 							}, 1000);
 							return;
 						}

@@ -11,7 +11,8 @@ export function renderPong() {
 
     // If no gameId is provided, redirect to lobby
     if (mode === 'online' && !gameId) {
-        window.location.href = '/pong-lobby';
+		window.location.href = '/pong-lobby';
+
         return;
     }
 

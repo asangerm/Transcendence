@@ -108,5 +108,5 @@ async function handleRoute() {
 
 export function navigateTo(path: string) {
 	window.history.pushState({}, '', path);
-	handleRoute();	
+	handleRoute();
 } 
