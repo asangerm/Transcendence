@@ -1,5 +1,6 @@
 import { Pong } from '../pong';
 import { getApiUrl } from "../config";
+import { navigateTo } from '../router';
 
 export function renderPong() {
     const url = new URL(window.location.href);
@@ -81,7 +82,7 @@ export function renderPong() {
                     });
                 }
             } catch {}
-            window.location.href = '/pong-lobby';
+            navigateTo('/pong-lobby');
         });
     }
 } 

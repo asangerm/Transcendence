@@ -1,4 +1,5 @@
 import { AuthStore } from "../stores/auth.store";
+import { navigateTo } from '../router';
 import { TournamentService, Tournament, Match, UpdateMatch } from "../services/tournament.service";
 
 	export class DisplayTournaments {
@@ -185,7 +186,7 @@ import { TournamentService, Tournament, Match, UpdateMatch } from "../services/t
 					try {
 						await TournamentService.deleteTournament(tournament.id);
 						alert("Tournoi supprimé avec succès ");
-						location.reload();
+						navigateTo("/tournaments")
 					} catch (err) {
 						alert(" Erreur lors de la suppression du tournoi.");
 						console.error(err);
@@ -199,7 +200,7 @@ import { TournamentService, Tournament, Match, UpdateMatch } from "../services/t
 			url.searchParams.set('mode', 'tournament');
 			url.searchParams.set('matchId', String(nextMatch.id));
 			url.searchParams.delete('gameId');
-			window.location.href = url.toString();
+			navigateTo(url.toString());
 		}
 		
 }

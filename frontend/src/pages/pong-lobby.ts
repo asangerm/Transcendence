@@ -1,5 +1,6 @@
 import type { LobbyState } from '../types/lobby';
 import { AuthStore } from '../stores/auth.store';
+import { navigateTo } from '../router';
 
 export function renderPongLobby() {
     const content = `
@@ -197,13 +198,13 @@ class PongLobby {
 			this.sendDuel();
 		});
 		playLocalBtn?.addEventListener('click', () => {
-			window.location.href = '/pong?mode=local';
+			navigateTo('/pong?mode=local');
 		});
 
         const playAiBtn = document.getElementById('play-ai-btn') as HTMLButtonElement | null;
 		playAiBtn?.addEventListener('click', () => {
 			const aiDifficulty = (document.getElementById('ai-difficulty') as HTMLSelectElement)?.value || 'medium';
-			window.location.href = `/pong?mode=ai&difficulty=${aiDifficulty}`;
+			navigateTo(`/pong?mode=ai&difficulty=${aiDifficulty}`);
 		});
 
         document.getElementById('join-room-btn')?.addEventListener('click', () => {
@@ -590,7 +591,7 @@ class PongLobby {
             
             setTimeout(() => {
                 const side = this.state.currentRoom?.players.top?.id === this.state.playerId ? 'top' : 'bottom';
-                window.location.href = `/pong?mode=online&gameId=${result.gameId}&side=${side}`;
+                navigateTo(`/pong?mode=online&gameId=${result.gameId}&side=${side}`);
             }, 500);
         } catch (error) {
             this.showMessage(error instanceof Error ? error.message : 'Échec du démarrage du jeu', 'error');
