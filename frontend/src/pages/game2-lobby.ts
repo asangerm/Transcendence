@@ -52,7 +52,6 @@ class Game2Lobby {
     private mmInterval: any = null;
 
     async init() {
-        // Get user info (you might need to implement this based on your auth system)
         this.state.playerId = this.getCurrentUserId();
         this.state.username = this.getCurrentUsername();
         
@@ -68,12 +67,10 @@ class Game2Lobby {
         });
     }
 
-    // ==== MATCHMAKING ====
     private async startMatchmaking() {
         const statusP = document.getElementById('mm-status');
         const btnSearch = document.getElementById('mm-search');
         const btnCancel = document.getElementById('mm-cancel');
-        // Garde: identité requise
         if (!this.state.playerId || !this.state.username) {
             this.showMessage('Identité introuvable, veuillez vous reconnecter.', 'error');
             return;
@@ -103,7 +100,6 @@ class Game2Lobby {
             return;
         }
 
-        // Poll toutes les secondes pour le statut
         this.mmInterval = setInterval(async () => {
             try {
                 const res = await fetch(`/api/matchmaking/status/${this.state.playerId}`);
@@ -134,7 +130,6 @@ class Game2Lobby {
         btnSearch?.classList.remove('hidden');
     }
 
-    // Annulation auto si l’utilisateur ferme/quitte la page
     constructor() {
         window.addEventListener('beforeunload', () => {
             if (this.mmInterval) { clearInterval(this.mmInterval); this.mmInterval = null; }
@@ -144,7 +139,6 @@ class Game2Lobby {
         });
     }
 
-    // Conservé pour compat: non utilisé en matchmaking
     private handleWebSocketMessage(message: any) {
         switch (message.type) {
             case 'room_created':
@@ -193,7 +187,6 @@ class Game2Lobby {
             case 'game_started':
                 this.showMessage('Game starting...', 'success');
                 setTimeout(() => {
-                    // Determine seat from current room state if available
                     let seat = '';
                     if (this.state.currentRoom) {
                         const p1 = this.state.currentRoom.players.player1;
@@ -206,7 +199,6 @@ class Game2Lobby {
                 break;
                 
             case 'room_list':
-                // Not used - we use HTTP polling instead
                 break;
                 
             case 'room_error':
@@ -214,8 +206,6 @@ class Game2Lobby {
                 break;
         }
     }
-
-    // Les méthodes de room sont conservées mais non utilisées avec le matchmaking.
 
     private async joinRoom() {
         const roomIdInput = document.getElementById('room-id') as HTMLInputElement;
@@ -322,7 +312,6 @@ class Game2Lobby {
             const result = await response.json();
             this.showMessage('Game starting...', 'success');
             setTimeout(() => {
-                // Owner is always player1 in our room model
                 window.location.href = `/game2?mode=online&gameId=${result.gameId}&player=player1`;
             }, 1000);
         } catch (error) {
@@ -333,7 +322,6 @@ class Game2Lobby {
     private async kickPlayer() {
         if (!this.state.currentRoom) return;
 
-        // Find the other player to kick
         const otherPlayer = Object.values(this.state.currentRoom.players).find(p => p.id !== this.state.playerId);
         if (!otherPlayer) return;
 
@@ -381,10 +369,8 @@ class Game2Lobby {
             const room = await response.json();
             this.state.currentRoom = room;
             
-            // Check if game has started
             if (room.status === 'in_progress' && room.gameId) {
                 this.showMessage('Game starting...', 'success');
-                // Redirect both players to the game with their assigned seat
                 const p1 = room.players.player1;
                 const p2 = room.players.player2;
                 let seat = '';
@@ -408,23 +394,18 @@ class Game2Lobby {
         const roomJoiningDiv = document.getElementById('room-joining');
         
         if (this.state.currentRoom) {
-            // Show current room, hide creation/joining
             currentRoomDiv?.classList.remove('hidden');
             roomCreationDiv?.classList.add('hidden');
             roomJoiningDiv?.classList.add('hidden');
             
-            // Update room name
             const roomNameSpan = document.getElementById('current-room-name');
             if (roomNameSpan) roomNameSpan.textContent = this.state.currentRoom.name;
             
-            // Update players
             this.updatePlayerDisplay('player1', this.state.currentRoom.players.player1);
             this.updatePlayerDisplay('player2', this.state.currentRoom.players.player2);
             
-            // Update buttons based on room state
             this.updateRoomButtons();
         } else {
-            // Hide current room, show creation/joining
             currentRoomDiv?.classList.add('hidden');
             roomCreationDiv?.classList.remove('hidden');
             roomJoiningDiv?.classList.remove('hidden');
@@ -460,19 +441,16 @@ class Game2Lobby {
         const playerCount = Object.keys(this.state.currentRoom.players).length;
         const allPlayersReady = Object.values(this.state.currentRoom.players).every(p => p.ready);
 
-        // Update ready button text
         if (readyBtn) {
             readyBtn.textContent = this.state.isReady ? 'Not Ready' : 'Ready';
         }
 
-        // Show/hide start game button for room owner
         if (isOwner && playerCount === 2 && allPlayersReady) {
             startGameBtn.classList.remove('hidden');
         } else {
             startGameBtn.classList.add('hidden');
         }
 
-        // Show/hide kick player button for room owner
         if (isOwner && playerCount > 1) {
             kickPlayerBtn.classList.remove('hidden');
         } else {
@@ -484,7 +462,6 @@ class Game2Lobby {
         const roomsListDiv = document.getElementById('rooms-list');
         if (!roomsListDiv) return;
 
-        // Filter rooms to only show game2 rooms as a safety measure
         const game2Rooms = this.state.availableRooms.filter(room => room.gameType === 'game2');
 
         if (game2Rooms.length === 0) {
@@ -512,7 +489,6 @@ class Game2Lobby {
             `;
         }).join('');
 
-        // Add click handlers for room joining
         roomsListDiv.querySelectorAll('[data-room-id]').forEach(element => {
             element.addEventListener('click', () => {
                 const roomId = element.getAttribute('data-room-id');
@@ -538,21 +514,16 @@ class Game2Lobby {
 
         messageContainer.appendChild(messageDiv);
 
-        // Remove message after 5 seconds
         setTimeout(() => {
             messageDiv.remove();
         }, 5000);
     }
 
     private getCurrentUserId(): string {
-        // This should be implemented based on your auth system
-        // For now, return a mock ID
         return AuthStore.getUser()?.id.toString() || '';
     }
 
     private getCurrentUsername(): string {
-        // This should be implemented based on your auth system
-        // For now, return a mock username
         return AuthStore.getUser()?.display_name || '';
     }
 }
