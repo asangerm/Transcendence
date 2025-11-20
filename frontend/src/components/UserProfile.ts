@@ -322,9 +322,10 @@ private renderDefaultStats(game: string): string {
 			<path class="text-gray-700" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
 			<path class="text-gaming-success" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
 		</svg>
-		<div class="absolute inset-0 flex items-center justify-center">
+		<div class="absolute inset-0 flex flex-col items-center justify-center">
+			<span class="text-lg font-bold">Ratio V/D</span>
 			<span class="text-lg font-bold">0%</span>
-		</div>
+			</div>
 		</div>
 	</div>
 	`;
