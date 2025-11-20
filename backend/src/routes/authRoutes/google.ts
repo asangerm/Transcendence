@@ -34,6 +34,9 @@ export default async function googleAuth(app: FastifyInstance) {
 
         const { sub: googleId, email, name, picture } = payload;
 
+        const cleanUsername = (name || email?.split('@')[0] || 'user')
+        .split(' ')[0];
+
         let user = app.db
           .prepare("SELECT * FROM users WHERE google_id = ? OR email = ?")
           .get(googleId, email) as any;
@@ -44,7 +47,7 @@ export default async function googleAuth(app: FastifyInstance) {
           VALUES (?, ?, ?, ?, 1)
         `);
 
-          const result = insertUser.run(email, name, picture, googleId);
+          const result = insertUser.run(email, cleanUsername, picture, googleId);
           const userId = result.lastInsertRowid;
 
           user = app.db
