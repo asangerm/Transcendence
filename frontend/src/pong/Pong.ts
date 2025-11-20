@@ -1,12 +1,12 @@
 import { GameController, ControllerSnapshot } from './GameController';
 import { GameRenderer } from './GameRenderer';
-import type { UserInputState } from './scripts/gameState';
 import { PongRealtimeClient } from '../services/realtime/pongClient';
 import type { ServerGameState } from '../types/realtime';
 import { getApiUrl } from "../config";
 import { AIPlayer } from './scripts/AIPlayer';
 import type { Ball } from './scripts/Ball';
 import type { Paddle } from './scripts/Paddle';
+import { navigateTo } from '../router';
 
 export class Pong {
     private controller: GameController;
@@ -232,6 +232,10 @@ export class Pong {
             this.aiPlayer?.cleanup();
             this.aiPlayer = null;
         }
+        if (this.realtime) {
+            this.realtime.disconnect();
+            this.realtime = null;
+        }
         this.renderer.unmount();
     }
 
@@ -347,7 +351,7 @@ export class Pong {
             if (this.tournamentMatchId != null && !this.tournamentRedirectDone) {
                 this.tournamentRedirectDone = true;
                 setTimeout(() => {
-                    window.location.href = '/tournaments';
+                    navigateTo('/tournaments');
                 }, 2000);
             }
         }

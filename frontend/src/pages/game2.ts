@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Use global Phaser provided by the runtime to avoid TS type dependency
 declare const Phaser: any;
+import { navigateTo } from '../router';
 import { Game2Scene } from '../scripts/game2/Game2Scene';
 
 export function renderGame2() {
@@ -10,7 +11,7 @@ export function renderGame2() {
 
     // If no gameId is provided, redirect to lobby
     if (mode === 'online' && !gameId) {
-        window.location.href = '/game2-lobby';
+        navigateTo('/game2-lobby');
         return;
     }
 

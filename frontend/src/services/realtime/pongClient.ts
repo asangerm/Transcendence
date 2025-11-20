@@ -92,6 +92,21 @@ export class PongRealtimeClient {
             this.ws.send(JSON.stringify(obj));
         }
     }
+
+    disconnect(): void {
+        if (this.ws) {
+            try {
+                if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
+                    this.ws.close();
+                }
+            } catch {
+                // ignore close errors
+            }
+        }
+        this.isOpen = false;
+        this.ws = null;
+        this.pending = [];
+    }
 }
 
 

@@ -1,6 +1,8 @@
 import { Pong } from '../pong';
 import { getApiUrl } from "../config";
-import { navigateTo } from '../router';
+import { navigateTo, setRouteCleanup } from '../router';
+
+let currentPong: Pong | null = null;
 
 export function renderPong() {
     const url = new URL(window.location.href);
@@ -11,8 +13,7 @@ export function renderPong() {
 
     // If no gameId is provided, redirect to lobby
     if (mode === 'online' && !gameId) {
-		window.location.href = '/pong-lobby';
-
+        navigateTo('/pong-lobby');
         return;
     }
 
@@ -22,7 +23,7 @@ export function renderPong() {
     const matchId = url.searchParams.get('matchId') ? parseInt(url.searchParams.get('matchId')!) : undefined;
 
     if (isTournament && !matchId) {
-        window.location.href = '/pong-lobby';
+        navigateTo('/pong-lobby');
         return;
     }
 
@@ -59,13 +60,25 @@ export function renderPong() {
     const app = document.getElementById('app');
     if (app) {
         app.innerHTML = content;
+        if (currentPong) {
+            currentPong.unmount();
+            currentPong = null;
+        }
         const pong = new Pong();
+        currentPong = pong;
         if (mode === 'online') {
             pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: true, gameId, side });
         } else if (isTournament) {
             pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false, gameId, matchId });
         } else {
-            pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false, gameId, vsAI: isAI, aiDifficulty: difficulty as 'easy' | 'medium' | 'hard' }); }
+            pong.mount(document.getElementById('gameCanvas') as HTMLElement, { online: false, gameId, vsAI: isAI, aiDifficulty: difficulty as 'easy' | 'medium' | 'hard' });
+        }
+        setRouteCleanup(() => {
+            if (currentPong) {
+                currentPong.unmount();
+                currentPong = null;
+            }
+        });
         const quitBtn = document.getElementById('quit-btn');
         quitBtn?.addEventListener('click', async () => {
             try {

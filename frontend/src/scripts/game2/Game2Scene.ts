@@ -1,5 +1,6 @@
 declare const Phaser: any;
 import { getWsUrl } from '../../config';
+import { navigateTo } from '../../router';
 
 export class Game2Scene extends Phaser.Scene {
     public events!: any;
@@ -181,9 +182,7 @@ export class Game2Scene extends Phaser.Scene {
         btnZone.on('pointerover', () => this.tweens.add({ targets: btnG, scale: 1.05, duration: 120 }));
         btnZone.on('pointerout', () => this.tweens.add({ targets: btnG, scale: 1.0, duration: 120 }));
         btnZone.on('pointerdown', () => {
-            import('../../router').then(m => m.navigateTo('/game2-lobby')).catch(() => {
-                window.location.href = '/game2-lobby';
-            });
+            navigateTo('/game2-lobby');
         });
         this.conteneurRejouer.add([btnG, btnLabel, btnZone]);
 
@@ -488,13 +487,7 @@ export class Game2Scene extends Phaser.Scene {
     }
 
     private allerAuLobby() {
-        try {
-            import('../../router').then(m => m.navigateTo('/')).catch(() => {
-                window.location.href = '/';
-            });
-        } catch {
-            window.location.href = '/';
-        }
+        navigateTo('/');
     }
 }
 

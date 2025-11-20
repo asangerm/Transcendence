@@ -1,6 +1,8 @@
 import type { LobbyState } from '../types/lobby';
 import { AuthStore } from '../stores/auth.store';
-import { navigateTo } from '../router';
+import { navigateTo, setRouteCleanup } from '../router';
+
+let currentLobby: PongLobby | null = null;
 
 export function renderPongLobby() {
     const content = `
@@ -127,13 +129,13 @@ export function renderPongLobby() {
     const app = document.getElementById('app');
     if (app) {
         app.innerHTML = content;
-        initializeLobby();
+        currentLobby = new PongLobby();
+        currentLobby.init();
+        setRouteCleanup(() => {
+            currentLobby?.destroy();
+            currentLobby = null;
+        });
     }
-}
-
-function initializeLobby() {
-    const lobby = new PongLobby();
-    lobby.init();
 }
 
 class PongLobby {
@@ -153,6 +155,9 @@ class PongLobby {
 	private isLoadingDuels: boolean = false;
 	private lastNonEmptyDuels: any[] = [];
 	private hasLoadedDuelsOnce: boolean = false;
+    private roomPollInterval: number | null = null;
+    private duelPollInterval: number | null = null;
+    private hasNavigatedToGame: boolean = false;
 
     async init() {
         this.state.playerId = this.getCurrentUserId();
@@ -416,7 +421,7 @@ class PongLobby {
 	}
 
 	private startDuelPolling() {
-		setInterval(() => {
+		this.duelPollInterval = window.setInterval(() => {
 			this.loadDuels();
 		}, 2000);
 	}
@@ -500,7 +505,7 @@ class PongLobby {
     }
 
     private startPolling() {
-        setInterval(() => {
+        this.roomPollInterval = window.setInterval(() => {
             if (this.state.currentRoom) {
                 this.loadCurrentRoom();
             } else {
@@ -590,6 +595,8 @@ class PongLobby {
             this.state.currentRoom.gameId = result.gameId;
             
             setTimeout(() => {
+                if (this.hasNavigatedToGame) return;
+                this.hasNavigatedToGame = true;
                 const side = this.state.currentRoom?.players.top?.id === this.state.playerId ? 'top' : 'bottom';
                 navigateTo(`/pong?mode=online&gameId=${result.gameId}&side=${side}`);
             }, 500);
@@ -632,7 +639,7 @@ class PongLobby {
             this.state.currentRoom = room;
             
             // Check if game has started
-			if (room.status === 'in_progress' && room.gameId) {
+			if (room.status === 'in_progress' && room.gameId && !this.hasNavigatedToGame) {
 				try {
 					const gRes = await fetch(`/api/games/${room.gameId}`);
 					if (gRes.ok) {
@@ -640,6 +647,8 @@ class PongLobby {
 						if (!gameState.gameOver) {
 							this.showMessage('Démarrage du jeu...', 'success');
 							setTimeout(() => {
+                                if (this.hasNavigatedToGame) return;
+                                this.hasNavigatedToGame = true;
 								const side = room.players.top?.id === this.state.playerId ? 'top' : 'bottom';
 								navigateTo(`/pong?mode=online&gameId=${room.gameId}&side=${side}`);
 							}, 1000);
@@ -809,5 +818,16 @@ class PongLobby {
 
     private getCurrentUsername(): string {
         return AuthStore.getUser()?.display_name || '';
+    }
+
+    public destroy() {
+        if (this.roomPollInterval !== null) {
+            clearInterval(this.roomPollInterval);
+            this.roomPollInterval = null;
+        }
+        if (this.duelPollInterval !== null) {
+            clearInterval(this.duelPollInterval);
+            this.duelPollInterval = null;
+        }
     }
 }

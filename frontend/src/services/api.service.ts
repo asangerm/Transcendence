@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { AuthService } from './auth.service';
+import { navigateTo } from '../router';
 
 export class ApiService {
   private api: AxiosInstance;
@@ -51,7 +52,7 @@ export class ApiService {
             }
           } catch (refreshError) {
             AuthService.logout();
-            window.location.href = '/login';
+            navigateTo('/login');
             return Promise.reject(refreshError);
           }
         }

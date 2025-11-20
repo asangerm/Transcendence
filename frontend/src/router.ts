@@ -7,6 +7,12 @@ type Route = {
     component: () => void;
     requiresAuth?: boolean;
     guestOnly?: boolean;
+};
+
+let currentCleanup: (() => void) | null = null;
+
+export function setRouteCleanup(fn: (() => void) | null) {
+    currentCleanup = fn;
 }
 
 const routes: Route[] = [
@@ -33,7 +39,17 @@ export function initRouter() {
     handleRoute();
 
     // Handle browser back/forward buttons
-    window.addEventListener('popstate', handleRoute);
+    window.addEventListener('popstate', () => {
+        if (currentCleanup) {
+            try {
+                currentCleanup();
+            } catch (error) {
+                console.error('Error during route cleanup on popstate:', error);
+            }
+            currentCleanup = null;
+        }
+        handleRoute();
+    });
 	const navbarContainer = document.getElementById('navbar-container');
 	if (navbarContainer) {
 		new NavBar(navbarContainer);
@@ -107,6 +123,14 @@ async function handleRoute() {
 }
 
 export function navigateTo(path: string) {
+    if (currentCleanup) {
+        try {
+            currentCleanup();
+        } catch (error) {
+            console.error('Error during route cleanup:', error);
+        }
+        currentCleanup = null;
+    }
 	window.history.pushState({}, '', path);
 	handleRoute();
 } 
