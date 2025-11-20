@@ -25,10 +25,13 @@ export class RegisterForm {
 					
 					<form id="registerForm" class="space-y-3" novalidate>
 						<!-- Username Input -->
-						<div>
+						<div class="relative overflow-visible">
 							<label for="username" class="block text-sm font-medium mb-2">
 								Nom d'utilisateur
 							</label>
+							<div id="userVerif" class="transition-all duration-150 invisible scale-0 absolute top-2 -right-4 z-10 inline-block w-48 h-7 flex items-center justify-center text-sm font-medium bg-red-500 rounded-full shadow-xs text-black">
+								Espaces interdits
+							</div>
 							<input
 								type="text"
 								id="username"
