@@ -44,8 +44,24 @@ export class RegisterFormHandler {
 
     private setupEventListeners(): void {
 		if (this.usernameInput) {
+			this.usernameInput.addEventListener('input', () => {
+				let userVerif = document.getElementById('userVerif') as HTMLDivElement;
+				this.usernameInput.classList.remove('error-input');
+				userVerif.classList.remove('scale-100');
+				userVerif.classList.add('invisible', 'scale-0');
+				if (this.usernameInput.value && this.usernameInput.value.includes(" ")) {
+					userVerif.classList.add('scale-100');
+					userVerif.classList.remove('invisible', 'scale-0');
+					this.usernameInput.classList.add('error-input');
+				}
+			});
 			this.usernameInput.addEventListener('blur', () => {
-				// Verifier si le nom d'utilisateur est deja pris
+				this.verifyFormInputs();
+				if (this.formValidation.username) {
+					let userVerif = document.getElementById('userVerif') as HTMLDivElement;
+					userVerif.classList.remove('scale-100');
+					userVerif.classList.add('invisible', 'scale-0');
+				}
 			});
 		}
 
@@ -202,7 +218,7 @@ export class RegisterFormHandler {
 
 	private verifyFormInputs() : void {
 		// Username Input :
-		if (!this.usernameInput.value.trim()) {
+		if (!this.usernameInput.value.trim() || this.usernameInput.value.includes(" ")) {
 			this.formValidation.username = false;			
 		}
 		else {

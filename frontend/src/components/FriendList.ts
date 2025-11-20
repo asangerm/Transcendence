@@ -2,6 +2,7 @@ import { UserService, Friend } from "../services/user.service";
 import { AuthStore } from "../stores/auth.store";
 import { escapeHtml } from "../utils/sanitizer";
 import { getApiUrl } from '../config';
+import { navigateTo } from "../router";
 
 export class FriendsListComponent {
 	private container: HTMLElement;
@@ -299,7 +300,7 @@ export class FriendsListComponent {
 
 
 	private handleChallengeFriend(friendId: number, friendName: string) {
-    window.location.href = `/pong-lobby?opponent=${encodeURIComponent(friendName)}&opponentId=${friendId}`;
+    	navigateTo(`/pong-lobby?opponent=${encodeURIComponent(friendName)}&opponentId=${friendId}`);
 	}
 
 	private cleanup(): void {

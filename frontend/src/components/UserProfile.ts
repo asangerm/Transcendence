@@ -377,7 +377,7 @@ private renderStats(game: string): string {
 	let defeats: number = gameStats !== undefined ? gameStats.defeats : 0;
 	let totalGames: number = victories + defeats;
 	let winRate: number = gameStats !== undefined && totalGames > 0 ? Math.round((victories / totalGames) * 100) : 0;
-	let elo: number = gameStats !== undefined ? 100 + (victories * 15 - defeats * 17)  : 0;
+	let elo: number = gameStats !== undefined ? 100 + (victories * 15 - defeats * 17)  : 400;
 
 	return `
 	<!-- ${game} Stats -->
@@ -391,8 +391,8 @@ private renderStats(game: string): string {
 				</div>
 				${game === 'Game2' ? ` 
 				<div class="text-center">
-					<div class="text-4xl text-text dark:text-gray-200 font-bold mb-1">0</div>
-					<div class="text-muted dark:text-gray-200">Egalites</div>
+					<div class="text-4xl text-text dark:text-gray-200 font-bold mb-1">${gameStats !== undefined ? gameStats.draws : 0}</div>
+					<div class="text-muted dark:text-gray-200">Egalités</div>
 				</div>
 				`: ``}
 				<div class="text-center">
