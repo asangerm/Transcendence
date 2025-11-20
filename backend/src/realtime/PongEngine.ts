@@ -17,8 +17,14 @@ export class PongEngine {
   private readonly PADDLE_ACCELERATION = 500;
   private readonly PADDLE_MAX_SPEED = 35;
   private readonly PADDLE_FRICTION = 15;
+<<<<<<< Updated upstream
   private readonly BALL_SPEED_BOOST = 1.5;
   private readonly BALL_MAX_SPEED = 50;
+=======
+  private readonly BALL_SPEED_BOOST = 1.05;
+  private readonly BALL_START_SPEED = 20;
+  private readonly BALL_MAX_SPEED = 30;
+>>>>>>> Stashed changes
   private readonly ARENA_WIDTH = 50;
   private readonly PADDLE_HALF_WIDTH = 5;
   private readonly FIXED_DT = 1/60;
@@ -285,7 +291,7 @@ export class PongEngine {
     const dirZ = this.lastPointLoser === 'top' ? 1 : -1;
     const maxDeg = 30;
     const a = ((Math.random() * 2 - 1) * maxDeg) * (Math.PI / 180);
-    const speed = this.BALL_MAX_SPEED;
+    const speed = this.BALL_START_SPEED;
     const vx = Math.sin(a) * speed;
     const vz = Math.cos(a) * speed * dirZ;
     ball.velocity.x = 0;
