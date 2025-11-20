@@ -7,11 +7,11 @@ export function renderGameSelection() {
                     <!-- Pong Game Card -->
                     <a href="/pong-lobby" class="group">
                         <div class="bg-primary dark:bg-primary-dark rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                            <div class="relative aspect-video bg-secondary dark:bg-secondary-dark">
+                            <div class="relative flex items-center justify-center aspect-video bg-secondary dark:bg-gray-800">
                                 <img 
                                     src="../../images/pong-image.png" 
                                     alt="Pong Game" 
-                                    class="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-90"
+                                    class="object-cover transition-opacity duration-300 group-hover:opacity-90"
                                 >
                                 <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
                                     <span class="text-white text-2xl font-bold opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">

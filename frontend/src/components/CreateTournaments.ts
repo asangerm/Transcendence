@@ -113,7 +113,7 @@ export class CreateTournaments {
 		for (let i = 1; i <= playersNumber; i++) {
 			if (i === 1)
 				displayInputs += `<div class="w-full flex flex-col gap-6 justify-between items-center">`
-			displayInputs += `<input required type="text" id="player${i}" name="player${i}" placeholder="Nom du joueur ${i}" class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-muted dark:text-muted-dark border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300">`;
+			displayInputs += `<input required maxlength="15" type="text" id="player${i}" name="player${i}" placeholder="Nom du joueur ${i}" class="w-full dark:bg-gray-700 h-10 px-4 py-2 text-muted dark:text-muted-dark border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300">`;
 			if (i !== 1 && i % 4 === 0 && i !== playersNumber)
 				displayInputs += `</div> <div class="w-full flex flex-col gap-6 justify-items items-center">`;
 			else if (i === playersNumber)
