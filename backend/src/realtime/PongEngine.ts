@@ -17,14 +17,9 @@ export class PongEngine {
   private readonly PADDLE_ACCELERATION = 500;
   private readonly PADDLE_MAX_SPEED = 35;
   private readonly PADDLE_FRICTION = 15;
-<<<<<<< Updated upstream
-  private readonly BALL_SPEED_BOOST = 1.5;
-  private readonly BALL_MAX_SPEED = 50;
-=======
   private readonly BALL_SPEED_BOOST = 1.05;
   private readonly BALL_START_SPEED = 20;
   private readonly BALL_MAX_SPEED = 30;
->>>>>>> Stashed changes
   private readonly ARENA_WIDTH = 50;
   private readonly PADDLE_HALF_WIDTH = 5;
   private readonly FIXED_DT = 1/60;
