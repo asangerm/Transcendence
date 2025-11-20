@@ -18,6 +18,7 @@ export class PongEngine {
   private readonly PADDLE_MAX_SPEED = 35;
   private readonly PADDLE_FRICTION = 15;
   private readonly BALL_SPEED_BOOST = 1.05;
+  private readonly BALL_MIN_SPEED = 18;
   private readonly BALL_START_SPEED = 20;
   private readonly BALL_MAX_SPEED = 30;
   private readonly ARENA_WIDTH = 50;
@@ -226,6 +227,12 @@ export class PongEngine {
     this.checkPaddleCollision('top', p, v);
     this.checkPaddleCollision('bottom', p, v);
 
+    if (Math.hypot(v.x, v.z) < this.BALL_MIN_SPEED) {
+      const angle = Math.atan2(v.x, v.z);
+      v.x = Math.cos(angle) * this.BALL_MIN_SPEED;
+      v.z = Math.sin(angle) * this.BALL_MIN_SPEED;
+    }
+
     if (p.z >= 49.5) {
       this.state.scores.bottom += 1;
       this.lastPointLoser = 'top';
@@ -243,38 +250,31 @@ export class PongEngine {
     const withinX = Math.abs(ballPos.x - paddle.position.x) < this.PADDLE_HALF_WIDTH;
 
     if (withinZ && withinX) {
+      const dirZ = side === 'top' ? -1 : 1;
+
+      if (Math.abs(paddle.velocity.x) < 0.01) {
+        ballVel.z = -ballVel.z;
+        ballPos.z = paddle.position.z + dirZ * 2.1;
+        return;
+      }
+
       const originalSpeed = Math.hypot(ballVel.x, ballVel.z);
-      if (side === 'top' && ballVel.z > 0) {
-        ballVel.z = -Math.abs(ballVel.z);
-      } else if (side === 'bottom' && ballVel.z < 0) {
-        ballVel.z = Math.abs(ballVel.z);
-      }
-      ballVel.x += paddle.velocity.x * 0.1;
-      let mag = Math.hypot(ballVel.x, ballVel.z);
-      if (originalSpeed < mag) {
-        const s = originalSpeed / mag;
-        ballVel.x *= s;
-        ballVel.z *= s;
-      }
-      
-      if (mag > this.BALL_MAX_SPEED) {
-        const s = this.BALL_MAX_SPEED / mag;
-        ballVel.x *= s;
-        ballVel.z *= s;
-      }
-      if (Math.abs(ballVel.z) < 4) {
-        ballVel.z = Math.sign(ballVel.z || 1) * 4;
-      }
-      const sgnX = Math.sign(ballVel.x) || 1;
-      const sgnZ = Math.sign(ballVel.z) || 1;
-      const speed = Math.hypot(ballVel.x, ballVel.z);
-      let ang = Math.atan2(Math.abs(ballVel.x), Math.abs(ballVel.z));
-      const minA = 0.45;
-      const maxA = 1.1;
-      if (ang < minA) ang = minA;
-      if (ang > maxA) ang = maxA;
-      ballVel.x = sgnX * Math.sin(ang) * speed;
-      ballVel.z = sgnZ * Math.cos(ang) * speed;
+
+      const paddleInfluence = paddle.velocity.x / this.PADDLE_MAX_SPEED;
+      const normalized = Math.max(-1, Math.min(1, paddleInfluence * 0.5));
+
+      const maxAngle = Math.PI / 4;
+      const angle = normalized * maxAngle;
+
+      let speed = originalSpeed > 0 ? originalSpeed : this.BALL_MIN_SPEED;
+      if (speed < this.BALL_MIN_SPEED) speed = this.BALL_MIN_SPEED;
+      if (speed > this.BALL_MAX_SPEED) speed = this.BALL_MAX_SPEED;
+
+      ballVel.x = Math.sin(angle) * speed;
+      ballVel.z = Math.cos(angle) * speed * dirZ;
+      ballVel.y = 0;
+
+      ballPos.z = paddle.position.z + dirZ * 2.1;
     }
   }
 
