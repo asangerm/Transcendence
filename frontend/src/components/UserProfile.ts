@@ -200,10 +200,6 @@ private render(): void {
 			<div class="space-y-4 flex flex-col items-center" id="gameHistory">
 				${this.renderMatchHistory()}
 			</div>
-			
-			<button class="w-full mt-6 bg-gaming-accent/20 hover:bg-gaming-accent/30 border border-gaming-accent/50 py-3 rounded-lg font-medium transition-colors">
-				Voir tout l'historique
-			</button>
 		</div>
 	</div>
 
@@ -417,7 +413,6 @@ private renderMatchHistory(): string {
 
 	return this.userProfile.matchHistory.map(match => {
 		const isDraw = match.winner_id === null;
-		console.log("isDraw: ", isDraw);
 		let bgClass = 'bg-gray-500/5 border-gray-500';
 		
 		let badgeText = 'EGALITE';
@@ -436,8 +431,6 @@ private renderMatchHistory(): string {
 			day: '2-digit',
 			month: '2-digit',
 			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
 		});
 
 		return `
