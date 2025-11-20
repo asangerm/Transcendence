@@ -156,6 +156,8 @@ class PongLobby {
     async init() {
         this.state.playerId = this.getCurrentUserId();
         this.state.username = this.getCurrentUsername();
+
+        this.initializeOpponentFromUrl();
         
         this.setupEventListeners();
         this.startPolling();
@@ -166,6 +168,23 @@ class PongLobby {
 		await this.loadDuels();
 		this.startDuelPolling();
     }
+
+    private initializeOpponentFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const opponentName = params.get('opponent');
+    const opponentId = params.get('opponentId');
+    if (opponentName && opponentId) {
+        const duelInput = document.getElementById('duel-search') as HTMLInputElement;
+        if (duelInput) {
+            duelInput.value = opponentName;
+        }
+            this.selectedOpponentName = opponentName;
+            this.selectedOpponentId = opponentId;
+            this.updateDuelSelectionUI();
+        
+        }
+    }
+
 
     private setupEventListeners() {
 		const duelSearch = document.getElementById('duel-search') as HTMLInputElement | null;

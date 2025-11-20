@@ -41,13 +41,16 @@ export class FriendsListComponent {
 				const friendId = target.dataset.friendId;
 
 				if (!action || !friendId) return;
+				
 
 				if (action === "remove") {
 					await this.handleRemoveFriend(parseInt(friendId));
 				} else if (action === "add") {
 					this.handleAddFriend(parseInt(friendId));
 				}else if (action === "duel") {
-					this.handleChallengeFriend(parseInt(friendId));
+					const friendData = this.friends.find(f => f.friend_id === parseInt(friendId));
+    				if (friendData) 
+						this.handleChallengeFriend(friendData.friend_id, friendData.friend_name);
 				}
 			});
 			this.attachListeners();
@@ -295,9 +298,8 @@ export class FriendsListComponent {
 	}
 
 
-	private handleChallengeFriend(friendId: number) {
-		console.log(`Lancer un duel contre l'utilisateur ${friendId}`);
-		// TODO: ouvrir une modale de défi ou rediriger vers la salle de duel
+	private handleChallengeFriend(friendId: number, friendName: string) {
+    window.location.href = `/pong-lobby?opponent=${encodeURIComponent(friendName)}&opponentId=${friendId}`;
 	}
 
 	private cleanup(): void {
@@ -306,9 +308,6 @@ export class FriendsListComponent {
 		const newContainer = this.container.cloneNode(false) as HTMLElement;
 		this.container.replaceWith(newContainer);
 		this.container = newContainer;
-
 	}
-
 }
-
 
