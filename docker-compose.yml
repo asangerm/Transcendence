@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  frontend:
+    container_name: transcendence-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app:delegated
+      - ./frontend/ssl:/app/ssl:ro
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+
+  backend:
+    container_name: transcendence-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/tsconfig.json:/app/tsconfig.json
+      - ./backend/package.json:/app/package.json
+      - ./backend/data:/app/data
+      - ./backend/uploads:/app/uploads
+      - ./backend/ssl:/app/ssl
+      - backend_node_modules:/app/node_modules
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=development
+      - DB_PATH=/app/data/db.sqlite
+      - HTTPS_ENABLED=true
+
+volumes:
+  frontend_node_modules:
+  backend_node_modules:
