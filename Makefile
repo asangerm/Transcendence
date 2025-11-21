@@ -5,6 +5,7 @@ all: up
 ssl:
 	@if [ ! -f backend/ssl/cert.pem ]; then \
 		mkdir -p backend/ssl frontend/ssl; \
+		chmod 700 backend/ssl frontend/ssl; \
 		openssl req -x509 -newkey rsa:4096 -keyout backend/ssl/key.pem \
 			-out backend/ssl/cert.pem -days 365 -nodes \
 			-subj "/C=FR/ST=IDF/L=Paris/O=42/OU=Transcendence/CN=localhost" 2>/dev/null; \
