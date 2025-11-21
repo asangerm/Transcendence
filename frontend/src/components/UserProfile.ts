@@ -103,7 +103,7 @@ private render(): void {
 					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20">
 						<path fill="#e8e8e8" d="M10 9a3 3 0 1 0 0-6a3 3 0 0 0 0 6ZM6 8a2 2 0 1 1-4 0a2 2 0 0 1 4 0Zm-4.51 7.326a.78.78 0 0 1-.358-.442a3 3 0 0 1 4.308-3.516a6.484 6.484 0 0 0-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 0 1-2.07-.655Zm14.95.654a4.97 4.97 0 0 0 2.07-.654a.78.78 0 0 0 .357-.442a3 3 0 0 0-4.308-3.517a6.484 6.484 0 0 1 1.907 3.96a2.32 2.32 0 0 1-.026.654ZM18 8a2 2 0 1 1-4 0a2 2 0 0 1 4 0ZM5.304 16.19a.844.844 0 0 1-.277-.71a5 5 0 0 1 9.947 0a.843.843 0 0 1-.277.71A6.975 6.975 0 0 1 10 18a6.974 6.974 0 0 1-4.696-1.81Z"/>
 					</svg>
-					<span>Amis : ${this.userProfile.friendCount || 0}</span>
+					<span>Profils suivis : ${this.userProfile.friendCount || 0}</span>
 				</a>
 				<div class="text-center mb-2 grid grid-cols-1 lg:grid-cols-3 gap-6">
 					<div class="relative inline-block col-span-1">
@@ -135,7 +135,7 @@ private render(): void {
 					</div>
 					<div class="relative flex flex-col col-span-2 text-left text-text-muted dark:text-text-muted-dark">
 						<h2 class="text-3xl text-text dark:text-text-dark font-bold mb-3">${safeDisplayName}</h2>
-						<span>Membre depuis : ${creationDate}</span>
+						<span class="mt-8 block">Membre depuis : ${creationDate}</span>
 					</div>
 				</div>
 				<div class="flex justify-left mb-2 items-center">

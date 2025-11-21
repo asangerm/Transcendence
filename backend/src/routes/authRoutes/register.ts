@@ -13,11 +13,22 @@ export default async function registerRoute(app: FastifyInstance) {
 
     const { name, email, password } = validatedUser;
 
-    const existing = app.db
-      .prepare("SELECT id FROM users WHERE email = ? OR display_name = ?")
-      .get(email, name);
-    if (existing) {
-      return reply.status(409).send({ error: true, message: "Email ou nom d'utilisateur déjà pris" });
+    // Vérifier uniquement l'email
+    const existingEmail = app.db
+      .prepare("SELECT id FROM users WHERE email = ?")
+      .get(email);
+
+    if (existingEmail) {
+      return reply.status(409).send({ error: true, message: "Cet email est déjà utilisé." });
+    }
+
+    // Vérifier uniquement le pseudonyme
+    const existingName = app.db
+      .prepare("SELECT id FROM users WHERE display_name = ?")
+      .get(name);
+
+    if (existingName) {
+      return reply.status(409).send({ error: true, message: "Ce nom d'utilisateur est déjà pris." });
     }
 
     const hashed = await bcrypt.hash(password, 10);
