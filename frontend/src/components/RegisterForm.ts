@@ -1,13 +1,14 @@
 import { AuthService, RegisterCredentials } from '../services/auth.service';
 import { RegisterFormHandler } from '../scripts/register-form';
+import { navigateTo } from '../router';
 
 export class RegisterForm {
   private container: HTMLElement;
-  private onSuccess?: (user: any) => void;
+  private onSuccess?: () => void;
   private onError?: (error: string) => void;
   private formHandler;
 
-  constructor(container: HTMLElement, options: { onSuccess?: (user: any) => void; onError?: (error: string) => void } = {}) {
+  constructor(container: HTMLElement, options: { onSuccess?: () => void; onError?: (error: string) => void } = {}) {
     this.container = container;
     this.onSuccess = options.onSuccess;
     this.onError = options.onError;
@@ -187,10 +188,8 @@ export class RegisterForm {
       const result = await AuthService.register(credentials);
       
       if (result.success) {
-        this.showSuccess('Compte crée avec succes !');
-        setTimeout(() => {
-          this.onSuccess?.();
-        }, 1500);
+        await AuthService.verifyToken();
+        this.onSuccess?.();
       } else {
         throw new Error(result.message);
       }

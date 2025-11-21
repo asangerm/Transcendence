@@ -3,10 +3,10 @@ import '../types/google.d.ts';
 
 export class LoginForm {
   private container: HTMLElement;
-  private onSuccess?: (user: any) => void;
+  private onSuccess?: () => void;
   private onError?: (error: string) => void;
 
-  constructor(container: HTMLElement, options: { onSuccess?: (user: any) => void; onError?: (error: string) => void } = {}) {
+  constructor(container: HTMLElement, options: { onSuccess?: () => void; onError?: (error: string) => void } = {}) {
     this.container = container;
     this.onSuccess = options.onSuccess;
     this.onError = options.onError;
@@ -132,8 +132,8 @@ export class LoginForm {
       const result = await AuthService.login(credentials);
       
       if (result.success) {
-        const user = await AuthService.verifyToken();
-        this.onSuccess?.(user);
+        await AuthService.verifyToken();
+        this.onSuccess?.();
       } else {
         throw new Error(result.message);
       }

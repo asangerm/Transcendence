@@ -7,7 +7,7 @@ export function renderLogin() {
         app.innerHTML = '';
         
         new LoginForm(app, {
-            onSuccess: (user) => {
+            onSuccess: () => {
                 navigateTo('/');
             },
             onError: (error) => {
