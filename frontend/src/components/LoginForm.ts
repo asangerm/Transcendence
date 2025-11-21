@@ -90,7 +90,7 @@ export class LoginForm {
                 </div>
               </div>
 
-              <div class="mt-6" id="google-signin-container">
+              <div class="mt-6 flex justify-center" id="google-signin-container">
                 <!-- Google Sign-In-->
               </div>
             </div>
