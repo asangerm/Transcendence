@@ -26,6 +26,7 @@ Ce projet met en place une plateforme web complète permettant de jouer à un je
 ## 📂 Structure du projet
 
 /frontend → frontend (HTML, TailwindCSS, TS)
+
 /backend → backend Fastify + WebSocket + HTTP
 
 ## 📊 Gestion des modules
