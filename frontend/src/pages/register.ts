@@ -7,8 +7,8 @@ export function renderRegister() {
         app.innerHTML = '';
         
         new RegisterForm(app, {
-            onSuccess: (user) => {
-                navigateTo('/login');
+            onSuccess: () => {
+                navigateTo('/');
             },
             onError: (error) => {
                 console.error('Registration error:', error);
