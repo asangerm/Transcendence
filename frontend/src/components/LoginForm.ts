@@ -204,8 +204,8 @@ export class LoginForm {
 
   private async handleGoogleResponse(response: any): Promise<void> {
     try {
-      const result = await AuthService.googleLogin(response.credential);
-      this.onSuccess?.(result.user);
+      await AuthService.googleLogin(response.credential);
+      this.onSuccess?.();
     } catch (error: any) {
       console.error('Google response error:', error);
       this.showError(error.message);
@@ -217,8 +217,5 @@ export class LoginForm {
     const errorDiv = this.container.querySelector('#error-message') as HTMLDivElement;
     errorDiv.textContent = message;
     errorDiv.classList.remove('hidden');
-  }
-
-  private showSuccess(message: string): void {
   }
 }
