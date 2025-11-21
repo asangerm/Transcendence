@@ -1,72 +1,75 @@
 # 🕹️ Transcendance
 
-> Projet de développement d’un jeu multijoueur en ligne, réalisé dans le cadre de l’École 42.
+> Projet de développement d’un jeu multijoueur en ligne réalisé dans le cadre de l’École 42.
 
 ## 📌 Objectif
 
-Créer un jeu de ping-pong en ligne avec matchmaking, chat en temps réel, système de classement, gestion de comptes utilisateurs et un backend sécurisé.
+Ce projet met en place une plateforme web complète permettant de jouer à un jeu multijoueur en temps réel, incluant un système d’authentification sécurisé, un chat instantané, un matchmaking basé sur l’ELO, et une architecture backend moderne et entièrement containerisée conformément aux exigences du sujet ft_transcendence.
 
 ## 🚀 Fonctionnalités
 
-- 🎮 Jeu en ligne 1v1
-- 🧑‍🤝‍🧑 Système de login OAuth
-- 🧵 Chat global et privé
-- 🏆 Classement des joueurs
-- 🛡️ Sécurité JWT & 2FA
-- ⚙️ CI/CD via GitHub Actions
+- 🎮 **Jeu en ligne 1v1 en temps réel**
+- 🤝 **Second jeu avec matchmaking basé sur un système d’ELO**
+- 🔐 **Authentification sécurisée** (OAuth, JWT, 2FA TOTP)
+- 👤 **Gestion complète des utilisateurs**
+- 🛡️ **Modules de sécurité avancés**
+- 🧱 **Architecture backend modulaire (Fastify + WebSocket)**
+- 🐳 **Déploiement Docker rootless**
 
 ## 🧱 Stack technique
 
-| Frontend | Backend  | Infra/CI         |
-|----------|----------|------------------|
-| React    | NestJS   | Docker           |
-| Tailwind | TypeORM  | GitHub Actions   |
-| WebSocket| PostgreSQL |                 |
+| Frontend           | Backend            | Base de données | Infra / CI         |
+|--------------------|--------------------|------------------|---------------------|
+| HTML / TailwindCSS | Node.js / Fastify  | SQLite           | Docker (rootless)   |
+| TypeScript         | WebSocket - HTTP   |                  | GitHub Actions      |
 
 ## 📂 Structure du projet
 
-    /client      → frontend React
-    /server      → backend NestJS
-    /shared      → types, config communs
-    /docs        → documentation technique
+/frontend → frontend (HTML, TailwindCSS, TS)
+/backend → backend Fastify + WebSocket + HTTP
 
 ## 📊 Gestion des modules
 
 📊 [Voir le tableau Google Sheets](https://docs.google.com/spreadsheets/d/14Mzw_ATNZ2kGa5tiQ0BoNGbKqMgrd8GDxE_yPBFLGqM/edit?usp=sharing)
 
-## 🔧 Installation (dev)
+## 🔧 Installation (développement)
 
 ```bash
 # Clone le repo
 git clone https://github.com/votre-repo/transcendance.git
-cd transcendence
+cd transcendance
 
-# Lance Docker
-docker compose up --build
+# Lancement
+make
 ```
 
-### Accès :
-- Frontend : http://localhost:3000  
-- Backend : http://localhost:4000
+##Accès local
 
-## 📸 Captures d'écran
+Frontend : http://localhost:3000
 
-_Ajoutez ici quelques captures du jeu (login, match, scoreboard...)._
+Backend : http://localhost:8000
 
-## 🙌 Contributeurs
+##📸 Captures d’écran
 
-- @pseudo1 (frontend)
-- @pseudo2 (backend)
-- @pseudo3 (infra/devops)
-- @pseudo4 (UI/UX)
-- @pseudo5 (testing)
+Ajoutez ici des captures du jeu, du matchmaking, du chat, ou de l’interface.
 
----
+##🙌 Contributeurs
 
-## 🤝 Contribution
+@nfradet
 
-Voir [`CONTRIBUTING.md`](./CONTRIBUTING.md) pour les bonnes pratiques, les conventions de nommage et le workflow Git.
+@yonieva
 
-## 📄 Licence
+@jde-meo
 
-Ce projet est sous licence MIT.
+@nbiron
+
+@asangerm
+
+##🤝 Contribution
+
+Consultez CONTRIBUTING.md
+ pour connaître les conventions de développement, la structure Git et les bonnes pratiques.
+
+##📄 Licence
+
+Projet sous licence MIT.
