@@ -24,6 +24,7 @@ export class PongEngine {
   private readonly ARENA_WIDTH = 50;
   private readonly PADDLE_HALF_WIDTH = 5;
   private readonly FIXED_DT = 1/60;
+  private readonly VICTORY_SCORE = 3;
 
   constructor(id: string, topPlayer: { id: string; username?: string }, bottomPlayer: { id: string; username?: string }) {
     this.state = {
@@ -104,14 +105,13 @@ export class PongEngine {
 
   update(): boolean {
     const now = Date.now();
-    // Si la partie est déjà terminée (par exemple par forfait), ne pas modifier le vainqueur ni les scores
+    
     if (this.state.gameOver) {
       this.state.updatedAt = now;
       return false;
     }
 
-    // Condition de victoire par score (si aucun forfait n'a déjà clos la partie)
-    if (this.state.scores.top >= 10 || this.state.scores.bottom >= 10) {
+    if (this.state.scores.top >= this.VICTORY_SCORE || this.state.scores.bottom >= this.VICTORY_SCORE) {
       this.state.gameOver = true;
       this.state.winner = this.state.scores.top > this.state.scores.bottom ? 'top' : 'bottom';
       this.state.updatedAt = now;
@@ -247,7 +247,7 @@ export class PongEngine {
   private checkPaddleCollision(side: 'top' | 'bottom', ballPos: Vector3, ballVel: Vector3): void {
     const paddle = this.state.paddles[side];
     const withinZ = Math.abs(ballPos.z - paddle.position.z) < 2;
-    const withinX = Math.abs(ballPos.x - paddle.position.x) < this.PADDLE_HALF_WIDTH;
+    const withinX = Math.abs(ballPos.x - paddle.position.x) < (this.PADDLE_HALF_WIDTH + 1);
 
     if (withinZ && withinX) {
       const dirZ = side === 'top' ? -1 : 1;
@@ -297,5 +297,3 @@ export class PongEngine {
     this.freezeStartAt = Date.now();
   }
 }
-
-
