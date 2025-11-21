@@ -35,7 +35,9 @@ export default async function googleAuth(app: FastifyInstance) {
         const { sub: googleId, email, name, picture } = payload;
 
         const cleanUsername = (name || email?.split('@')[0] || 'user')
-        .split(' ')[0];
+        .split(' ')[0]
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
 
         let user = app.db
           .prepare("SELECT * FROM users WHERE google_id = ? OR email = ?")
