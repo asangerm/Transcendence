@@ -34,6 +34,10 @@ export default async function googleAuth(app: FastifyInstance) {
 
         const { sub: googleId, email, name, picture } = payload;
 
+        if (picture) {
+          fetch(picture).catch(() => {});
+        }
+
         const cleanUsername = (name || email?.split('@')[0] || 'user')
         .split(' ')[0]
         .normalize('NFD')
