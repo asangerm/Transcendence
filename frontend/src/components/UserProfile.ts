@@ -168,18 +168,11 @@ private render(): void {
 
 			<!-- Stats Card with Game Selector -->
 			<div class="bg-primary dark:bg-primary-dark backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-				<div class="flex items-center justify-between mb-8">
-					<h3 class="text-2xl font-bold" id="currentGameTitle">PONG</h3>
-					<button id="dropdownArrow" class="transition-all duration-150 text-gray-400 hover:text-white transition-colors">
-						<svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-						</svg>
-					</button>
-				</div>
-				<!-- Menu déroulant -->
-				<div id="gameDropdown" class="invisible transition-all duration-150 scale-0 origin-top-right absolute top-14 right-5 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
-					<button id="pongChoice" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">PONG</button>
-					<button id="aowChoice" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-b-lg">TIC-TAC-TOE</button>
+				<div class="border-b border-white/10 mb-6">
+					<nav class="flex gap-6">
+						<button id="tabPong" class="py-2 text-sm font-semibold border-b-2 border-button text-white">PONG</button>
+						<button id="tabTtt" class="py-2 text-sm font-semibold text-gray-400 hover:text-white">TIC-TAC-TOE</button>
+					</nav>
 				</div>
 				
 				<!-- Pong Stats (default) -->
@@ -495,39 +488,34 @@ private updateGameStats(gameName: string): void {
 }
 
 private attachEventListeners(): void {
-	const dropdown = document.getElementById('gameDropdown') as HTMLDivElement;
-	const arrow = document.getElementById('dropdownArrow') as HTMLButtonElement;
-	const pongbtn = document.getElementById("pongChoice") as HTMLButtonElement
-	const aowbtn = document.getElementById("aowChoice") as HTMLButtonElement
+	const tabPong = document.getElementById('tabPong') as HTMLButtonElement;
+	const tabTtt = document.getElementById('tabTtt') as HTMLButtonElement;
 
+	const setActiveTab = (game: 'PONG' | 'TIC-TAC-TOE') => {
+		if (!tabPong || !tabTtt) return;
+		const activeClasses = ['border-b-2', 'border-button', 'text-white'];
+		const inactiveClasses = ['text-gray-400'];
 
-	arrow.addEventListener('click', (e) => {
-		e.preventDefault();
-		if (dropdown.classList.contains("invisible")) {
-			dropdown.classList.add("scale-100");
-			dropdown.classList.remove("scale-0");
+		if (game === 'PONG') {
+			tabPong.classList.add(...activeClasses);
+			tabPong.classList.remove(...inactiveClasses);
+			tabTtt.classList.remove(...activeClasses);
+			tabTtt.classList.add(...inactiveClasses);
+		} else {
+			tabTtt.classList.add(...activeClasses);
+			tabTtt.classList.remove(...inactiveClasses);
+			tabPong.classList.remove(...activeClasses);
+			tabPong.classList.add(...inactiveClasses);
 		}
-		else {
-			dropdown.classList.remove("scale-100");
-			dropdown.classList.add("scale-0");
-		}
-		arrow.classList.toggle("rotate-180");
-		dropdown.classList.toggle("invisible");
-	});
+	};
 
-	pongbtn.addEventListener("click", () => {
-		dropdown.classList.remove("scale-100");
-		dropdown.classList.add("scale-0");
-		dropdown.classList.toggle("invisible");
-		arrow.classList.toggle("rotate-180");
+	tabPong?.addEventListener('click', () => {
+		setActiveTab('PONG');
 		this.updateGameStats('PONG');
 	});
 
-	aowbtn.addEventListener("click", () => {
-		dropdown.classList.remove("scale-100");
-		dropdown.classList.add("scale-0");
-		dropdown.classList.toggle("invisible");
-		arrow.classList.toggle("rotate-180");
+	tabTtt?.addEventListener('click', () => {
+		setActiveTab('TIC-TAC-TOE');
 		this.updateGameStats('TIC-TAC-TOE');
 	});
 
@@ -557,7 +545,7 @@ private attachEventListeners(): void {
 				modifyPhoto.classList.remove("opacity-80");
 				
 			});
-			modifyPhoto.addEventListener('click', (e) => {
+			modifyPhoto.addEventListener('click', () => {
 				if(avatarDropdown.classList.contains("scale-0"))
 				{
 					avatarDropdown.classList.remove("scale-0");
