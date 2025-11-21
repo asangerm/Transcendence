@@ -4,6 +4,7 @@ import { AuthStore } from '../stores/auth.store';
 import { sanitizeHtml, sanitizeInput, escapeHtml } from '../utils/sanitizer';
 import { navigateTo } from '../router';
 import { getApiUrl } from '../config';
+import { ft_alert, ft_confirm } from '../utils/confirm';
 
 export class UserProfileComponent {
 	private container: HTMLElement;
@@ -195,19 +196,19 @@ private render(): void {
 
 
 	<!-- Modals -->
-		<div id="edit-profile-modal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-				<div class="relative top-10 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-					<div class="mt-3">
-						<h3 class="text-lg font-medium text-gray-900 dark:text-white">Modifier le Profil</h3>
+		<div id="edit-profile-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+				<div class="relative top-10 mx-auto p-5 w-96 shadow-md rounded-md bg-background dark:bg-background-dark shadow-text/10 dark:shadow-text-dark/10">
+					<div class="">
+						<h3 class="text-lg font-medium text-text dark:text-text-dark">Modifier le Profil</h3>
 						<form id="edit-profile-form" class="mt-4 space-y-4">
 							<div>
-									<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom d'utilisateur</label>
+									<label class="block text-sm font-medium text-text dark:text-text-dark">Nom d'utilisateur</label>
 									<input 
 							id="username-modify"
 										type="text" 
 										name="displayName" 
 										value=""
-							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-0 bg-text/10 dark:bg-text-dark/10 text-text dark:text-text-dark"
 							required
 							minlength="3"
 							maxlength="50"
@@ -220,7 +221,7 @@ private render(): void {
 							type="text" 
 							name="email" 
 							value=""
-							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-0 bg-text/10 dark:bg-text-dark/10 text-text dark:text-text-dark"
 							required
 							minlength="3"
 							maxlength="50"
@@ -248,37 +249,39 @@ private render(): void {
 									Sauvegarder
 								</button>
 							</div>
-							<div class="w-80 mx-auto border border-top-6 mt-4"></div>
-							<div class="mt-4 flex flex-col justify-between gap-4">
-								<button 
-									type="button" 
-									id="export-btn" 
-									class="flex items-center justify-center gap-2 button-secondary stroke-text-dark dark:hover:stroke-text text-xs"
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
-										<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
-									</svg>
-									Exporter mes données
-								</button>
-
-								<div class="flex justify-between gap-2">
-									<button 
-									type="button" 
-									id="anonymize-btn" 
-									class="px-2 py-1 text-sm delete-secondary"
-									>
-									Anonymiser mon compte
-									</button>
-									<button 
-									type="button" 
-									id="delete-btn" 
-									class="px-2 py-1 text-sm delete-primary"
-									>
-									Supprimer mon compte
-									</button>
-								</div>
-							</div>
 						</form>
+					</div>
+				</div>
+				<div class="relative top-10 mx-auto mt-8 p-5 w-96 shadow-md rounded-md bg-background dark:bg-background-dark shadow-text/10 dark:shadow-text-dark/10">
+					<h3 class="text-lg font-medium text-text dark:text-text-dark">Gestion de compte</h3>
+					<div class="mt-4 flex flex-col justify-between gap-4">
+						<button 
+							type="button" 
+							id="export-btn" 
+							class="flex items-center justify-center gap-2 button-secondary stroke-text-dark dark:hover:stroke-text text-xs"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
+								<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+							</svg>
+							Exporter mes données
+						</button>
+
+						<div class="flex justify-between gap-2">
+							<button 
+							type="button" 
+							id="anonymize-btn" 
+							class="px-2 py-1 text-sm delete-secondary"
+							>
+							Anonymiser mon compte
+							</button>
+							<button 
+							type="button" 
+							id="delete-btn" 
+							class="px-2 py-1 text-sm delete-primary"
+							>
+							Supprimer mon compte
+							</button>
+						</div>
 					</div>
 				</div>
 		</div>
@@ -553,12 +556,12 @@ private async handleProfileUpdate(event: Event): Promise<void> {
     const email = sanitizeInput(formData.get('email') as string);
 
     if (!displayName || !email) {
-        alert('Le nom et l’email sont requis.');
+        ft_alert('Le nom et l’email sont requis.');
         return;
     }
 
     if (!this.userProfile) {
-        alert('Profil introuvable.');
+        ft_alert('Profil introuvable.');
         return;
     }
 
@@ -567,7 +570,7 @@ private async handleProfileUpdate(event: Event): Promise<void> {
             { display_name: displayName, email }
         );
 
-        alert('Profil mis à jour avec succès !');
+        ft_alert('Profil mis à jour avec succès !');
 
         this.userProfile.display_name = updatedUser.display_name;
         this.userProfile.email = updatedUser.email;
@@ -598,7 +601,7 @@ private async handleProfileUpdate(event: Event): Promise<void> {
             error.message ||
             'Impossible de mettre à jour le profil.';
 
-        alert('Erreur : ' + backendMessage);
+        ft_alert('Erreur : ' + backendMessage);
     }
 }
 
@@ -616,13 +619,13 @@ private async handleAddFriend(): Promise<void> {
 	try {
 		const user = AuthStore.getUser();
 		if (!user) {
-			this.showError('You must be logged in to add friends');
+			ft_alert('You must be logged in to add friends');
 			return;
 		}
 		await UserService.addFriend(this.userProfile.id);
 		this.loadUserData(this.userProfile.display_name);
 	} catch (error: any) {
-		this.showError(error.message || 'Failed to add friend');
+		ft_alert(error.message || 'Failed to add friend');
 	}
 }
 
@@ -632,13 +635,13 @@ private async handleRemoveFriend(): Promise<void> {
 	try {
 		const user = AuthStore.getUser();
 		if (!user) {
-			this.showError('You must be logged in to remove friends');
+			ft_alert('You must be logged in to remove friends');
 			return;
 		}
 		await UserService.removeFriend(this.userProfile.id);
 		this.loadUserData(this.userProfile.display_name);
 	} catch (error: any) {
-		this.showError(error.message || 'Failed to remove friend');
+		ft_alert(error.message || 'Failed to remove friend');
 	}
 }
 
@@ -673,21 +676,24 @@ private showSuccess(message: string): void {
 private async handleAnonymizeAccount(): Promise<void> {
 	if (!this.userProfile) return;
 
-	const confirmed = confirm(
-		"🚨🚨Êtes-vous sûr de vouloir ANONYMISER votre compte ?🚨🚨\n\n" +
-		" ⚠️Conséquences⚠️ :\n" +
-		"- Votre nom, email et avatar seront remplacés par des données anonymes.\n" +
-		"- Vous resterez inscrit, mais sous un profil anonyme.\n" +
-		"- Vous ne pourrez plus vous connecter.\n" +
-		"- ☠️☠️☠️ CETTE ACTION EST IRRÉVERSIBLE ☠️☠️☠️.\n\n" +
-		"Voulez-vous continuer ? 🤷"
+	const confirmed = await ft_confirm(
+		{
+			title: 'Anonymisation de compte',
+			message: "Êtes-vous sûr de vouloir ANONYMISER votre compte ?\n\n" +
+			"Conséquences :\n" +
+			"- Votre nom, email et avatar seront remplacés par des données anonymes.\n" +
+			"- Vous resterez inscrit, mais sous un profil anonyme.\n" +
+			"- Vous ne pourrez plus vous connecter.\n\n" +
+			"Cette action est irréversible.\n\n" +
+			"Voulez-vous continuer ?",
+		}
 	);
 
 	if (!confirmed) return;
 
 	try {
 		const response = await UserService.anonymizeAccount();
-		alert(response.message || "Votre compte a été anonymisé avec succès.");
+		ft_alert(response.message || "Votre compte a été anonymisé avec succès.");
 
 		AuthService.logout();
 		AuthStore.clear();
@@ -696,7 +702,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 		navigateTo("/");
 	} catch (error: any) {
 		console.error("Erreur lors de l'anonymisation :", error);
-		alert("Une erreur est survenue lors de l'anonymisation du compte.");
+		ft_alert("Une erreur est survenue lors de l'anonymisation du compte.");
 	}
 }
 
@@ -706,22 +712,25 @@ private async handleAnonymizeAccount(): Promise<void> {
 	private async handleDeleteAccount(): Promise<void> {
 	if (!this.userProfile) return;
 
-	const confirmed = confirm(
-		"🚨🚨Êtes-vous sûr de vouloir SUPPRIMER votre compte ?🚨🚨\n\n" +
-		" ⚠️Conséquences⚠️ :\n" +
-		"- Votre compte sera entièrement effacé de notre base de données.\n" +
-		"- Vous ne pourrez plus jamais vous reconnecter.\n" +
-		"- Vos amis perdront la relation avec vous.\n" +
-		"- Votre historique de matchs sera supprimé.\n\n" +
-		"  ☠️☠️☠️ CETTE ACTION EST IRRÉVERSIBLE ☠️☠️☠️.\n\n" +
-		"Voulez-vous continuer ? 🤷"
+	const confirmed = await ft_confirm(
+		{
+			title: 'Suppression de compte',
+			message: "Êtes-vous sûr de vouloir SUPPRIMER votre compte ?\n\n" +
+			"Conséquences :\n" +
+			"- Votre compte sera entièrement effacé de notre base de données.\n" +
+			"- Vous ne pourrez plus jamais vous reconnecter.\n" +
+			"- Vos amis perdront la relation avec vous.\n" +
+			"- Votre historique de matchs sera supprimé.\n\n" +
+			"Cette action est irréversible.\n\n" +
+			"Voulez-vous continuer ?",
+		}
 	);
 
 	if (!confirmed) return;
 
 	try {
 		const response = await UserService.deleteAccount();
-		alert(response.message || "Votre compte a été supprimé avec succès.");
+		ft_alert(response.message || "Votre compte a été supprimé avec succès.");
 
 		AuthService.logout();
 		AuthStore.clear();
@@ -730,7 +739,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 		navigateTo("/");
 	} catch (error: any) {
 		console.error("Erreur lors de la suppression :", error);
-		alert("Une erreur est survenue lors de la suppression du compte.");
+		ft_alert("Une erreur est survenue lors de la suppression du compte.");
 	}
   }
 
@@ -749,7 +758,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 			window.URL.revokeObjectURL(url);
 		} catch (error) {
 			console.error(error);
-			alert("Une erreur est survenue lors de l'export de vos données.");
+			ft_alert("Une erreur est survenue lors de l'export de vos données.");
 		}
 	}
 

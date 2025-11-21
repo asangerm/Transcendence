@@ -103,7 +103,6 @@ export class CreateTournaments {
 			const playersForm = document.getElementById('playersForm') as HTMLFormElement;
 			const errorMessage = document.getElementById('errorMessage') as HTMLDivElement;
 
-			t
 			for (let i = 1; i <= Number(playerSelect.value); i++) {
 				const input = document.getElementById(`player${i}`) as HTMLInputElement;
 				input.addEventListener("input", () => {

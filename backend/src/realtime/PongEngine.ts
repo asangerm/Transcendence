@@ -14,6 +14,8 @@ export class PongEngine {
   private readonly BOUNCE_COUNT = 3;
   private readonly BOUNCE_AMPLITUDE = 5;
 
+  private hasInitialLaunch = false;
+
   private readonly PADDLE_ACCELERATION = 500;
   private readonly PADDLE_MAX_SPEED = 35;
   private readonly PADDLE_FRICTION = 15;
@@ -46,7 +48,6 @@ export class PongEngine {
       top: { left: 0, right: 0 }, 
       bottom: { left: 0, right: 0 } 
     };
-    this.resetBall();
   }
 
   getState(): ServerGameState {
@@ -59,6 +60,17 @@ export class PongEngine {
 
   setPlayer(side: 'top' | 'bottom', player: { id: string; username?: string }): void {
     this.state.players[side] = player;
+  }
+
+  /**
+   * Démarre la toute première manche.
+   * Appelé par la couche temps réel quand un client est prêt (première connexion WS).
+   * Sans cet appel, la balle reste immobile au centre.
+   */
+  startFirstRound(): void {
+    if (this.hasInitialLaunch) return;
+    this.hasInitialLaunch = true;
+    this.resetBall();
   }
 
   forfeit(side: 'top' | 'bottom'): void {

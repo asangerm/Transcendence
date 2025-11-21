@@ -231,7 +231,20 @@ export async function registerRealtime(app: FastifyInstance) {
     
     if (gameId) {
       if (!connections.has(gameId)) connections.set(gameId, new Set());
-      connections.get(gameId)!.add(connection.socket);
+      const subs = connections.get(gameId)!;
+      const wasEmpty = subs.size === 0;
+      subs.add(connection.socket);
+
+      // Si c'est la première connexion pour cette partie de Pong,
+      // on démarre la toute première manche maintenant.
+      if (wasEmpty) {
+        const engine = gameManager.getEngine(gameId);
+        if (engine && typeof (engine as any).startFirstRound === 'function') {
+          try {
+            (engine as any).startFirstRound();
+          } catch {}
+        }
+      }
     }
 
     connection.socket.send(JSON.stringify({ type: 'hello', serverTime: Date.now() } as RealtimeMessage));
