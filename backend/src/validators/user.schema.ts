@@ -5,7 +5,7 @@ const userSchema = z.object({
     .string()
     .min(3, "Le nom doit faire au moins 3 caractères")
     .max(20, "Le nom ne doit pas dépasser 20 caractères")
-	.regex(/^\S+$/, "Le nom ne doit contenir aucun espace"),
+    .regex(/^[A-Za-z0-9]+$/, "Le nom ne peut contenir que des lettres et des chiffres"),
   email: z
     .string()
     .email("Email invalide"),

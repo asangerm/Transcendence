@@ -30,7 +30,7 @@ export class RegisterForm {
 								Nom d'utilisateur
 							</label>
 							<div id="userVerif" class="transition-all duration-150 invisible scale-0 absolute top-2 -right-4 z-10 inline-block w-48 h-7 flex items-center justify-center text-sm font-medium bg-red-500 rounded-full shadow-xs text-black">
-								Espaces interdits
+								Lettres & chiffres uniquement
 							</div>
 							<input
 								type="text"

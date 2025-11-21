@@ -43,11 +43,8 @@ export class UserProfileComponent {
 				return;
 			}
 
-			// S'abonner aux changements d'utilisateur
 			this.unsubscribe = AuthStore.subscribe((user) => {
-				// Si l'utilisateur change, recharger le profil si c'est son propre profil
 					if (this.isOwnProfile && user && user.id !== this.userProfile?.id) {
-						// Vérifier qu'on est toujours sur la page profil
 						if (window.location.pathname === '/profile') {
 							this.loadUserData(user.display_name);
 						}
@@ -750,11 +747,10 @@ private async handleAnonymizeAccount(): Promise<void> {
 		const response = await UserService.anonymizeAccount();
 		alert(response.message || "Votre compte a été anonymisé avec succès.");
 
-		// Nettoyage local pour forcer une reconnexion
 		AuthService.logout();
+		AuthStore.clear();
 		this.userProfile = null;
 
-		// Recharge complète de la page pour rafraîchir l'état
 		navigateTo("/");
 	} catch (error: any) {
 		console.error("Erreur lors de l'anonymisation :", error);
@@ -785,11 +781,10 @@ private async handleAnonymizeAccount(): Promise<void> {
 		const response = await UserService.deleteAccount();
 		alert(response.message || "Votre compte a été supprimé avec succès.");
 
-		// Nettoyage local AVANT la redirection
 		AuthService.logout();
+		AuthStore.clear();
 		this.userProfile = null;
 
-		// Forcer le rechargement complet de la page pour vider la session UI
 		navigateTo("/");
 	} catch (error: any) {
 		console.error("Erreur lors de la suppression :", error);

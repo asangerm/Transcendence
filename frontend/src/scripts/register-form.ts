@@ -49,7 +49,7 @@ export class RegisterFormHandler {
 				this.usernameInput.classList.remove('error-input');
 				userVerif.classList.remove('scale-100');
 				userVerif.classList.add('invisible', 'scale-0');
-				if (this.usernameInput.value && this.usernameInput.value.includes(" ")) {
+				if (this.usernameInput.value && !/^[A-Za-z0-9]+$/.test(this.usernameInput.value)) {
 					userVerif.classList.add('scale-100');
 					userVerif.classList.remove('invisible', 'scale-0');
 					this.usernameInput.classList.add('error-input');
@@ -218,7 +218,7 @@ export class RegisterFormHandler {
 
 	private verifyFormInputs() : void {
 		// Username Input :
-		if (!this.usernameInput.value.trim() || this.usernameInput.value.includes(" ")) {
+		if (!this.usernameInput.value.trim() || !/^[A-Za-z0-9]+$/.test(this.usernameInput.value)) {
 			this.formValidation.username = false;			
 		}
 		else {
