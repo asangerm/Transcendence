@@ -76,18 +76,8 @@ export class NavBar {
 							</a>
 						</div>
 
-						<!-- Mobile menu button -->
-						<div class="md:hidden flex items-center">
-							<button id="mobile-menu-button" class="text-text hover:text-button focus:outline-none dark:text-text-dark dark:hover:text-button-dark">
-								<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path id="menu-icon" class="block" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-									<path id="close-icon" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-								</svg>
-							</button>
-						</div>
-
 						<!-- Desktop menu -->
-						<div class="hidden md:flex items-center space-x-6">
+						<div class="flex items-center space-x-6">
 							${this.isAuth ? `
 							<a href="/tournaments" data-nav class="flex flex-row justify-items items-center gap-2 py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">
 								<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 1664 1472">
@@ -118,10 +108,10 @@ export class NavBar {
 									<div class="absolute right-0 bottom-0 w-3 h-3 bg-gray-500 rounded-full border-2"></div>
 									`}
 									<!-- Menu déroulant -->
-									<div id="profile-dropdown" class="absolute transition-all duration-150 invisible origin-top-right scale-0 z-50 top-10 right-0 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
 										<a href="/profile/${safeDisplayName}" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Profil</a>
+									<div id="profile-dropdown" class="absolute transition-all duration-150 invisible origin-top-right scale-0 z-50 top-10 right-0 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
 										<a href="/friends/${safeDisplayName}" id="friends" class="block w-full text-left px-4 py-2 hover:bg-gray-700 ">Amis</a>
-										<a id="logout" 
+										<a id="logout"
 											class="flex items-center gap-2 w-full px-4 py-2 text-left text-red-500 hover:bg-gray-700 rounded-b-lg border-t border-gray-600">
 											<svg xmlns="http://www.w3.org/2000/svg" 
 												class="w-6 h-6 text-red-500" 
@@ -143,38 +133,16 @@ export class NavBar {
 							`}
 						</div>
 					</div>
-
-					<!-- Mobile menu -->
-					<div id="mobile-menu" class="hidden md:hidden pb-4">
-						<a href="/games" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Games</a>
-						${this.isAuth ? `
-							<a href="/profile/${safeDisplayName}" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Profile</a>
-							<a href="/friends/${safeDisplayName}" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Profile</a>
-							<a href="/logout" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Déconnexion</a>
-						` : `
-							<a href="/login" data-nav class="block py-2 px-4 text-text hover:text-button font-medium transition-colors duration-300 dark:text-text-dark dark:hover:text-button-dark">Connexion</a>
-							<a href="/register" data-nav class="button-primary">Inscription</a>
-						`}
-					</div>
 				</div>
 			</nav>
 		`
 	}
 
 	private attachEventListeners(): void {
-		const mobileMenuButton = this.container.querySelector('#mobile-menu-button');
-		const mobileMenu = this.container.querySelector('#mobile-menu');
-		const menuIcon = this.container.querySelector('#menu-icon');
-		const closeIcon = this.container.querySelector('#close-icon');
 		const navProfile = this.container.querySelector('#profile-nav');
 		const dropdownProfile = this.container.querySelector('#profile-dropdown');
 		const logoutBtn = this.container.querySelector('#logout');
 
-		mobileMenuButton?.addEventListener('click', () => {
-			mobileMenu?.classList.toggle('hidden');
-			menuIcon?.classList.toggle('hidden');
-			closeIcon?.classList.toggle('hidden');
-		});
 		if (dropdownProfile) {
 			navProfile?.addEventListener('click', () => {
 				if (dropdownProfile.classList.contains("invisible")) {
@@ -190,7 +158,6 @@ export class NavBar {
 		logoutBtn?.addEventListener('click', () => {
 			this.handleLogout();
 		});
-
 	}
 
 	private async handleLogout(): Promise<void> {

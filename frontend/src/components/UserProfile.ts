@@ -292,52 +292,6 @@ private render(): void {
 	`;
 }
 
-// private renderDefaultStats(game: string): string {
-// 		// console.log("test game name : ", game);
-// 	return `
-// 	<!-- ${game} Stats (No data) -->
-// 	<div>
-// 		<div class="grid grid-cols-2 gap-4 mb-8">
-// 			<div class="text-center">
-// 				<div class="text-4xl text-text dark:text-green-200 font-bold mb-1">0</div>
-// 				<div class="text-muted dark:text-green-200">Victoires</div>
-// 			</div>
-// 			${game === 'Game2' ? ` 
-// 			<div class="text-center">
-// 				<div class="text-4xl text-text dark:text-gray-200 font-bold mb-1">0</div>
-// 				<div class="text-muted dark:text-gray-200">Egalites</div>
-// 			</div>
-// 			`: ``}
-// 			<div class="text-center">
-// 				<div class="text-4xl text-text dark:text-red-200 font-bold mb-1">0</div>
-// 				<div class="text-muted dark:text-red-200">Défaites</div>
-// 			</div>
-// 		</div>
-		
-// 		${game === 'Game2' ? ` 
-// 			<div class="text-center mb-6">
-// 				<div class="text-xl text-muted dark:text-muted-dark">Rang : 100</div>
-// 			</div>
-// 		`: ``}
-// 		<div class="text-center mb-6">
-// 			<div class="text-xl text-muted dark:text-muted-dark">Parties jouées : 0</div>
-// 		</div>
-// 	</div>
-// 	<!-- Win Rate Circle -->
-// 	<div class="flex justify-center mb-2">
-// 		<div class="relative w-32 h-32">
-// 		<svg class="w-32 h-32 transform trasition-all duration-400 -rotate-90" viewBox="0 0 36 36">
-// 			<path class="text-gray-700" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-// 			<path class="text-gaming-success" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-// 		</svg>
-// 		<div class="absolute inset-0 flex flex-col items-center justify-center">
-// 			<span class="text-lg font-bold">Ratio V/D</span>
-// 			<span class="text-lg font-bold">0%</span>
-// 			</div>
-// 		</div>
-// 	</div>
-// 	`;
-// }
 
 private fillModifyForm() {
 	if (!this.userProfile)
@@ -357,7 +311,7 @@ private fillModifyForm() {
 }
 
 private renderStats(game: string): string {
-	// Vérifier que userStats existe et est un tableau
+
 	if (!this.userStats || !Array.isArray(this.userStats)) {
 		console.warn('UserStats not available or not an array:', this.userStats);
 	}
@@ -374,7 +328,7 @@ private renderStats(game: string): string {
 	let defeats: number = gameStats !== undefined ? gameStats.defeats : 0;
 	let totalGames: number = victories + defeats;
 	let winRate: number = gameStats !== undefined && totalGames > 0 ? Math.round((victories / totalGames) * 100) : 0;
-	let elo: number = gameStats !== undefined ? 100 + (victories * 15 - defeats * 17)  : 400;
+	let elo: number = gameStats !== undefined ? 400 + (victories * 15 - defeats * 17)  : 400;
 
 	return `
 	<!-- ${game} Stats -->
