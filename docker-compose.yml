@@ -37,7 +37,6 @@ services:
       - NODE_ENV=development
       - DB_PATH=/app/data/db.sqlite
       - HTTPS_ENABLED=true
-      - FRONTEND_URL=https://localhost:3000
 
 volumes:
   frontend_node_modules:
