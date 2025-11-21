@@ -44,17 +44,17 @@ cd transcendance
 make
 ```
 
-##Accès local
+## Accès local
 
 Frontend : http://localhost:3000
 
 Backend : http://localhost:8000
 
-##📸 Captures d’écran
+## 📸 Captures d’écran
 
 Ajoutez ici des captures du jeu, du matchmaking, du chat, ou de l’interface.
 
-##🙌 Contributeurs
+## 🙌 Contributeurs
 
 @nfradet
 
@@ -66,11 +66,11 @@ Ajoutez ici des captures du jeu, du matchmaking, du chat, ou de l’interface.
 
 @asangerm
 
-##🤝 Contribution
+## 🤝 Contribution
 
 Consultez CONTRIBUTING.md
  pour connaître les conventions de développement, la structure Git et les bonnes pratiques.
 
-##📄 Licence
+## 📄 Licence
 
 Projet sous licence MIT.
