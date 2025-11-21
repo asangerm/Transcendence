@@ -103,12 +103,11 @@ export class NavBar {
 										id="navBar-avatar"
 									>
 									${this.isAuth ? `
-									<div class="absolute right-0 bottom-0 w-3 h-3 bg-green-500 rounded-full border-2"></div>
+										<div class="absolute right-0 bottom-0 w-3 h-3 bg-green-500 rounded-full border-2"></div>
 									` : `
-									<div class="absolute right-0 bottom-0 w-3 h-3 bg-gray-500 rounded-full border-2"></div>
+										<div class="absolute right-0 bottom-0 w-3 h-3 bg-gray-500 rounded-full border-2"></div>
 									`}
 									<!-- Menu déroulant -->
-										<a href="/profile/${safeDisplayName}" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Profil</a>
 									<div id="profile-dropdown" class="absolute transition-all duration-150 invisible origin-top-right scale-0 z-50 top-10 right-0 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
 										<a href="/profile/${safeDisplayName}" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">Profil</a>
 										<a href="/friends/${safeDisplayName}" id="friends" class="block w-full text-left px-4 py-2 hover:bg-gray-700 ">Profils suivis</a>
