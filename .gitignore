@@ -1,5 +1,4 @@
 # Dependencies
-node_modules/
 .pnp
 .pnp.js
 
@@ -13,8 +12,9 @@ dist/
 out/
 
 # SQLite DB
-backend/data/db.sqlite
+backend/data/
 backend/uploads/avatars
+backend/ssl/
 
 # Misc
 .DS_Store
@@ -37,6 +37,11 @@ yarn-error.log*
 
 # Docker
 .docker/ 
+
+# Vite
+frontend/node_modules/
+frontend/.vite/
+frontend/ssl/
 
 # SSL Certificates (auto-generated)
 **/ssl/*.pem
