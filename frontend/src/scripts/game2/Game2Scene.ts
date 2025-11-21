@@ -175,7 +175,7 @@ export class Game2Scene extends Phaser.Scene {
         const by = maxY + this.tailleCelluleRef / 2 + 44;
         this.conteneurRejouer = this.add.container(0, 0).setDepth(25).setVisible(false);
         const btnG = this.add.graphics({ x: bx, y: by });
-        btnG.fillStyle(0x00c2ff, 1);
+        btnG.fillStyle(0xEBEBEB, 1);
         btnG.fillRoundedRect(-bw / 2, -bh / 2, bw, bh, 12);
         const btnLabel = this.add.text(bx, by, 'Rejouer', { font: '24px Arial', color: '#001018' }).setOrigin(0.5);
         const btnZone = this.add.zone(bx, by, bw, bh).setOrigin(0.5).setInteractive({ useHandCursor: true });

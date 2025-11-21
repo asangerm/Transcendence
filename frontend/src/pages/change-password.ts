@@ -1,5 +1,6 @@
 import UserService from '../services/user.service';
 import { navigateTo } from '../router';
+import { ft_alert } from '../utils/confirm';
 
 export async function renderChangePassword() {
   const app = document.getElementById('app');
@@ -86,13 +87,13 @@ document.head.appendChild(style);
     const confirmPassword = (document.getElementById('confirm-password') as HTMLInputElement).value;
 
     if (newPassword !== confirmPassword) {
-      alert('Les mots de passe ne correspondent pas.');
+      ft_alert('Les mots de passe ne correspondent pas.');
       return;
     }
 
     try {
       await UserService.changePassword(oldPassword, newPassword);
-      alert('Mot de passe changé avec succès !');
+      ft_alert('Mot de passe changé avec succès !');
       navigateTo('/profile');
     } catch (err: any) {
       console.error('Change password error', err);
@@ -100,7 +101,7 @@ document.head.appendChild(style);
         err?.response?.data?.message ||
         err?.message ||
         'Erreur lors du changement de mot de passe';
-      alert('Erreur: ' + msg);
+      ft_alert('Erreur: ' + msg);
     }
   });
 }

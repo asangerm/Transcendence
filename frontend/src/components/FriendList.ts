@@ -3,6 +3,7 @@ import { AuthStore } from "../stores/auth.store";
 import { escapeHtml } from "../utils/sanitizer";
 import { getApiUrl } from '../config';
 import { navigateTo } from "../router";
+import { ft_alert } from "../utils/confirm";
 
 export class FriendsListComponent {
 	private container: HTMLElement;
@@ -276,7 +277,7 @@ export class FriendsListComponent {
 			this.attachListeners();
 		} catch (error: any) {
 			console.error("Error adding friend:", error);
-			alert("Impossible d'ajouter cet ami.");
+			ft_alert("Impossible d'ajouter cet ami.");
 		}
 	}
 
@@ -294,7 +295,7 @@ export class FriendsListComponent {
 			this.attachListeners();
 		} catch (error: any) {
 			console.error("Error removing friend:", error);
-			alert("Impossible de retirer cet ami.");
+			ft_alert("Impossible de retirer cet ami.");
 		}
 	}
 

@@ -4,6 +4,7 @@ import { AuthStore } from '../stores/auth.store';
 import { sanitizeHtml, sanitizeInput, escapeHtml } from '../utils/sanitizer';
 import { navigateTo } from '../router';
 import { getApiUrl } from '../config';
+import { ft_alert, ft_confirm } from '../utils/confirm';
 
 export class UserProfileComponent {
 	private container: HTMLElement;
@@ -103,7 +104,7 @@ private render(): void {
 					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20">
 						<path fill="#e8e8e8" d="M10 9a3 3 0 1 0 0-6a3 3 0 0 0 0 6ZM6 8a2 2 0 1 1-4 0a2 2 0 0 1 4 0Zm-4.51 7.326a.78.78 0 0 1-.358-.442a3 3 0 0 1 4.308-3.516a6.484 6.484 0 0 0-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 0 1-2.07-.655Zm14.95.654a4.97 4.97 0 0 0 2.07-.654a.78.78 0 0 0 .357-.442a3 3 0 0 0-4.308-3.517a6.484 6.484 0 0 1 1.907 3.96a2.32 2.32 0 0 1-.026.654ZM18 8a2 2 0 1 1-4 0a2 2 0 0 1 4 0ZM5.304 16.19a.844.844 0 0 1-.277-.71a5 5 0 0 1 9.947 0a.843.843 0 0 1-.277.71A6.975 6.975 0 0 1 10 18a6.974 6.974 0 0 1-4.696-1.81Z"/>
 					</svg>
-					<span>Amis : ${this.userProfile.friendCount || 0}</span>
+					<span>Profils suivis : ${this.userProfile.friendCount || 0}</span>
 				</a>
 				<div class="text-center mb-2 grid grid-cols-1 lg:grid-cols-3 gap-6">
 					<div class="relative inline-block col-span-1">
@@ -135,7 +136,7 @@ private render(): void {
 					</div>
 					<div class="relative flex flex-col col-span-2 text-left text-text-muted dark:text-text-muted-dark">
 						<h2 class="text-3xl text-text dark:text-text-dark font-bold mb-3">${safeDisplayName}</h2>
-						<span>Membre depuis : ${creationDate}</span>
+						<span class="mt-8 block">Membre depuis : ${creationDate}</span>
 					</div>
 				</div>
 				<div class="flex justify-left mb-2 items-center">
@@ -168,18 +169,11 @@ private render(): void {
 
 			<!-- Stats Card with Game Selector -->
 			<div class="bg-primary dark:bg-primary-dark backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-				<div class="flex items-center justify-between mb-8">
-					<h3 class="text-2xl font-bold" id="currentGameTitle">PONG</h3>
-					<button id="dropdownArrow" class="transition-all duration-150 text-gray-400 hover:text-white transition-colors">
-						<svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-						</svg>
-					</button>
-				</div>
-				<!-- Menu déroulant -->
-				<div id="gameDropdown" class="invisible transition-all duration-150 scale-0 origin-top-right absolute top-14 right-5 mt-2 w-40 bg-primary dark:bg-primary-dark border border-grey-500 z-50 rounded-lg shadow-lg ">
-					<button id="pongChoice" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-t-lg">PONG</button>
-					<button id="aowChoice" class="block w-full text-left px-4 py-2 hover:bg-gray-700 rounded-b-lg">TIC-TAC-TOE</button>
+				<div class="border-b border-white/10 mb-6">
+					<nav class="flex gap-6">
+						<button id="tabPong" class="py-2 text-sm font-semibold border-b-2 border-button text-white">PONG</button>
+						<button id="tabTtt" class="py-2 text-sm font-semibold text-gray-400 hover:text-white">TIC-TAC-TOE</button>
+					</nav>
 				</div>
 				
 				<!-- Pong Stats (default) -->
@@ -202,19 +196,19 @@ private render(): void {
 
 
 	<!-- Modals -->
-		<div id="edit-profile-modal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-				<div class="relative top-10 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-					<div class="mt-3">
-						<h3 class="text-lg font-medium text-gray-900 dark:text-white">Modifier le Profil</h3>
+		<div id="edit-profile-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+				<div class="relative top-10 mx-auto p-5 w-96 shadow-md rounded-md bg-background dark:bg-background-dark shadow-text/10 dark:shadow-text-dark/10">
+					<div class="">
+						<h3 class="text-lg font-medium text-text dark:text-text-dark">Modifier le Profil</h3>
 						<form id="edit-profile-form" class="mt-4 space-y-4">
 							<div>
-									<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom d'utilisateur</label>
+									<label class="block text-sm font-medium text-text dark:text-text-dark">Nom d'utilisateur</label>
 									<input 
 							id="username-modify"
 										type="text" 
 										name="displayName" 
 										value=""
-							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-0 bg-text/10 dark:bg-text-dark/10 text-text dark:text-text-dark"
 							required
 							minlength="3"
 							maxlength="50"
@@ -227,7 +221,7 @@ private render(): void {
 							type="text" 
 							name="email" 
 							value=""
-							class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-0 bg-text/10 dark:bg-text-dark/10 text-text dark:text-text-dark"
 							required
 							minlength="3"
 							maxlength="50"
@@ -255,89 +249,45 @@ private render(): void {
 									Sauvegarder
 								</button>
 							</div>
-							<div class="w-80 mx-auto border border-top-6 mt-4"></div>
-							<div class="mt-4 flex flex-col justify-between gap-4">
-								<button 
-									type="button" 
-									id="export-btn" 
-									class="flex items-center justify-center gap-2 button-secondary stroke-text-dark dark:hover:stroke-text text-xs"
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
-										<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
-									</svg>
-									Exporter mes données
-								</button>
-
-								<div class="flex justify-between gap-2">
-									<button 
-									type="button" 
-									id="anonymize-btn" 
-									class="px-2 py-1 text-sm delete-secondary"
-									>
-									Anonymiser mon compte
-									</button>
-									<button 
-									type="button" 
-									id="delete-btn" 
-									class="px-2 py-1 text-sm delete-primary"
-									>
-									Supprimer mon compte
-									</button>
-								</div>
-							</div>
 						</form>
+					</div>
+				</div>
+				<div class="relative top-10 mx-auto mt-8 p-5 w-96 shadow-md rounded-md bg-background dark:bg-background-dark shadow-text/10 dark:shadow-text-dark/10">
+					<h3 class="text-lg font-medium text-text dark:text-text-dark">Gestion de compte</h3>
+					<div class="mt-4 flex flex-col justify-between gap-4">
+						<button 
+							type="button" 
+							id="export-btn" 
+							class="flex items-center justify-center gap-2 button-secondary stroke-text-dark dark:hover:stroke-text text-xs"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
+								<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+							</svg>
+							Exporter mes données
+						</button>
+
+						<div class="flex justify-between gap-2">
+							<button 
+							type="button" 
+							id="anonymize-btn" 
+							class="px-2 py-1 text-sm delete-secondary"
+							>
+							Anonymiser mon compte
+							</button>
+							<button 
+							type="button" 
+							id="delete-btn" 
+							class="px-2 py-1 text-sm delete-primary"
+							>
+							Supprimer mon compte
+							</button>
+						</div>
 					</div>
 				</div>
 		</div>
 	`;
 }
 
-// private renderDefaultStats(game: string): string {
-// 		// console.log("test game name : ", game);
-// 	return `
-// 	<!-- ${game} Stats (No data) -->
-// 	<div>
-// 		<div class="grid grid-cols-2 gap-4 mb-8">
-// 			<div class="text-center">
-// 				<div class="text-4xl text-text dark:text-green-200 font-bold mb-1">0</div>
-// 				<div class="text-muted dark:text-green-200">Victoires</div>
-// 			</div>
-// 			${game === 'Game2' ? ` 
-// 			<div class="text-center">
-// 				<div class="text-4xl text-text dark:text-gray-200 font-bold mb-1">0</div>
-// 				<div class="text-muted dark:text-gray-200">Egalites</div>
-// 			</div>
-// 			`: ``}
-// 			<div class="text-center">
-// 				<div class="text-4xl text-text dark:text-red-200 font-bold mb-1">0</div>
-// 				<div class="text-muted dark:text-red-200">Défaites</div>
-// 			</div>
-// 		</div>
-		
-// 		${game === 'Game2' ? ` 
-// 			<div class="text-center mb-6">
-// 				<div class="text-xl text-muted dark:text-muted-dark">Rang : 100</div>
-// 			</div>
-// 		`: ``}
-// 		<div class="text-center mb-6">
-// 			<div class="text-xl text-muted dark:text-muted-dark">Parties jouées : 0</div>
-// 		</div>
-// 	</div>
-// 	<!-- Win Rate Circle -->
-// 	<div class="flex justify-center mb-2">
-// 		<div class="relative w-32 h-32">
-// 		<svg class="w-32 h-32 transform trasition-all duration-400 -rotate-90" viewBox="0 0 36 36">
-// 			<path class="text-gray-700" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-// 			<path class="text-gaming-success" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-// 		</svg>
-// 		<div class="absolute inset-0 flex flex-col items-center justify-center">
-// 			<span class="text-lg font-bold">Ratio V/D</span>
-// 			<span class="text-lg font-bold">0%</span>
-// 			</div>
-// 		</div>
-// 	</div>
-// 	`;
-// }
 
 private fillModifyForm() {
 	if (!this.userProfile)
@@ -357,7 +307,7 @@ private fillModifyForm() {
 }
 
 private renderStats(game: string): string {
-	// Vérifier que userStats existe et est un tableau
+
 	if (!this.userStats || !Array.isArray(this.userStats)) {
 		console.warn('UserStats not available or not an array:', this.userStats);
 	}
@@ -374,7 +324,7 @@ private renderStats(game: string): string {
 	let defeats: number = gameStats !== undefined ? gameStats.defeats : 0;
 	let totalGames: number = victories + defeats;
 	let winRate: number = gameStats !== undefined && totalGames > 0 ? Math.round((victories / totalGames) * 100) : 0;
-	let elo: number = gameStats !== undefined ? 100 + (victories * 15 - defeats * 17)  : 400;
+	let elo: number = gameStats !== undefined ? 400 + (victories * 15 - defeats * 17)  : 400;
 
 	return `
 	<!-- ${game} Stats -->
@@ -495,39 +445,34 @@ private updateGameStats(gameName: string): void {
 }
 
 private attachEventListeners(): void {
-	const dropdown = document.getElementById('gameDropdown') as HTMLDivElement;
-	const arrow = document.getElementById('dropdownArrow') as HTMLButtonElement;
-	const pongbtn = document.getElementById("pongChoice") as HTMLButtonElement
-	const aowbtn = document.getElementById("aowChoice") as HTMLButtonElement
+	const tabPong = document.getElementById('tabPong') as HTMLButtonElement;
+	const tabTtt = document.getElementById('tabTtt') as HTMLButtonElement;
 
+	const setActiveTab = (game: 'PONG' | 'TIC-TAC-TOE') => {
+		if (!tabPong || !tabTtt) return;
+		const activeClasses = ['border-b-2', 'border-button', 'text-white'];
+		const inactiveClasses = ['text-gray-400'];
 
-	arrow.addEventListener('click', (e) => {
-		e.preventDefault();
-		if (dropdown.classList.contains("invisible")) {
-			dropdown.classList.add("scale-100");
-			dropdown.classList.remove("scale-0");
+		if (game === 'PONG') {
+			tabPong.classList.add(...activeClasses);
+			tabPong.classList.remove(...inactiveClasses);
+			tabTtt.classList.remove(...activeClasses);
+			tabTtt.classList.add(...inactiveClasses);
+		} else {
+			tabTtt.classList.add(...activeClasses);
+			tabTtt.classList.remove(...inactiveClasses);
+			tabPong.classList.remove(...activeClasses);
+			tabPong.classList.add(...inactiveClasses);
 		}
-		else {
-			dropdown.classList.remove("scale-100");
-			dropdown.classList.add("scale-0");
-		}
-		arrow.classList.toggle("rotate-180");
-		dropdown.classList.toggle("invisible");
-	});
+	};
 
-	pongbtn.addEventListener("click", () => {
-		dropdown.classList.remove("scale-100");
-		dropdown.classList.add("scale-0");
-		dropdown.classList.toggle("invisible");
-		arrow.classList.toggle("rotate-180");
+	tabPong?.addEventListener('click', () => {
+		setActiveTab('PONG');
 		this.updateGameStats('PONG');
 	});
 
-	aowbtn.addEventListener("click", () => {
-		dropdown.classList.remove("scale-100");
-		dropdown.classList.add("scale-0");
-		dropdown.classList.toggle("invisible");
-		arrow.classList.toggle("rotate-180");
+	tabTtt?.addEventListener('click', () => {
+		setActiveTab('TIC-TAC-TOE');
 		this.updateGameStats('TIC-TAC-TOE');
 	});
 
@@ -557,7 +502,7 @@ private attachEventListeners(): void {
 				modifyPhoto.classList.remove("opacity-80");
 				
 			});
-			modifyPhoto.addEventListener('click', (e) => {
+			modifyPhoto.addEventListener('click', () => {
 				if(avatarDropdown.classList.contains("scale-0"))
 				{
 					avatarDropdown.classList.remove("scale-0");
@@ -611,12 +556,12 @@ private async handleProfileUpdate(event: Event): Promise<void> {
     const email = sanitizeInput(formData.get('email') as string);
 
     if (!displayName || !email) {
-        alert('Le nom et l’email sont requis.');
+        ft_alert('Le nom et l’email sont requis.');
         return;
     }
 
     if (!this.userProfile) {
-        alert('Profil introuvable.');
+        ft_alert('Profil introuvable.');
         return;
     }
 
@@ -625,7 +570,7 @@ private async handleProfileUpdate(event: Event): Promise<void> {
             { display_name: displayName, email }
         );
 
-        alert('Profil mis à jour avec succès !');
+        ft_alert('Profil mis à jour avec succès !');
 
         this.userProfile.display_name = updatedUser.display_name;
         this.userProfile.email = updatedUser.email;
@@ -656,7 +601,7 @@ private async handleProfileUpdate(event: Event): Promise<void> {
             error.message ||
             'Impossible de mettre à jour le profil.';
 
-        alert('Erreur : ' + backendMessage);
+        ft_alert('Erreur : ' + backendMessage);
     }
 }
 
@@ -674,13 +619,13 @@ private async handleAddFriend(): Promise<void> {
 	try {
 		const user = AuthStore.getUser();
 		if (!user) {
-			this.showError('You must be logged in to add friends');
+			ft_alert('You must be logged in to add friends');
 			return;
 		}
 		await UserService.addFriend(this.userProfile.id);
 		this.loadUserData(this.userProfile.display_name);
 	} catch (error: any) {
-		this.showError(error.message || 'Failed to add friend');
+		ft_alert(error.message || 'Failed to add friend');
 	}
 }
 
@@ -690,13 +635,13 @@ private async handleRemoveFriend(): Promise<void> {
 	try {
 		const user = AuthStore.getUser();
 		if (!user) {
-			this.showError('You must be logged in to remove friends');
+			ft_alert('You must be logged in to remove friends');
 			return;
 		}
 		await UserService.removeFriend(this.userProfile.id);
 		this.loadUserData(this.userProfile.display_name);
 	} catch (error: any) {
-		this.showError(error.message || 'Failed to remove friend');
+		ft_alert(error.message || 'Failed to remove friend');
 	}
 }
 
@@ -731,21 +676,24 @@ private showSuccess(message: string): void {
 private async handleAnonymizeAccount(): Promise<void> {
 	if (!this.userProfile) return;
 
-	const confirmed = confirm(
-		"🚨🚨Êtes-vous sûr de vouloir ANONYMISER votre compte ?🚨🚨\n\n" +
-		" ⚠️Conséquences⚠️ :\n" +
-		"- Votre nom, email et avatar seront remplacés par des données anonymes.\n" +
-		"- Vous resterez inscrit, mais sous un profil anonyme.\n" +
-		"- Vous ne pourrez plus vous connecter.\n" +
-		"- ☠️☠️☠️ CETTE ACTION EST IRRÉVERSIBLE ☠️☠️☠️.\n\n" +
-		"Voulez-vous continuer ? 🤷"
+	const confirmed = await ft_confirm(
+		{
+			title: 'Anonymisation de compte',
+			message: "Êtes-vous sûr de vouloir ANONYMISER votre compte ?\n\n" +
+			"Conséquences :\n" +
+			"- Votre nom, email et avatar seront remplacés par des données anonymes.\n" +
+			"- Vous resterez inscrit, mais sous un profil anonyme.\n" +
+			"- Vous ne pourrez plus vous connecter.\n\n" +
+			"Cette action est irréversible.\n\n" +
+			"Voulez-vous continuer ?",
+		}
 	);
 
 	if (!confirmed) return;
 
 	try {
 		const response = await UserService.anonymizeAccount();
-		alert(response.message || "Votre compte a été anonymisé avec succès.");
+		ft_alert(response.message || "Votre compte a été anonymisé avec succès.");
 
 		AuthService.logout();
 		AuthStore.clear();
@@ -754,7 +702,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 		navigateTo("/");
 	} catch (error: any) {
 		console.error("Erreur lors de l'anonymisation :", error);
-		alert("Une erreur est survenue lors de l'anonymisation du compte.");
+		ft_alert("Une erreur est survenue lors de l'anonymisation du compte.");
 	}
 }
 
@@ -764,22 +712,25 @@ private async handleAnonymizeAccount(): Promise<void> {
 	private async handleDeleteAccount(): Promise<void> {
 	if (!this.userProfile) return;
 
-	const confirmed = confirm(
-		"🚨🚨Êtes-vous sûr de vouloir SUPPRIMER votre compte ?🚨🚨\n\n" +
-		" ⚠️Conséquences⚠️ :\n" +
-		"- Votre compte sera entièrement effacé de notre base de données.\n" +
-		"- Vous ne pourrez plus jamais vous reconnecter.\n" +
-		"- Vos amis perdront la relation avec vous.\n" +
-		"- Votre historique de matchs sera supprimé.\n\n" +
-		"  ☠️☠️☠️ CETTE ACTION EST IRRÉVERSIBLE ☠️☠️☠️.\n\n" +
-		"Voulez-vous continuer ? 🤷"
+	const confirmed = await ft_confirm(
+		{
+			title: 'Suppression de compte',
+			message: "Êtes-vous sûr de vouloir SUPPRIMER votre compte ?\n\n" +
+			"Conséquences :\n" +
+			"- Votre compte sera entièrement effacé de notre base de données.\n" +
+			"- Vous ne pourrez plus jamais vous reconnecter.\n" +
+			"- Vos amis perdront la relation avec vous.\n" +
+			"- Votre historique de matchs sera supprimé.\n\n" +
+			"Cette action est irréversible.\n\n" +
+			"Voulez-vous continuer ?",
+		}
 	);
 
 	if (!confirmed) return;
 
 	try {
 		const response = await UserService.deleteAccount();
-		alert(response.message || "Votre compte a été supprimé avec succès.");
+		ft_alert(response.message || "Votre compte a été supprimé avec succès.");
 
 		AuthService.logout();
 		AuthStore.clear();
@@ -788,7 +739,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 		navigateTo("/");
 	} catch (error: any) {
 		console.error("Erreur lors de la suppression :", error);
-		alert("Une erreur est survenue lors de la suppression du compte.");
+		ft_alert("Une erreur est survenue lors de la suppression du compte.");
 	}
   }
 
@@ -807,7 +758,7 @@ private async handleAnonymizeAccount(): Promise<void> {
 			window.URL.revokeObjectURL(url);
 		} catch (error) {
 			console.error(error);
-			alert("Une erreur est survenue lors de l'export de vos données.");
+			ft_alert("Une erreur est survenue lors de l'export de vos données.");
 		}
 	}
 

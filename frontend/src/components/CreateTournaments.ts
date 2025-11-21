@@ -69,7 +69,6 @@ export class CreateTournaments {
 					</form>
 				</div>
 			</div>
-
 		`
 	}
 
@@ -89,6 +88,8 @@ export class CreateTournaments {
 						</h2>
 						<form id="playersForm" class="space-y-6"> 
 							${this.displayInputNames(Number(playerSelect.value))}
+							<!-- Message d'erreur -->
+							<div id="errorMessage" class="text-red-500 text-sm mt-2 hidden"></div>
 							<button
 								type="submit"
 								class="w-full button-primary"
@@ -98,10 +99,35 @@ export class CreateTournaments {
 						</form>
 					</div>
 				</div>`;
+
 			const playersForm = document.getElementById('playersForm') as HTMLFormElement;
+			const errorMessage = document.getElementById('errorMessage') as HTMLDivElement;
+
+			for (let i = 1; i <= Number(playerSelect.value); i++) {
+				const input = document.getElementById(`player${i}`) as HTMLInputElement;
+				input.addEventListener("input", () => {
+					errorMessage.textContent = "";
+					errorMessage.classList.add("hidden");
+				});
+			}
+
 			playersForm.addEventListener("submit", (e) => {
 				e.preventDefault();
+
+				const names: string[] = [];
+				for (let i = 1; i <= Number(playerSelect.value); i++) {
+					const input = document.getElementById(`player${i}`) as HTMLInputElement;
+					names.push(input.value.trim().toLowerCase());
+				}
+
 				
+				const uniqueNames = new Set(names);
+				if (uniqueNames.size !== names.length) {
+					errorMessage.textContent = "Deux joueurs ne peuvent pas avoir le même nom !";
+					errorMessage.classList.remove("hidden");
+					return;
+				}
+
 				const tournamentInfos = this.extractTournamentInfos(Number(playerSelect.value), safeName);
 				this.registerTournament(tournamentInfos);
 			});

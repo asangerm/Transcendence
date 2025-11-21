@@ -12,10 +12,10 @@ export function renderGame2Lobby() {
                     <div id="mm-block" class="mb-6 bg-gray-800 p-6 rounded-lg text-center">
                         <p id="mm-status" class="text-lg text-gray-300 mb-4">Clique sur "Chercher une partie" pour trouver un adversaire.</p>
                         <div class="flex gap-4 justify-center">
-                            <button id="mm-search" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
+                            <button id="mm-search" class="px-8 py-3 button-primary">
                                 Chercher une partie
                             </button>
-                            <button id="mm-cancel" class="px-8 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors hidden">
+                            <button id="mm-cancel" class="px-8 py-3 button-secondary hidden">
                                 Annuler
                             </button>
                         </div>

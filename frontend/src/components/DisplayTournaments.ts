@@ -1,6 +1,7 @@
 import { AuthStore } from "../stores/auth.store";
 import { navigateTo } from '../router';
 import { TournamentService, Tournament, Match, UpdateMatch } from "../services/tournament.service";
+import { ft_alert, ft_confirm } from "../utils/confirm";
 
 	export class DisplayTournaments {
 		private container: HTMLElement;
@@ -180,17 +181,24 @@ import { TournamentService, Tournament, Match, UpdateMatch } from "../services/t
 			const deleteBtn = document.getElementById("deleteTournamentBtn");
 			if (deleteBtn) {
 				deleteBtn.addEventListener("click", async () => {
-					const confirmDelete = confirm(`Voulez-vous vraiment supprimer le tournoi "${tournament.name}" ?`);
-					if (!confirmDelete) return;
+					const confirmDelete = await ft_confirm({
+						title: 'Suppression de tournoi',
+						message: `Voulez-vous vraiment supprimer le tournoi "${tournament.name}" ?`,
+						confirmButtonText: 'Oui',
+						cancelButtonText: 'Non',
+					});
 
-					try {
-						await TournamentService.deleteTournament(tournament.id);
-						alert("Tournoi supprimé avec succès ");
-						navigateTo("/tournaments")
-					} catch (err) {
-						alert(" Erreur lors de la suppression du tournoi.");
-						console.error(err);
+					if (confirmDelete) {
+						try {
+							await TournamentService.deleteTournament(tournament.id);
+							ft_alert("Tournoi supprimé avec succès ");
+							navigateTo("/tournaments")
+						} catch (err) {
+							ft_alert(" Erreur lors de la suppression du tournoi.");
+							console.error(err);
+						}
 					}
+
 				});
 			}
 		}

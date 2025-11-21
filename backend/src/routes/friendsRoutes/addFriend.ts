@@ -23,7 +23,7 @@ export default async function addFriend(app: FastifyInstance) {
       const friendExists = app.db
         .prepare("SELECT id FROM users WHERE id = ?")
         .get(friendId);
-      if (!friendExists) {
+      if (!friendExists) {  
         return reply.status(404).send({
           error: true,
           message: "The user you are trying to add does not exist.",
