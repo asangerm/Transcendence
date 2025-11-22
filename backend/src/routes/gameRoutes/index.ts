@@ -27,8 +27,8 @@ export default async function gameRoutes(app: FastifyInstance) {
       const body = await z.object({ side: z.enum(['top', 'bottom']).optional() }).parseAsync((req as any).body ?? {});
       const state = gameManager.getState(params.id);
       if (!state) {
-        reply.code(404);
-        return { error: 'Not found' };
+        reply.code(200);
+        return { message: 'No game for this id' };
       }
       const side = body.side ?? 'top';
       const ok = gameManager.forfeit(params.id, side);
