@@ -17,7 +17,7 @@ export default async function gameRoutes(app: FastifyInstance) {
   app.get('/games/:id', async (req, reply) => {
     const id = (req.params as any).id as string;
     const state = gameManager.getState(id);
-    if (!state) return reply.code(404).send({ message: 'Not found' });
+    if (!state) return reply.code(200).send({ message: 'Not found' });
     return state;
   });
 
